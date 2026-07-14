@@ -31,4 +31,6 @@ data class HabitEntity(
     val days: Set<DayOfWeek>,
     val time: LocalDateTime,
     @ColumnInfo(name = "reminder", defaultValue = "1") val reminder: Boolean,
+    @ColumnInfo(defaultValue = "[]") val steps: List<String> = emptyList(),
+    @ColumnInfo(defaultValue = "") val color: String = "",
 )

@@ -62,13 +62,16 @@ import com.shub39.grit.core.now
 import com.shub39.grit.core.toFormattedString
 import com.shub39.grit.shared.ui.habit.HabitsAction
 import com.shub39.grit.shared.ui.theme.LiquidGlassDefaults
+import com.shub39.grit.shared.ui.theme.bestContentColor
 import com.shub39.grit.shared.ui.theme.gritSemanticColors
 import com.shub39.grit.shared.ui.theme.liquidGlass
+import com.shub39.grit.shared.ui.theme.parseAccentColor
 import grit.shared.ui.generated.resources.*
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
 /** Habit Card for list */
@@ -91,29 +94,37 @@ fun HabitCard(
     val canCompleteToday = today.dayOfWeek in habitWithAnalytics.habit.days
     val semantic = gritSemanticColors()
 
+    // Per-habit accent; falls back to the global theme when unset.
+    val accent = parseAccentColor(habitWithAnalytics.habit.color)
+    val doneColor = accent ?: MaterialTheme.colorScheme.primary
+    val onDoneColor = accent?.bestContentColor() ?: MaterialTheme.colorScheme.onPrimary
+
     // animated colors
     val cardContent by
         animateColorAsState(
             targetValue =
-                when (completed) {
-                    true -> MaterialTheme.colorScheme.onPrimaryContainer
+                when {
+                    completed && accent == null -> MaterialTheme.colorScheme.onPrimaryContainer
                     else ->
                         MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = if (canCompleteToday) 1f else 0.7f
+                            alpha = if (canCompleteToday || completed) 1f else 0.7f
                         )
                 },
             animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
-            label = "cardBackground",
+            label = "cardContent",
         )
     // Translucent liquid glass pane; days that can't be completed fade further back.
     val cardBackground by
         animateColorAsState(
             targetValue =
-                when (completed) {
-                    true ->
+                when {
+                    completed && accent != null -> accent.copy(alpha = 0.55f)
+                    completed -> {
                         MaterialTheme.colorScheme.primaryContainer.copy(
                             alpha = LiquidGlassDefaults.CARD_ALPHA
                         )
+                    }
+                    accent != null -> accent.copy(alpha = if (canCompleteToday) 0.26f else 0.14f)
                     else ->
                         MaterialTheme.colorScheme.surfaceContainer.copy(
                             alpha =
@@ -124,6 +135,9 @@ fun HabitCard(
             animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
             label = "cardBackground",
         )
+    // Diagonal gradient end so accent panes don't read as flat blocks.
+    val cardBackgroundEnd =
+        accent?.copy(alpha = if (completed) 0.32f else if (canCompleteToday) 0.12f else 0.07f)
 
     val weekState =
         rememberWeekCalendarState(
@@ -152,9 +166,8 @@ fun HabitCard(
                 .liquidGlass(
                     shape = shape,
                     fill = cardBackground,
-                    border =
-                        if (completed) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                        else null,
+                    border = if (completed) doneColor.copy(alpha = 0.5f) else null,
+                    fillEnd = cardBackgroundEnd,
                 ),
     ) {
         ListItem(
@@ -193,11 +206,37 @@ fun HabitCard(
                 }
             },
             supportingContent = {
-                if (habitWithAnalytics.habit.reminder) {
-                    Text(
-                        text = habitWithAnalytics.habit.time.time.toFormattedString(is24Hr),
-                        style = MaterialTheme.typography.labelMedium,
-                    )
+                Column {
+                    if (habitWithAnalytics.habit.reminder) {
+                        Text(
+                            text = habitWithAnalytics.habit.time.time.toFormattedString(is24Hr),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
+
+                    if (habitWithAnalytics.habit.steps.isNotEmpty()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.bulleted_list),
+                                contentDescription = null,
+                                modifier = Modifier.size(12.dp),
+                                tint = cardContent.copy(alpha = 0.75f),
+                            )
+
+                            Text(
+                                text =
+                                    stringResource(
+                                        Res.string.steps_count,
+                                        habitWithAnalytics.habit.steps.size,
+                                    ),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = cardContent.copy(alpha = 0.75f),
+                            )
+                        }
+                    }
                 }
             },
             trailingContent = {
@@ -296,10 +335,7 @@ fun HabitCard(
                                                 else -> RoundedCornerShape(20.dp)
                                             }
 
-                                        Modifier.background(
-                                            color = MaterialTheme.colorScheme.primary,
-                                            shape = shape,
-                                        )
+                                        Modifier.background(color = doneColor, shape = shape)
                                     } else Modifier
                                 )
                                 .clip(shape = RoundedCornerShape(20.dp))
@@ -328,7 +364,7 @@ fun HabitCard(
                                 maxLines = 1,
                                 modifier = Modifier.basicMarquee(),
                                 color =
-                                    if (done) MaterialTheme.colorScheme.onPrimary
+                                    if (done) onDoneColor
                                     else if (!validDay) cardContent.copy(alpha = 0.5f)
                                     else cardContent,
                             )
@@ -339,7 +375,7 @@ fun HabitCard(
                                 maxLines = 1,
                                 modifier = Modifier.basicMarquee(),
                                 color =
-                                    if (done) MaterialTheme.colorScheme.onPrimary
+                                    if (done) onDoneColor
                                     else if (!validDay) cardContent.copy(alpha = 0.5f)
                                     else cardContent,
                             )

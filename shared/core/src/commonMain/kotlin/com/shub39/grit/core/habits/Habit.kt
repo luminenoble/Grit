@@ -29,4 +29,8 @@ data class Habit(
     val days: Set<DayOfWeek>,
     val index: Int,
     val reminder: Boolean,
+    /** Ordered sub-steps of the habit routine. */
+    val steps: List<String> = emptyList(),
+    /** Accent color as a hex string ("#AARRGGBB"); empty means theme default. */
+    val color: String = "",
 )

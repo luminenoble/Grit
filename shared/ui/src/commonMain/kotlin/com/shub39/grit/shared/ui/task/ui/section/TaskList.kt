@@ -105,6 +105,7 @@ import com.shub39.grit.shared.ui.task.ui.component.TaskUpsertSheet
 import com.shub39.grit.shared.ui.theme.GritRadius
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
 import com.shub39.grit.shared.ui.theme.flexFontRounded
+import com.shub39.grit.shared.ui.theme.parseAccentColor
 import grit.shared.ui.generated.resources.*
 import grit.shared.ui.generated.resources.add
 import kotlin.invoke
@@ -418,6 +419,11 @@ private fun CategorySelector(
                         onReorderModeChange(false)
                     },
                 ) {
+                    parseAccentColor(category.color)?.let { accent ->
+                        Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(accent))
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+
                     Text(text = category.name)
                 }
             }
@@ -486,6 +492,10 @@ private fun CompactTasksView(
             if (isTodayView || category != null) {
                 val sourceTasks =
                     if (isTodayView) state.todayTasks else state.tasks[category] ?: emptyList()
+                val accentByCategory =
+                    remember(state.tasks.keys) {
+                        state.tasks.keys.associate { it.id to parseAccentColor(it.color) }
+                    }
 
                 val lazyListState = rememberLazyListState()
                 var reorderableTasks by
@@ -560,6 +570,7 @@ private fun CompactTasksView(
                                 is24Hr = state.is24Hour,
                                 shape = cardShape,
                                 onDetailsClick = { onEditTask(task) },
+                                accent = accentByCategory[task.categoryId],
                                 modifier =
                                     Modifier.fillMaxWidth()
                                         .clip(cardShape)
@@ -633,6 +644,7 @@ private fun CompactTasksView(
                                 is24Hr = state.is24Hour,
                                 shape = cardShape,
                                 onDetailsClick = { onEditTask(task) },
+                                accent = accentByCategory[task.categoryId],
                                 modifier =
                                     Modifier.fillMaxWidth().clip(cardShape).clickable {
                                         if (!isReorderMode) {
@@ -668,6 +680,10 @@ private fun ExpandedTasksView(
             color = CategoryColors.GRAY.color,
         )
     val tasksAndCategories = listOf(todayCategory to state.todayTasks) + state.tasks.toList()
+    val accentByCategory =
+        remember(state.tasks.keys) {
+            state.tasks.keys.associate { it.id to parseAccentColor(it.color) }
+        }
 
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Adaptive(minSize = 350.dp),
@@ -750,6 +766,7 @@ private fun ExpandedTasksView(
                             is24Hr = state.is24Hour,
                             shape = cardShape,
                             onDetailsClick = { onEditTask(task) },
+                            accent = accentByCategory[task.categoryId],
                             modifier =
                                 Modifier.animateItem().fillMaxWidth().clip(cardShape).clickable {
                                     val updatedTask = task.copy(status = !task.status)
@@ -795,6 +812,7 @@ private fun ExpandedTasksView(
                                 is24Hr = state.is24Hour,
                                 shape = cardShape,
                                 onDetailsClick = { onEditTask(task) },
+                                accent = accentByCategory[task.categoryId],
                                 modifier =
                                     Modifier.fillMaxWidth().clip(cardShape).clickable {
                                         val updatedTask = task.copy(status = !task.status)

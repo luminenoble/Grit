@@ -67,6 +67,7 @@ fun TaskCard(
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(GritRadius.md),
     onDetailsClick: (() -> Unit)? = null,
+    accent: Color? = null,
 ) {
     val semantic = gritSemanticColors()
 
@@ -76,22 +77,25 @@ fun TaskCard(
     val cardContent by
         animateColorAsState(
             targetValue =
-                when (task.status) {
-                    true -> MaterialTheme.colorScheme.onSurface
+                when {
+                    !task.status && accent != null -> MaterialTheme.colorScheme.onSurface
+                    task.status -> MaterialTheme.colorScheme.onSurface
                     else -> MaterialTheme.colorScheme.onSecondaryContainer
                 },
             animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
             label = "cardContent",
         )
-    // Translucent liquid glass pane; done tasks recede by getting fainter.
+    // Translucent liquid glass pane tinted by the category accent when one is set;
+    // done tasks recede by getting fainter and neutral.
     val cardContainer by
         animateColorAsState(
             targetValue =
-                when (task.status) {
-                    true ->
+                when {
+                    task.status ->
                         MaterialTheme.colorScheme.surfaceContainerHighest.copy(
                             alpha = LiquidGlassDefaults.CARD_ALPHA * 0.7f
                         )
+                    accent != null -> accent.copy(alpha = 0.40f)
                     else ->
                         MaterialTheme.colorScheme.secondaryContainer.copy(
                             alpha = LiquidGlassDefaults.CARD_ALPHA
@@ -100,6 +104,8 @@ fun TaskCard(
             animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
             label = "cardContainer",
         )
+    // Diagonal gradient end keeps accent cards from looking like flat color blocks.
+    val cardContainerEnd = if (!task.status) accent?.copy(alpha = 0.18f) else null
     val cardColors =
         CardDefaults.cardColors(containerColor = Color.Transparent, contentColor = cardContent)
 
@@ -111,6 +117,7 @@ fun TaskCard(
                     shape = shape,
                     fill = cardContainer,
                     border = if (isOverdue) semantic.error.copy(alpha = 0.9f) else null,
+                    fillEnd = cardContainerEnd,
                 ),
         colors = cardColors,
         shape = shape,

@@ -51,9 +51,15 @@ object LiquidGlassDefaults {
  *
  * @param fill translucent tint of the pane; pass the alpha you want baked into the color.
  * @param border overrides the specular gradient border with a solid color (e.g. status accents).
+ * @param fillEnd when set, the fill becomes a diagonal gradient from [fill] to this color.
  */
 @Composable
-fun Modifier.liquidGlass(shape: Shape, fill: Color, border: Color? = null): Modifier {
+fun Modifier.liquidGlass(
+    shape: Shape,
+    fill: Color,
+    border: Color? = null,
+    fillEnd: Color? = null,
+): Modifier {
     val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
 
     val sheenAlpha = if (isDark) 0.09f else 0.30f
@@ -65,6 +71,7 @@ fun Modifier.liquidGlass(shape: Shape, fill: Color, border: Color? = null): Modi
     return clip(shape).drawWithCache {
         val outline = shape.createOutline(size, layoutDirection, this)
 
+        val fillBrush = fillEnd?.let { Brush.linearGradient(0f to fill, 1f to it) }
         val sheen =
             Brush.verticalGradient(
                 0f to Color.White.copy(alpha = sheenAlpha),
@@ -81,7 +88,11 @@ fun Modifier.liquidGlass(shape: Shape, fill: Color, border: Color? = null): Modi
         val edgeStroke = Stroke(width = 1.dp.toPx() * 2) // half is clipped away by the shape
 
         onDrawBehind {
-            drawOutline(outline, color = fill)
+            if (fillBrush != null) {
+                drawOutline(outline, brush = fillBrush)
+            } else {
+                drawOutline(outline, color = fill)
+            }
             drawOutline(outline, brush = sheen)
             drawOutline(outline, brush = edge, style = edgeStroke)
         }

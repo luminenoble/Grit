@@ -29,7 +29,7 @@ import com.shub39.grit.core.data.Converters
     entities = [HabitEntity::class, HabitStatusEntity::class],
     version = HabitDatabase.SCHEMA_VERSION,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 4, to = 5)],
+    autoMigrations = [AutoMigration(from = 4, to = 5), AutoMigration(from = 5, to = 6)],
 )
 @ColumnTypeConverters(Converters::class)
 abstract class HabitDatabase : RoomDatabase() {
@@ -38,7 +38,7 @@ abstract class HabitDatabase : RoomDatabase() {
     abstract fun habitStatusDao(): HabitStatusDao
 
     companion object {
-        const val SCHEMA_VERSION = 5
+        const val SCHEMA_VERSION = 6
         const val DB_NAME = "habit_database"
 
         val migrate_3_4 =

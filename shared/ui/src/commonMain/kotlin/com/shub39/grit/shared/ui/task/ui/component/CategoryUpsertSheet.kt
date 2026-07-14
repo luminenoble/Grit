@@ -17,6 +17,7 @@
 package com.shub39.grit.shared.ui.task.ui.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,12 +25,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions.Companion.Default
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonShapes
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -43,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -51,8 +55,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.tasks.Category
+import com.shub39.grit.shared.ui.components.ColorPickerDialog
 import com.shub39.grit.shared.ui.components.GritBottomSheet
+import com.shub39.grit.shared.ui.components.detachedItemShape
+import com.shub39.grit.shared.ui.components.listItemColors
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
+import com.shub39.grit.shared.ui.theme.parseAccentColor
+import com.shub39.grit.shared.ui.theme.toHexString
 import grit.shared.ui.generated.resources.*
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
@@ -67,6 +76,7 @@ fun CategoryUpsertSheet(
     onUpsertCategory: (Category) -> Unit,
 ) {
     var newCategory by remember { mutableStateOf(category) }
+    var colorPickerDialog by remember { mutableStateOf(false) }
 
     val textFieldState =
         rememberTextFieldState(
@@ -129,6 +139,31 @@ fun CategoryUpsertSheet(
                 modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
             )
 
+            // Accent color for this category and all its tasks
+            ListItem(
+                colors = listItemColors(),
+                modifier = Modifier.clip(detachedItemShape()),
+                leadingContent = {
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.palette),
+                        contentDescription = null,
+                    )
+                },
+                headlineContent = { Text(text = stringResource(Res.string.accent_color)) },
+                trailingContent = {
+                    Box(
+                        modifier =
+                            Modifier.size(32.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    parseAccentColor(newCategory.color)
+                                        ?: MaterialTheme.colorScheme.primaryContainer
+                                )
+                                .clickable { colorPickerDialog = true }
+                    )
+                },
+            )
+
             Button(
                 onClick = {
                     onUpsertCategory(newCategory.copy(name = textFieldState.text.toString()))
@@ -143,6 +178,15 @@ fun CategoryUpsertSheet(
             ) {
                 Text(text = stringResource(if (isEditSheet) Res.string.done else Res.string.save))
             }
+        }
+
+        if (colorPickerDialog) {
+            ColorPickerDialog(
+                initialColor =
+                    parseAccentColor(newCategory.color) ?: MaterialTheme.colorScheme.primary,
+                onSelect = { newCategory = newCategory.copy(color = it.toHexString()) },
+                onDismiss = { colorPickerDialog = false },
+            )
         }
     }
 }

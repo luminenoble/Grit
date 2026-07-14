@@ -19,6 +19,7 @@ package com.shub39.grit.shared.ui.habit.ui.component
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,9 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -38,13 +42,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.rememberTimePickerState
@@ -54,6 +61,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +77,8 @@ import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.habits.Habit
 import com.shub39.grit.core.now
 import com.shub39.grit.core.toFormattedString
+import com.shub39.grit.shared.ui.ai.createTaskPlanner
+import com.shub39.grit.shared.ui.components.ColorPickerDialog
 import com.shub39.grit.shared.ui.components.ExpressiveSwitch
 import com.shub39.grit.shared.ui.components.GritBottomSheet
 import com.shub39.grit.shared.ui.components.GritTimePicker
@@ -80,17 +90,25 @@ import com.shub39.grit.shared.ui.components.middleItemShape
 import com.shub39.grit.shared.ui.theme.GritTheme
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
 import com.shub39.grit.shared.ui.theme.flexFontRounded
+import com.shub39.grit.shared.ui.theme.parseAccentColor
+import com.shub39.grit.shared.ui.theme.toHexString
 import grit.shared.ui.generated.resources.*
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 private const val TITLE_STRING_LIMIT = 50
 private const val DESCRIPTION_STRING_LIMIT = 200
+
+/** A step being edited, with a stable [uid] independent of its list position. */
+private data class StepItem(val uid: Int, val text: String)
 
 @Composable
 expect fun HabitUpsertSheet(
@@ -118,6 +136,20 @@ fun HabitUpsertSheetContent(
     val focusRequester = remember { FocusRequester() }
 
     var timePickerDialog by remember { mutableStateOf(false) }
+    var colorPickerDialog by remember { mutableStateOf(false) }
+
+    // Steps get a stable local uid so drag reorder and deletion animate correctly.
+    var stepUidCounter by remember { mutableStateOf(newHabit.steps.size) }
+    var stepItems by remember {
+        mutableStateOf(newHabit.steps.mapIndexed { index, text -> StepItem(index, text) })
+    }
+    var newStepText by remember { mutableStateOf("") }
+
+    // AI decomposition of the habit into steps
+    val aiScope = rememberCoroutineScope()
+    val planner = remember { createTaskPlanner() }
+    var aiLoading by remember { mutableStateOf(false) }
+    var aiError by remember { mutableStateOf<String?>(null) }
 
     val titleTextFieldState =
         rememberTextFieldState(
@@ -172,8 +204,22 @@ fun HabitUpsertSheetContent(
             )
         }
 
+        val sheetListState = rememberLazyListState()
+        val stepsReorderState =
+            rememberReorderableLazyListState(sheetListState) { from, to ->
+                stepItems =
+                    stepItems.toMutableList().apply {
+                        val fromIndex = indexOfFirst { "step_${it.uid}" == from.key }
+                        val toIndex = indexOfFirst { "step_${it.uid}" == to.key }
+                        if (fromIndex >= 0 && toIndex >= 0) {
+                            add(toIndex, removeAt(fromIndex))
+                        }
+                    }
+            }
+
         LazyColumn(
             modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large),
+            state = sheetListState,
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             contentPadding = PaddingValues(16.dp),
@@ -231,6 +277,143 @@ fun HabitUpsertSheetContent(
                         }
                     },
                     isError = newHabit.description.length > DESCRIPTION_STRING_LIMIT,
+                )
+            }
+
+            // steps: add, remove, drag to reorder, or let AI decompose the habit
+            item {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                ) {
+                    Text(
+                        text = stringResource(Res.string.steps),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.weight(1f),
+                    )
+
+                    TextButton(
+                        onClick = {
+                            aiScope.launch {
+                                aiLoading = true
+                                aiError = null
+                                runCatching {
+                                        planner.decompose(
+                                            (titleTextFieldState.text.toString() +
+                                                    "\n" +
+                                                    descTextFieldState.text.toString())
+                                                .trim()
+                                        )
+                                    }
+                                    .onSuccess { plan ->
+                                        stepItems =
+                                            plan.steps.mapIndexed { index, text ->
+                                                StepItem(stepUidCounter + index, text)
+                                            }
+                                        stepUidCounter += plan.steps.size
+                                    }
+                                    .onFailure { aiError = it.message ?: "生成失败" }
+                                aiLoading = false
+                            }
+                        },
+                        enabled = titleTextFieldState.text.isNotBlank() && !aiLoading,
+                    ) {
+                        if (aiLoading) {
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                        } else {
+                            Text(text = stringResource(Res.string.ai_fill_steps))
+                        }
+                    }
+                }
+
+                aiError?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+
+            items(stepItems, key = { "step_${it.uid}" }) { step ->
+                ReorderableItem(stepsReorderState, key = "step_${step.uid}") {
+                    ListItem(
+                        modifier = Modifier.clip(MaterialTheme.shapes.medium),
+                        colors = listItemColors(),
+                        headlineContent = { Text(text = step.text) },
+                        leadingContent = {
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.drag_indicator),
+                                contentDescription = "Reorder",
+                                modifier = Modifier.draggableHandle(),
+                            )
+                        },
+                        trailingContent = {
+                            IconButton(
+                                onClick = { stepItems = stepItems.filter { it.uid != step.uid } }
+                            ) {
+                                Icon(
+                                    imageVector = vectorResource(Res.drawable.delete),
+                                    contentDescription = "Delete",
+                                )
+                            }
+                        },
+                    )
+                }
+            }
+
+            item {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedTextField(
+                        value = newStepText,
+                        onValueChange = { newStepText = it },
+                        shape = MaterialTheme.shapes.medium,
+                        placeholder = { Text(text = stringResource(Res.string.add_step)) },
+                        singleLine = true,
+                        modifier = Modifier.weight(1f),
+                    )
+
+                    FilledTonalIconButton(
+                        onClick = {
+                            stepItems = stepItems + StepItem(stepUidCounter++, newStepText.trim())
+                            newStepText = ""
+                        },
+                        enabled = newStepText.isNotBlank(),
+                    ) {
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.add),
+                            contentDescription = stringResource(Res.string.add_step),
+                        )
+                    }
+                }
+            }
+
+            item {
+                ListItem(
+                    colors = listItemColors(),
+                    modifier = Modifier.clip(detachedItemShape()),
+                    leadingContent = {
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.palette),
+                            contentDescription = null,
+                        )
+                    },
+                    headlineContent = { Text(text = stringResource(Res.string.accent_color)) },
+                    trailingContent = {
+                        Box(
+                            modifier =
+                                Modifier.size(32.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        parseAccentColor(newHabit.color)
+                                            ?: MaterialTheme.colorScheme.primaryContainer
+                                    )
+                                    .clickable { colorPickerDialog = true }
+                        )
+                    },
                 )
             }
 
@@ -360,6 +543,7 @@ fun HabitUpsertSheetContent(
                             newHabit.copy(
                                 title = titleTextFieldState.text.toString(),
                                 description = descTextFieldState.text.toString(),
+                                steps = stepItems.map { it.text }.filter { it.isNotBlank() },
                             )
                         )
                         onDismissRequest()
@@ -382,6 +566,15 @@ fun HabitUpsertSheetContent(
                     )
                 }
             }
+        }
+
+        if (colorPickerDialog) {
+            ColorPickerDialog(
+                initialColor =
+                    parseAccentColor(newHabit.color) ?: MaterialTheme.colorScheme.primary,
+                onSelect = { updateHabit(newHabit.copy(color = it.toHexString())) },
+                onDismiss = { colorPickerDialog = false },
+            )
         }
 
         if (timePickerDialog) {

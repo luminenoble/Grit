@@ -69,18 +69,12 @@ fun AiDecomposeSheet(
             text = "AI 分解任务",
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
         )
-        Text(
-            text = "输入一个目标，AI 帮你生成一个带描述和步骤的任务",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
 
         OutlinedTextField(
             value = input,
             onValueChange = { input = it },
             modifier = Modifier.fillMaxWidth(),
             minLines = 2,
-            placeholder = { Text("例如：筹备周末的生日聚会") },
         )
 
         when (val s = state) {

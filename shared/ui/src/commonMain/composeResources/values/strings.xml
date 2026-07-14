@@ -77,6 +77,8 @@
     <string name="reorder_tasks">Reorder tasks</string>
     <string name="reorder_tasks_desc">Reorder tasks when marked as completed</string>
     <string name="today">Today</string>
+    <string name="accent_color">Color</string>
+    <string name="ai_fill_steps">AI</string>
     <string name="add_to_today">Show in Today</string>
     <string name="task_description">Description</string>
     <string name="steps">Steps</string>

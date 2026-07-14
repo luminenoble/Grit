@@ -25,6 +25,8 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceComposable
 import androidx.glance.GlanceId
@@ -42,7 +44,9 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.background
+import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -71,6 +75,14 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
 class AllTasksWidget : GlanceAppWidget(), KoinComponent {
+
+    companion object {
+        /** Per-widget display scope: SCOPE_ALL, SCOPE_TODAY, or a category id. */
+        private val scopeKey = longPreferencesKey("scope_category_id")
+        private const val SCOPE_ALL = 0L
+        private const val SCOPE_TODAY = -1L
+    }
+
     override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
@@ -83,16 +95,44 @@ class AllTasksWidget : GlanceAppWidget(), KoinComponent {
             val tasks by repo.getTasksFlow().collectAsState(emptyMap())
             val textSize by settings.getWidgetTextSizeFlow().collectAsState(WidgetTextSize.MEDIUM)
 
+            val widgetScope = currentState<Preferences>()[scopeKey] ?: SCOPE_ALL
+            val scopedTasks =
+                when (widgetScope) {
+                    SCOPE_ALL -> tasks
+                    SCOPE_TODAY -> tasks.mapValues { entry -> entry.value.filter { it.isToday } }
+                    else -> tasks.filterKeys { it.id == widgetScope }
+                }
+            val title =
+                when (widgetScope) {
+                    SCOPE_ALL -> "Tasks"
+                    SCOPE_TODAY -> "Today"
+                    else -> tasks.keys.firstOrNull { it.id == widgetScope }?.name ?: "Tasks"
+                }
+
             key(size) {
                 GlanceTheme {
                     Content(
-                        tasks = tasks.filter { it.value.isNotEmpty() },
+                        tasks = scopedTasks.filter { it.value.isNotEmpty() },
+                        title = title,
                         textSize = textSize,
                         onUpdateTaskStatus = {
                             scope.launch { repo.upsertTask(it.copy(status = !it.status)) }
                         },
                         onUpdateWidget = {
                             scope.launch { this@AllTasksWidget.update(context, id) }
+                        },
+                        onCycleScope = {
+                            val order = listOf(SCOPE_ALL, SCOPE_TODAY) + tasks.keys.map { it.id }
+                            val next =
+                                order[
+                                    (order.indexOf(widgetScope).coerceAtLeast(0) + 1) % order.size]
+
+                            scope.launch {
+                                updateAppWidgetState(context, id) { prefs ->
+                                    prefs[scopeKey] = next
+                                }
+                                this@AllTasksWidget.update(context, id)
+                            }
                         },
                     )
                 }
@@ -147,6 +187,8 @@ private fun Content(
     onUpdateWidget: () -> Unit,
     modifier: GlanceModifier = GlanceModifier,
     textSize: WidgetTextSize = WidgetTextSize.MEDIUM,
+    title: String = "Tasks",
+    onCycleScope: (() -> Unit)? = null,
 ) {
     val size = LocalSize.current
     val roundedCornerSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
@@ -183,10 +225,21 @@ private fun Content(
     ) {
         TitleBar(
             startIcon = ImageProvider(R.drawable.check_list),
-            title = "Tasks",
+            title = title,
             actions = {
+                if (onCycleScope != null) {
+                    Box(GlanceModifier.padding(horizontal = 8.dp)) {
+                        Image(
+                            provider = ImageProvider(R.drawable.arrow_forward),
+                            contentDescription = "Switch category",
+                            colorFilter = ColorFilter.tint(GlanceTheme.colors.onSurface),
+                            modifier = GlanceModifier.clickable { onCycleScope() },
+                        )
+                    }
+                }
+
                 if (size.width >= WidgetSize.Width4) {
-                    Box(GlanceModifier.padding(horizontal = 16.dp)) {
+                    Box(GlanceModifier.padding(end = 16.dp, start = 8.dp)) {
                         Image(
                             provider = ImageProvider(R.drawable.refresh),
                             contentDescription = null,
