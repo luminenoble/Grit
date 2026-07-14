@@ -21,7 +21,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -48,7 +48,9 @@ import com.shub39.grit.core.tasks.Task
 import com.shub39.grit.core.toFormattedString
 import com.shub39.grit.shared.ui.theme.GritRadius
 import com.shub39.grit.shared.ui.theme.GritSpacing
+import com.shub39.grit.shared.ui.theme.LiquidGlassDefaults
 import com.shub39.grit.shared.ui.theme.gritSemanticColors
+import com.shub39.grit.shared.ui.theme.liquidGlass
 import grit.shared.ui.generated.resources.*
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.vectorResource
@@ -77,37 +79,37 @@ fun TaskCard(
             animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
             label = "cardContent",
         )
+    // Translucent liquid glass pane; done tasks recede by getting fainter.
     val cardContainer by
         animateColorAsState(
             targetValue =
                 when (task.status) {
-                    true -> MaterialTheme.colorScheme.surfaceContainerHighest
-                    else -> MaterialTheme.colorScheme.secondaryContainer
+                    true ->
+                        MaterialTheme.colorScheme.surfaceContainerHighest.copy(
+                            alpha = LiquidGlassDefaults.CARD_ALPHA * 0.7f
+                        )
+                    else ->
+                        MaterialTheme.colorScheme.secondaryContainer.copy(
+                            alpha = LiquidGlassDefaults.CARD_ALPHA
+                        )
                 },
             animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
             label = "cardContainer",
         )
     val cardColors =
-        CardDefaults.cardColors(containerColor = cardContainer, contentColor = cardContent)
-
-    // Hairline border for subtle depth (Ant Design style); tinted red when overdue.
-    val borderColor by
-        animateColorAsState(
-            targetValue =
-                if (isOverdue) semantic.error
-                else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-            animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
-            label = "cardBorder",
-        )
+        CardDefaults.cardColors(containerColor = Color.Transparent, contentColor = cardContent)
 
     Card(
         modifier =
-            modifier.animateContentSize(
-                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()
-            ),
+            modifier
+                .animateContentSize(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
+                .liquidGlass(
+                    shape = shape,
+                    fill = cardContainer,
+                    border = if (isOverdue) semantic.error.copy(alpha = 0.9f) else null,
+                ),
         colors = cardColors,
         shape = shape,
-        border = BorderStroke(1.dp, borderColor),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

@@ -162,16 +162,10 @@ private fun Content(
         modifier =
             modifier
                 .fillMaxSize()
+                .background(ImageProvider(R.drawable.widget_glass_bg))
                 .then(
-                    if (roundedCornerSupported) {
-                        GlanceModifier.background(GlanceTheme.colors.widgetBackground)
-                            .cornerRadius(24.dp)
-                    } else {
-                        GlanceModifier.background(
-                            imageProvider = ImageProvider(R.drawable.rounded_4dp),
-                            colorFilter = ColorFilter.tint(GlanceTheme.colors.widgetBackground),
-                        )
-                    }
+                    if (roundedCornerSupported) GlanceModifier.cornerRadius(24.dp)
+                    else GlanceModifier
                 )
                 .clickable(actionStartActivity<MainActivity>())
     ) {
@@ -208,26 +202,15 @@ private fun Content(
                     Row(
                         modifier =
                             GlanceModifier.fillMaxWidth()
+                                .background(
+                                    ImageProvider(
+                                        if (!habitWithStatus.second) R.drawable.widget_glass_item
+                                        else R.drawable.widget_glass_item_done
+                                    )
+                                )
                                 .then(
-                                    if (roundedCornerSupported) {
-                                        GlanceModifier.cornerRadius(16.dp)
-                                            .background(
-                                                if (!habitWithStatus.second)
-                                                    GlanceTheme.colors.secondaryContainer
-                                                else GlanceTheme.colors.tertiaryContainer
-                                            )
-                                    } else {
-                                        GlanceModifier.background(
-                                            imageProvider =
-                                                ImageProvider(R.drawable.rounded_list_top),
-                                            colorFilter =
-                                                ColorFilter.tint(
-                                                    if (!habitWithStatus.second)
-                                                        GlanceTheme.colors.secondaryContainer
-                                                    else GlanceTheme.colors.tertiaryContainer
-                                                ),
-                                        )
-                                    }
+                                    if (roundedCornerSupported) GlanceModifier.cornerRadius(16.dp)
+                                    else GlanceModifier
                                 )
                                 .padding(vertical = 8.dp)
                                 .clickable {
@@ -248,9 +231,9 @@ private fun Content(
                                 modifier = GlanceModifier.padding(start = 12.dp),
                                 colorFilter =
                                     ColorFilter.tint(
-                                        if (!habitWithStatus.second) {
-                                            GlanceTheme.colors.onSecondaryContainer
-                                        } else GlanceTheme.colors.onTertiaryContainer
+                                        if (habitWithStatus.second) {
+                                            GlanceTheme.colors.primary
+                                        } else GlanceTheme.colors.onSurfaceVariant
                                     ),
                             )
                         }
@@ -262,8 +245,8 @@ private fun Content(
                                     TextStyle(
                                         color =
                                             if (!habitWithStatus.second) {
-                                                GlanceTheme.colors.onSecondaryContainer
-                                            } else GlanceTheme.colors.onTertiaryContainer,
+                                                GlanceTheme.colors.onSurface
+                                            } else GlanceTheme.colors.onSurfaceVariant,
                                         textDecoration =
                                             if (!habitWithStatus.second) {
                                                 TextDecoration.None
@@ -280,8 +263,8 @@ private fun Content(
                                         TextStyle(
                                             color =
                                                 if (!habitWithStatus.second) {
-                                                    GlanceTheme.colors.onSecondaryContainer
-                                                } else GlanceTheme.colors.onTertiaryContainer,
+                                                    GlanceTheme.colors.onSurface
+                                                } else GlanceTheme.colors.onSurfaceVariant,
                                             textDecoration =
                                                 if (!habitWithStatus.second) {
                                                     TextDecoration.None

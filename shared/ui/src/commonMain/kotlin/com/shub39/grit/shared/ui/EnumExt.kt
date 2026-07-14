@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.habits.CalendarType
 import com.shub39.grit.core.habits.StreakPosition
+import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.core.theme.AppTheme
 import com.shub39.grit.core.theme.Fonts
 import com.shub39.grit.core.theme.PaletteStyle
@@ -83,6 +84,14 @@ fun CalendarType.toStringRes(): StringResource {
     return when (this) {
         MONTH -> Res.string.monthly
         YEAR -> Res.string.yearly
+    }
+}
+
+fun WidgetTextSize.toStringRes(): StringResource {
+    return when (this) {
+        SMALL -> Res.string.text_size_small
+        MEDIUM -> Res.string.text_size_medium
+        LARGE -> Res.string.text_size_large
     }
 }
 

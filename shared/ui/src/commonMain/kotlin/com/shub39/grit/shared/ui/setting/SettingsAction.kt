@@ -18,6 +18,7 @@ package com.shub39.grit.shared.ui.setting
 
 import androidx.compose.ui.graphics.Color
 import com.shub39.grit.core.settings.Sections
+import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.core.theme.AppTheme
 import com.shub39.grit.core.theme.Fonts
 import com.shub39.grit.core.theme.PaletteStyle
@@ -53,4 +54,6 @@ sealed interface SettingsAction {
     data class ChangeMaterialYou(val pref: Boolean) : SettingsAction
 
     data class ChangeBiometricLock(val pref: Boolean) : SettingsAction
+
+    data class ChangeWidgetTextSize(val size: WidgetTextSize) : SettingsAction
 }

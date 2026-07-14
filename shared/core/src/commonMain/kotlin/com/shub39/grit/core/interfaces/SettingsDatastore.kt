@@ -17,6 +17,7 @@
 package com.shub39.grit.core.interfaces
 
 import com.shub39.grit.core.settings.Sections
+import com.shub39.grit.core.settings.WidgetTextSize
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.DayOfWeek
 
@@ -52,4 +53,8 @@ interface SettingsDatastore {
     fun getLastChangelogShown(): Flow<String>
 
     suspend fun updateLastChangelogShown(version: String)
+
+    fun getWidgetTextSizeFlow(): Flow<WidgetTextSize>
+
+    suspend fun setWidgetTextSize(size: WidgetTextSize)
 }

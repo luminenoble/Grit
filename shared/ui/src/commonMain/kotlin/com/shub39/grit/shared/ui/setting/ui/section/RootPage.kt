@@ -20,7 +20,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -29,6 +31,7 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,6 +45,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.settings.Sections
+import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.shared.ui.GritPreviewWrapper
 import com.shub39.grit.shared.ui.components.ExpressiveSwitch
 import com.shub39.grit.shared.ui.components.detachedItemShape
@@ -53,6 +57,7 @@ import com.shub39.grit.shared.ui.setting.SettingsAction
 import com.shub39.grit.shared.ui.setting.SettingsState
 import com.shub39.grit.shared.ui.setting.ui.component.LocalePickerSheet
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
+import com.shub39.grit.shared.ui.toStringRes
 import grit.shared.ui.generated.resources.*
 import kotlinx.datetime.DayOfWeek
 import org.jetbrains.compose.resources.stringResource
@@ -147,6 +152,35 @@ fun RootPage(
                                     onAction(SettingsAction.ChangeReorderTasks(it))
                                 },
                             )
+                        },
+                        colors = listItemColors(),
+                        modifier = Modifier.clip(middleItemShape()),
+                    )
+
+                    ListItem(
+                        headlineContent = {
+                            Text(text = stringResource(Res.string.widget_text_size))
+                        },
+                        supportingContent = {
+                            Column {
+                                Text(text = stringResource(Res.string.widget_text_size_desc))
+
+                                Row(
+                                    modifier = Modifier.padding(top = 8.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    WidgetTextSize.entries.forEach { size ->
+                                        ToggleButton(
+                                            checked = state.widgetTextSize == size,
+                                            onCheckedChange = {
+                                                onAction(SettingsAction.ChangeWidgetTextSize(size))
+                                            },
+                                        ) {
+                                            Text(text = stringResource(size.toStringRes()))
+                                        }
+                                    }
+                                }
+                            }
                         },
                         colors = listItemColors(),
                         modifier = Modifier.clip(middleItemShape()),

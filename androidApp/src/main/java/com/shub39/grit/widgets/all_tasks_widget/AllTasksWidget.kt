@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceComposable
 import androidx.glance.GlanceId
@@ -58,6 +59,8 @@ import androidx.glance.text.TextDecoration
 import androidx.glance.text.TextStyle
 import com.shub39.grit.R
 import com.shub39.grit.app.MainActivity
+import com.shub39.grit.core.interfaces.SettingsDatastore
+import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.core.tasks.CategoryColors
 import com.shub39.grit.core.tasks.Task
@@ -72,16 +75,19 @@ class AllTasksWidget : GlanceAppWidget(), KoinComponent {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val repo = get<TaskRepo>()
+        val settings = get<SettingsDatastore>()
 
         provideContent {
             val scope = rememberCoroutineScope()
             val size = LocalSize.current
             val tasks by repo.getTasksFlow().collectAsState(emptyMap())
+            val textSize by settings.getWidgetTextSizeFlow().collectAsState(WidgetTextSize.MEDIUM)
 
             key(size) {
                 GlanceTheme {
                     Content(
                         tasks = tasks.filter { it.value.isNotEmpty() },
+                        textSize = textSize,
                         onUpdateTaskStatus = {
                             scope.launch { repo.upsertTask(it.copy(status = !it.status)) }
                         },
@@ -140,24 +146,38 @@ private fun Content(
     onUpdateTaskStatus: (Task) -> Unit,
     onUpdateWidget: () -> Unit,
     modifier: GlanceModifier = GlanceModifier,
+    textSize: WidgetTextSize = WidgetTextSize.MEDIUM,
 ) {
     val size = LocalSize.current
     val roundedCornerSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+    // Smaller text tightens paddings too, so small widgets fit more tasks.
+    val taskFontSize =
+        when (textSize) {
+            WidgetTextSize.SMALL -> 11.sp
+            WidgetTextSize.MEDIUM -> 14.sp
+            WidgetTextSize.LARGE -> 17.sp
+        }
+    val taskTextPadding =
+        when (textSize) {
+            WidgetTextSize.SMALL -> 4.dp
+            WidgetTextSize.MEDIUM -> 8.dp
+            WidgetTextSize.LARGE -> 10.dp
+        }
+    val taskItemSpacing =
+        when (textSize) {
+            WidgetTextSize.SMALL -> 2.dp
+            else -> 4.dp
+        }
 
     Column(
         modifier =
             modifier
                 .fillMaxSize()
+                .background(ImageProvider(R.drawable.widget_glass_bg))
                 .then(
-                    if (roundedCornerSupported) {
-                        GlanceModifier.background(GlanceTheme.colors.widgetBackground)
-                            .cornerRadius(24.dp)
-                    } else {
-                        GlanceModifier.background(
-                            imageProvider = ImageProvider(R.drawable.rounded_4dp),
-                            colorFilter = ColorFilter.tint(GlanceTheme.colors.widgetBackground),
-                        )
-                    }
+                    if (roundedCornerSupported) GlanceModifier.cornerRadius(24.dp)
+                    else GlanceModifier
                 )
                 .clickable(actionStartActivity<MainActivity>())
     ) {
@@ -189,10 +209,11 @@ private fun Content(
                         style =
                             TextStyle(
                                 fontWeight = FontWeight.Bold,
+                                fontSize = taskFontSize,
                                 color = GlanceTheme.colors.onSurfaceVariant,
                             ),
                     )
-                    Spacer(GlanceModifier.height(8.dp))
+                    Spacer(GlanceModifier.height(taskItemSpacing * 2))
                     taskGroup.value.forEach { task ->
                         val status = task.status
 
@@ -200,30 +221,21 @@ private fun Content(
                             Column(
                                 modifier =
                                     GlanceModifier.fillMaxWidth()
-                                        .then(
-                                            if (roundedCornerSupported) {
-                                                GlanceModifier.cornerRadius(16.dp)
-                                                    .background(
-                                                        if (!status)
-                                                            GlanceTheme.colors.secondaryContainer
-                                                        else GlanceTheme.colors.tertiaryContainer
-                                                    )
-                                            } else {
-                                                GlanceModifier.background(
-                                                    imageProvider =
-                                                        ImageProvider(R.drawable.rounded_list_top),
-                                                    colorFilter =
-                                                        ColorFilter.tint(
-                                                            if (!status)
-                                                                GlanceTheme.colors
-                                                                    .secondaryContainer
-                                                            else
-                                                                GlanceTheme.colors.tertiaryContainer
-                                                        ),
-                                                )
-                                            }
+                                        .background(
+                                            ImageProvider(
+                                                if (!status) R.drawable.widget_glass_item
+                                                else R.drawable.widget_glass_item_done
+                                            )
                                         )
-                                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                                        .then(
+                                            if (roundedCornerSupported)
+                                                GlanceModifier.cornerRadius(16.dp)
+                                            else GlanceModifier
+                                        )
+                                        .padding(
+                                            horizontal = taskTextPadding,
+                                            vertical = taskItemSpacing,
+                                        )
                                         .clickable {
                                             onUpdateTaskStatus(task)
                                             onUpdateWidget()
@@ -231,13 +243,15 @@ private fun Content(
                             ) {
                                 Text(
                                     text = task.title,
-                                    modifier = GlanceModifier.fillMaxWidth().padding(8.dp),
+                                    modifier =
+                                        GlanceModifier.fillMaxWidth().padding(taskTextPadding),
                                     style =
                                         TextStyle(
+                                            fontSize = taskFontSize,
                                             color =
                                                 if (!status) {
-                                                    GlanceTheme.colors.onSecondaryContainer
-                                                } else GlanceTheme.colors.onTertiaryContainer,
+                                                    GlanceTheme.colors.onSurface
+                                                } else GlanceTheme.colors.onSurfaceVariant,
                                             textDecoration =
                                                 if (!status) {
                                                     TextDecoration.None
@@ -246,7 +260,7 @@ private fun Content(
                                     maxLines = 2,
                                 )
                             }
-                            Spacer(GlanceModifier.height(4.dp))
+                            Spacer(GlanceModifier.height(taskItemSpacing))
                         }
                     }
                 }

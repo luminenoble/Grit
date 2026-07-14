@@ -22,14 +22,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.shub39.grit.shared.ui.theme.LiquidGlassDefaults
+import com.shub39.grit.shared.ui.theme.liquidGlass
 
 @Composable
 fun GritBottomSheet(
@@ -39,11 +44,23 @@ fun GritBottomSheet(
     padding: Dp = 32.dp,
     content: @Composable (ColumnScope.() -> Unit),
 ) {
+    val sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetMaxWidth = 500.dp,
-        modifier = modifier,
+        modifier =
+            modifier.liquidGlass(
+                shape = sheetShape,
+                fill =
+                    MaterialTheme.colorScheme.surfaceContainerLow.copy(
+                        alpha = LiquidGlassDefaults.OVERLAY_ALPHA
+                    ),
+            ),
         sheetState = sheetState,
+        shape = sheetShape,
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         Column(
             modifier = Modifier.padding(padding).animateContentSize().fillMaxWidth(),

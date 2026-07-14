@@ -172,16 +172,10 @@ private fun Content(
         modifier =
             modifier
                 .fillMaxSize()
+                .background(ImageProvider(R.drawable.widget_glass_bg))
                 .then(
-                    if (roundedCornerSupported) {
-                        GlanceModifier.background(GlanceTheme.colors.widgetBackground)
-                            .cornerRadius(24.dp)
-                    } else {
-                        GlanceModifier.background(
-                            imageProvider = ImageProvider(R.drawable.rounded_4dp),
-                            colorFilter = ColorFilter.tint(GlanceTheme.colors.widgetBackground),
-                        )
-                    }
+                    if (roundedCornerSupported) GlanceModifier.cornerRadius(24.dp)
+                    else GlanceModifier
                 )
                 .clickable(actionStartActivity<MainActivity>())
     ) {
@@ -227,8 +221,7 @@ private fun Content(
                     Column(
                         modifier =
                             GlanceModifier.background(
-                                imageProvider = ImageProvider(R.drawable.rounded_list_top),
-                                colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
+                                imageProvider = ImageProvider(R.drawable.widget_glass_item)
                             )
                     ) {
                         Row(
@@ -238,7 +231,7 @@ private fun Content(
                             Image(
                                 provider = ImageProvider(R.drawable.heat),
                                 contentDescription = null,
-                                colorFilter = ColorFilter.tint(GlanceTheme.colors.onPrimary),
+                                colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
                                 modifier = GlanceModifier.fillMaxHeight(),
                             )
 
@@ -253,7 +246,7 @@ private fun Content(
                                             TextStyle(
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 24.sp,
-                                                color = GlanceTheme.colors.onPrimary,
+                                                color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
 
@@ -263,7 +256,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontStyle = FontStyle.Italic,
-                                                color = GlanceTheme.colors.onPrimary,
+                                                color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
                                 }
@@ -278,7 +271,7 @@ private fun Content(
                                             TextStyle(
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 14.sp,
-                                                color = GlanceTheme.colors.onPrimary,
+                                                color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
 
@@ -289,7 +282,7 @@ private fun Content(
                                             TextStyle(
                                                 fontStyle = FontStyle.Italic,
                                                 fontSize = 10.sp,
-                                                color = GlanceTheme.colors.onPrimary,
+                                                color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
                                 }
@@ -306,8 +299,7 @@ private fun Content(
                     Column(
                         modifier =
                             GlanceModifier.background(
-                                imageProvider = ImageProvider(R.drawable.widget_list_middle),
-                                colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
+                                imageProvider = ImageProvider(R.drawable.widget_glass_item)
                             )
                     ) {
                         Row(
@@ -317,7 +309,7 @@ private fun Content(
                             Image(
                                 provider = ImageProvider(R.drawable.heat_outlined),
                                 contentDescription = null,
-                                colorFilter = ColorFilter.tint(GlanceTheme.colors.onPrimary),
+                                colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
                                 modifier = GlanceModifier.fillMaxHeight(),
                             )
 
@@ -332,7 +324,7 @@ private fun Content(
                                             TextStyle(
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 24.sp,
-                                                color = GlanceTheme.colors.onPrimary,
+                                                color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
 
@@ -342,7 +334,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontStyle = FontStyle.Italic,
-                                                color = GlanceTheme.colors.onPrimary,
+                                                color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
                                 }
@@ -357,7 +349,7 @@ private fun Content(
                                             TextStyle(
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 14.sp,
-                                                color = GlanceTheme.colors.onPrimary,
+                                                color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
 
@@ -368,7 +360,7 @@ private fun Content(
                                             TextStyle(
                                                 fontStyle = FontStyle.Italic,
                                                 fontSize = 10.sp,
-                                                color = GlanceTheme.colors.onPrimary,
+                                                color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
                                 }
@@ -385,8 +377,7 @@ private fun Content(
                     Column(
                         modifier =
                             GlanceModifier.background(
-                                imageProvider = ImageProvider(R.drawable.widget_list_bottom),
-                                colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
+                                imageProvider = ImageProvider(R.drawable.widget_glass_item)
                             )
                     ) {
                         Row(
@@ -396,7 +387,7 @@ private fun Content(
                             Image(
                                 provider = ImageProvider(R.drawable.flag_circle),
                                 contentDescription = null,
-                                colorFilter = ColorFilter.tint(GlanceTheme.colors.onPrimary),
+                                colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
                                 modifier = GlanceModifier.fillMaxHeight(),
                             )
 
@@ -411,7 +402,7 @@ private fun Content(
                                             TextStyle(
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 24.sp,
-                                                color = GlanceTheme.colors.onPrimary,
+                                                color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
 
@@ -421,7 +412,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontStyle = FontStyle.Italic,
-                                                color = GlanceTheme.colors.onPrimary,
+                                                color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
                                 }
@@ -436,7 +427,7 @@ private fun Content(
                                             TextStyle(
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 14.sp,
-                                                color = GlanceTheme.colors.onPrimary,
+                                                color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
 
@@ -447,7 +438,7 @@ private fun Content(
                                             TextStyle(
                                                 fontStyle = FontStyle.Italic,
                                                 fontSize = 10.sp,
-                                                color = GlanceTheme.colors.onPrimary,
+                                                color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
                                 }

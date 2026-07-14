@@ -22,12 +22,16 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.shub39.grit.shared.ui.theme.LiquidGlassDefaults
+import com.shub39.grit.shared.ui.theme.liquidGlass
 
 @Composable
 fun GritDialog(
@@ -37,7 +41,22 @@ fun GritDialog(
     content: @Composable (ColumnScope.() -> Unit),
 ) {
     BasicAlertDialog(onDismissRequest = onDismissRequest, modifier = modifier) {
-        Card(shape = MaterialTheme.shapes.extraLarge) {
+        Card(
+            shape = MaterialTheme.shapes.extraLarge,
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = Color.Transparent,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ),
+            modifier =
+                Modifier.liquidGlass(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    fill =
+                        MaterialTheme.colorScheme.surfaceContainerHigh.copy(
+                            alpha = LiquidGlassDefaults.OVERLAY_ALPHA
+                        ),
+                ),
+        ) {
             Column(
                 modifier = Modifier.padding(padding),
                 horizontalAlignment = Alignment.CenterHorizontally,

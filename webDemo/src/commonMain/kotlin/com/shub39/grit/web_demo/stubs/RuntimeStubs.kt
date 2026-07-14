@@ -26,6 +26,7 @@ import com.shub39.grit.core.interfaces.SettingsDatastore
 import com.shub39.grit.core.interfaces.ThemeDatastore
 import com.shub39.grit.core.now
 import com.shub39.grit.core.settings.Sections
+import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.core.tasks.Task
 import com.shub39.grit.core.tasks.TaskRepo
@@ -116,6 +117,7 @@ class SettingsDatastoreStub : SettingsDatastore {
     private val _taskReorder = MutableStateFlow(false)
     private val _compactView = MutableStateFlow(false)
     private val _lastChangelog = MutableStateFlow("")
+    private val _widgetTextSize = MutableStateFlow(WidgetTextSize.MEDIUM)
 
     override fun getStartOfTheWeekPref(): Flow<DayOfWeek> = _startOfWeek.asStateFlow()
 
@@ -163,6 +165,12 @@ class SettingsDatastoreStub : SettingsDatastore {
 
     override suspend fun updateLastChangelogShown(version: String) {
         _lastChangelog.update { version }
+    }
+
+    override fun getWidgetTextSizeFlow(): Flow<WidgetTextSize> = _widgetTextSize.asStateFlow()
+
+    override suspend fun setWidgetTextSize(size: WidgetTextSize) {
+        _widgetTextSize.update { size }
     }
 }
 

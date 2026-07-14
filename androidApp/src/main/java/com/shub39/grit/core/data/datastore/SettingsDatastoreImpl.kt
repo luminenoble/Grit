@@ -23,6 +23,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.shub39.grit.core.interfaces.SettingsDatastore
 import com.shub39.grit.core.settings.Sections
+import com.shub39.grit.core.settings.WidgetTextSize
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.DayOfWeek
@@ -40,6 +41,7 @@ class SettingsDatastoreImpl(private val datastore: DataStore<Preferences>) : Set
         private val taskReorderKey = booleanPreferencesKey("task_reorder")
         private val compactHabitView = booleanPreferencesKey("compact_habit_view")
         private val lastChangelogShownKey = stringPreferencesKey("last_changelog_shown")
+        private val widgetTextSizeKey = stringPreferencesKey("widget_text_size")
     }
 
     override fun getStartOfTheWeekPref(): Flow<DayOfWeek> =
@@ -102,5 +104,18 @@ class SettingsDatastoreImpl(private val datastore: DataStore<Preferences>) : Set
 
     override suspend fun updateLastChangelogShown(version: String) {
         datastore.edit { settings -> settings[lastChangelogShownKey] = version }
+    }
+
+    override fun getWidgetTextSizeFlow(): Flow<WidgetTextSize> =
+        datastore.data.map { prefs ->
+            try {
+                WidgetTextSize.valueOf(prefs[widgetTextSizeKey] ?: WidgetTextSize.MEDIUM.name)
+            } catch (_: Exception) {
+                WidgetTextSize.MEDIUM
+            }
+        }
+
+    override suspend fun setWidgetTextSize(size: WidgetTextSize) {
+        datastore.edit { prefs -> prefs[widgetTextSizeKey] = size.name }
     }
 }

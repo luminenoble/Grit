@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Dark liquid glass widget pane; see drawable/widget_glass_bg.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="24dp" />
+    <gradient
+        android:angle="270"
+        android:startColor="#E6212227"
+        android:endColor="#CC17181C" />
+    <stroke
+        android:width="1dp"
+        android:color="#38FFFFFF" />
+</shape>

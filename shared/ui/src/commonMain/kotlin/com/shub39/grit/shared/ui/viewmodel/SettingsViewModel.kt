@@ -128,6 +128,8 @@ class SettingsViewModel(
                 is ChangeBiometricLock -> settingsDatastore.setBiometricPref(action.pref)
 
                 is ChangeReorderTasks -> settingsDatastore.setTaskReorderPref(action.pref)
+
+                is ChangeWidgetTextSize -> settingsDatastore.setWidgetTextSize(action.size)
             }
         }
 
@@ -221,6 +223,11 @@ class SettingsViewModel(
                 settingsDatastore
                     .getBiometricLockPref()
                     .onEach { flow -> _state.update { it.copy(isBiometricLockOn = flow) } }
+                    .launchIn(this)
+
+                settingsDatastore
+                    .getWidgetTextSizeFlow()
+                    .onEach { flow -> _state.update { it.copy(widgetTextSize = flow) } }
                     .launchIn(this)
             }
         }

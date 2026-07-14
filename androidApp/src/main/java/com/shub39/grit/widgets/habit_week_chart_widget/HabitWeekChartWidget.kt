@@ -171,16 +171,10 @@ private fun Content(
         modifier =
             modifier
                 .fillMaxSize()
+                .background(ImageProvider(R.drawable.widget_glass_bg))
                 .then(
-                    if (roundedCornerSupported) {
-                        GlanceModifier.background(GlanceTheme.colors.widgetBackground)
-                            .cornerRadius(24.dp)
-                    } else {
-                        GlanceModifier.background(
-                            imageProvider = ImageProvider(R.drawable.rounded_4dp),
-                            colorFilter = ColorFilter.tint(GlanceTheme.colors.widgetBackground),
-                        )
-                    }
+                    if (roundedCornerSupported) GlanceModifier.cornerRadius(24.dp)
+                    else GlanceModifier
                 )
                 .clickable(actionStartActivity<MainActivity>())
     ) {

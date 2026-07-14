@@ -20,7 +20,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -49,6 +48,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -61,7 +61,9 @@ import com.shub39.grit.core.habits.HabitWithAnalytics
 import com.shub39.grit.core.now
 import com.shub39.grit.core.toFormattedString
 import com.shub39.grit.shared.ui.habit.HabitsAction
+import com.shub39.grit.shared.ui.theme.LiquidGlassDefaults
 import com.shub39.grit.shared.ui.theme.gritSemanticColors
+import com.shub39.grit.shared.ui.theme.liquidGlass
 import grit.shared.ui.generated.resources.*
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
@@ -103,14 +105,20 @@ fun HabitCard(
             animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
             label = "cardBackground",
         )
+    // Translucent liquid glass pane; days that can't be completed fade further back.
     val cardBackground by
         animateColorAsState(
             targetValue =
                 when (completed) {
-                    true -> MaterialTheme.colorScheme.primaryContainer
+                    true ->
+                        MaterialTheme.colorScheme.primaryContainer.copy(
+                            alpha = LiquidGlassDefaults.CARD_ALPHA
+                        )
                     else ->
                         MaterialTheme.colorScheme.surfaceContainer.copy(
-                            alpha = if (canCompleteToday) 1f else 0.7f
+                            alpha =
+                                LiquidGlassDefaults.CARD_ALPHA *
+                                    (if (canCompleteToday) 1f else 0.6f)
                         )
                 },
             animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
@@ -125,20 +133,10 @@ fun HabitCard(
             firstDayOfWeek = startingDay,
         )
 
-    // Hairline border for subtle depth (Ant Design style); brightens when completed.
-    val borderColor by
-        animateColorAsState(
-            targetValue =
-                if (completed) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-            animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
-            label = "cardBorder",
-        )
-
     Card(
         colors =
             CardDefaults.outlinedCardColors(
-                containerColor = cardBackground,
+                containerColor = Color.Transparent,
                 contentColor = cardContent,
             ),
         onClick = {
@@ -147,17 +145,23 @@ fun HabitCard(
             }
         },
         shape = shape,
-        border = BorderStroke(1.dp, borderColor),
+        border = null,
         modifier =
-            modifier.animateContentSize(
-                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()
-            ),
+            modifier
+                .animateContentSize(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
+                .liquidGlass(
+                    shape = shape,
+                    fill = cardBackground,
+                    border =
+                        if (completed) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                        else null,
+                ),
     ) {
         ListItem(
             modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large),
             colors =
                 ListItemDefaults.colors(
-                    containerColor = cardBackground,
+                    containerColor = Color.Transparent,
                     headlineColor = cardContent,
                     supportingColor = cardContent,
                     trailingIconColor = cardContent,

@@ -76,6 +76,11 @@
     <string name="invalid_date_time">Time selected is in the past :\u0027)</string>
     <string name="reorder_tasks">Reorder tasks</string>
     <string name="reorder_tasks_desc">Reorder tasks when marked as completed</string>
+    <string name="widget_text_size">Widget text size</string>
+    <string name="widget_text_size_desc">Smaller text fits more tasks in the tasks widget</string>
+    <string name="text_size_small">Small</string>
+    <string name="text_size_medium">Medium</string>
+    <string name="text_size_large">Large</string>
     <string name="translate">Translate</string>
     <string name="translate_desc">Translate Grit in your language</string>
     <string name="changelog">Changelog</string>

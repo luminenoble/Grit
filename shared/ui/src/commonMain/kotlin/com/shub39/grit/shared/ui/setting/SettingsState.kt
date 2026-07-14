@@ -20,6 +20,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.shub39.grit.core.app.Changelog
 import com.shub39.grit.core.settings.Sections
+import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.core.settings.backup.ExportState
 import com.shub39.grit.core.settings.backup.RestoreState
 import com.shub39.grit.core.theme.Theme
@@ -41,6 +42,7 @@ data class SettingsState(
     val startingPage: Sections = Sections.Tasks,
     val isBiometricLockOn: Boolean? = null,
     val isBiometricLockAvailable: Boolean = false,
+    val widgetTextSize: WidgetTextSize = WidgetTextSize.MEDIUM,
 )
 
 @Stable
