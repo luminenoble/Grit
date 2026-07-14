@@ -56,7 +56,7 @@ private class DeepSeekTaskPlanner : TaskPlanner {
 
             val payload =
                 buildJsonObject {
-                        put("model", "deepseek-flash")
+                        put("model", "deepseek-v4-flash")
                         put("temperature", 0.3)
                         put("stream", false)
                         putJsonObject("response_format") { put("type", "json_object") }
