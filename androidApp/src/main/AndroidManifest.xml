@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"
+        tools:ignore="ExactAlarmPolicy" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" tools:node="remove"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" tools:ignore="ScopedStorage"/>
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Grit"
+        android:name=".app.GritApplication"
+        tools:targetApi="31">
+        <activity
+            android:name=".app.MainActivity"
+            android:launchMode="standard"
+            android:exported="true"
+            android:theme="@style/Theme.Grit.Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <receiver android:name=".core.data.GritIntentReceiver" />
+
+        <receiver android:name=".core.data.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".widgets.habit_overview_widget.HabitOverviewWidgetReceiver"
+            android:exported="true"
+            android:label="Habit Overview Widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/habit_overview_widget"/>
+        </receiver>
+
+        <receiver android:name=".widgets.all_tasks_widget.AllTasksWidgetReceiver"
+            android:exported="true"
+            android:label="All Tasks Widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/all_tasks_widget"/>
+        </receiver>
+
+        <receiver android:name=".widgets.habit_streak_widget.HabitStreakWidgetReceiver"
+            android:exported="true"
+            android:label="Habit Streak Widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/habit_streak_widget"/>
+        </receiver>
+
+        <receiver android:name=".widgets.habit_week_chart_widget.HabitWeekChartWidgetReceiver"
+            android:exported="true"
+            android:label="Habit Week Chart Widget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/habit_week_chart_widget"/>
+        </receiver>
+
+    </application>
+
+</manifest>
