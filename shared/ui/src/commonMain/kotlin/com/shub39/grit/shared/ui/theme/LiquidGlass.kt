@@ -23,9 +23,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
@@ -63,9 +63,10 @@ fun Modifier.liquidGlass(shape: Shape, fill: Color, border: Color? = null): Modi
     val borderBright = if (isDark) 0.28f else 0.60f
     val borderFaint = if (isDark) 0.06f else 0.12f
 
+    // drawWithCache re-runs only on size/state change; drawOutline avoids Path allocations
+    // for simple rounded shapes, keeping per-frame cost low under animateContentSize.
     return clip(shape).drawWithCache {
         val outline = shape.createOutline(size, layoutDirection, this)
-        val path = Path().apply { addOutline(outline) }
 
         val sheen =
             Brush.verticalGradient(
@@ -74,18 +75,18 @@ fun Modifier.liquidGlass(shape: Shape, fill: Color, border: Color? = null): Modi
                 endY = size.height,
             )
         val edge =
-            border?.let { Brush.linearGradient(listOf(it, it)) }
+            border?.let { SolidColor(it) }
                 ?: Brush.linearGradient(
                     0f to Color.White.copy(alpha = borderBright),
                     0.5f to Color.White.copy(alpha = borderFaint),
                     1f to Color.White.copy(alpha = borderBright / 2f),
                 )
-        val strokeWidth = 1.dp.toPx() * 2 // half is clipped away by the shape
+        val edgeStroke = Stroke(width = 1.dp.toPx() * 2) // half is clipped away by the shape
 
         onDrawBehind {
-            drawPath(path, color = fill)
-            drawPath(path, brush = sheen)
-            drawPath(path, brush = edge, style = Stroke(width = strokeWidth))
+            drawOutline(outline, color = fill)
+            drawOutline(outline, brush = sheen)
+            drawOutline(outline, brush = edge, style = edgeStroke)
         }
     }
 }

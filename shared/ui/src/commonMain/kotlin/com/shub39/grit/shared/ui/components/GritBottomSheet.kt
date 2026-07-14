@@ -17,12 +17,20 @@
 package com.shub39.grit.shared.ui.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -46,27 +54,53 @@ fun GritBottomSheet(
 ) {
     val sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
 
+    // The sheet surface stays transparent and undecorated: ModalBottomSheet applies its
+    // drag offset INSIDE the `modifier` param, so anything drawn there detaches from the
+    // sheet. The glass pane, drag handle and window insets all live in the content instead.
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetMaxWidth = 500.dp,
-        modifier =
-            modifier.liquidGlass(
-                shape = sheetShape,
-                fill =
-                    MaterialTheme.colorScheme.surfaceContainerLow.copy(
-                        alpha = LiquidGlassDefaults.OVERLAY_ALPHA
-                    ),
-            ),
+        modifier = modifier,
         sheetState = sheetState,
         shape = sheetShape,
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onSurface,
+        dragHandle = null,
+        contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
     ) {
         Column(
-            modifier = Modifier.padding(padding).animateContentSize().fillMaxWidth(),
+            modifier =
+                Modifier.fillMaxWidth()
+                    .liquidGlass(
+                        shape = sheetShape,
+                        fill =
+                            MaterialTheme.colorScheme.surfaceContainerLow.copy(
+                                alpha = LiquidGlassDefaults.OVERLAY_ALPHA
+                            ),
+                    )
+                    .windowInsetsPadding(BottomSheetDefaults.windowInsets),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            content = content,
-        )
+        ) {
+            Box(
+                modifier =
+                    Modifier.padding(top = 12.dp, bottom = 8.dp)
+                        .width(36.dp)
+                        .height(4.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                            shape = CircleShape,
+                        )
+            )
+
+            Column(
+                modifier =
+                    Modifier.padding(start = padding, end = padding, bottom = padding)
+                        .animateContentSize()
+                        .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                content = content,
+            )
+        }
     }
 }
