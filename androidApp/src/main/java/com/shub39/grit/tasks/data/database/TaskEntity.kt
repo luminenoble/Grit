@@ -43,4 +43,7 @@ data class TaskEntity(
     val status: Boolean = false,
     val index: Int = 0,
     @ColumnInfo(name = "reminder", defaultValue = "NULL") val reminder: LocalDateTime? = null,
+    @ColumnInfo(defaultValue = "") val description: String = "",
+    @ColumnInfo(defaultValue = "0") val isToday: Boolean = false,
+    @ColumnInfo(defaultValue = "[]") val steps: List<String> = emptyList(),
 )

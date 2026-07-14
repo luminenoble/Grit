@@ -47,11 +47,14 @@ import com.shub39.grit.shared.ui.components.GritBottomSheet
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * Bottom sheet that lets the user type a goal and have the AI break it into tasks, review/deselect
- * them, then add the chosen ones to the current category.
+ * Bottom sheet that lets the user type a goal and have the AI turn it into a single task with a
+ * description and concrete steps, review/deselect the steps, then add it to the current category.
  */
 @Composable
-fun AiDecomposeSheet(onDismiss: () -> Unit, onCreateTasks: (List<String>) -> Unit) {
+fun AiDecomposeSheet(
+    onDismiss: () -> Unit,
+    onCreateTask: (title: String, description: String, steps: List<String>) -> Unit,
+) {
     val viewModel: AiTasksViewModel = koinViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
     var input by remember { mutableStateOf("") }
@@ -67,7 +70,7 @@ fun AiDecomposeSheet(onDismiss: () -> Unit, onCreateTasks: (List<String>) -> Uni
             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
         )
         Text(
-            text = "输入一个目标，AI 帮你拆成具体的待办事项",
+            text = "输入一个目标，AI 帮你生成一个带描述和步骤的任务",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -108,14 +111,29 @@ fun AiDecomposeSheet(onDismiss: () -> Unit, onCreateTasks: (List<String>) -> Uni
             }
 
             is AiState.Suggestions -> {
+                val plan = s.plan
                 val selected =
-                    remember(s.tasks) { mutableStateListOf(*Array(s.tasks.size) { true }) }
+                    remember(plan) { mutableStateListOf(*Array(plan.steps.size) { true }) }
 
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    s.tasks.forEachIndexed { index, task ->
+                    Text(
+                        text = plan.title,
+                        style =
+                            MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    )
+
+                    if (plan.description.isNotBlank()) {
+                        Text(
+                            text = plan.description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    plan.steps.forEachIndexed { index, step ->
                         Row(
                             modifier =
                                 Modifier.fillMaxWidth()
@@ -129,7 +147,7 @@ fun AiDecomposeSheet(onDismiss: () -> Unit, onCreateTasks: (List<String>) -> Uni
                                 onCheckedChange = { selected[index] = it },
                             )
                             Text(
-                                text = task.title,
+                                text = step,
                                 modifier = Modifier.weight(1f),
                                 style = MaterialTheme.typography.bodyLarge,
                             )
@@ -139,16 +157,14 @@ fun AiDecomposeSheet(onDismiss: () -> Unit, onCreateTasks: (List<String>) -> Uni
 
                 Button(
                     onClick = {
-                        val titles =
-                            s.tasks.filterIndexed { index, _ -> selected[index] }.map { it.title }
-                        if (titles.isNotEmpty()) onCreateTasks(titles)
+                        val steps = plan.steps.filterIndexed { index, _ -> selected[index] }
+                        onCreateTask(plan.title, plan.description, steps)
                         viewModel.reset()
                         onDismiss()
                     },
-                    enabled = selected.any { it },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("添加所选任务")
+                    Text("添加任务")
                 }
             }
         }

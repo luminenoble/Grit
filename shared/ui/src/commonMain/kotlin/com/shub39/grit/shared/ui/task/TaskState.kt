@@ -29,4 +29,9 @@ data class TaskState(
     val completedTasks: List<Task> = emptyList(),
     val is24Hour: Boolean = false,
     val reorderTasks: Boolean = true,
-)
+    /** Virtual "Today" category is selected: show tasks flagged [Task.isToday] instead. */
+    val isTodayView: Boolean = false,
+) {
+    val todayTasks: List<Task>
+        get() = tasks.values.flatten().filter { it.isToday }
+}

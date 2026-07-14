@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.shub39.grit.shared.ui.theme.LiquidGlassDefaults
 import com.shub39.grit.shared.ui.theme.liquidGlass
 
 @Composable
@@ -51,10 +50,7 @@ fun GritDialog(
             modifier =
                 Modifier.liquidGlass(
                     shape = MaterialTheme.shapes.extraLarge,
-                    fill =
-                        MaterialTheme.colorScheme.surfaceContainerHigh.copy(
-                            alpha = LiquidGlassDefaults.OVERLAY_ALPHA
-                        ),
+                    fill = MaterialTheme.colorScheme.surfaceContainerHigh,
                 ),
         ) {
             Column(

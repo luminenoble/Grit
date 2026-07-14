@@ -28,12 +28,15 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonShapes
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -84,6 +87,11 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
+
+/** A step being edited, with a stable [uid] independent of its list position. */
+private data class StepItem(val uid: Int, val text: String)
 
 @Composable
 expect fun TaskUpsertSheet(
@@ -119,6 +127,13 @@ fun TaskUpsertSheetContent(
             initialText = newTask.title,
             initialSelection = TextRange(newTask.title.length),
         )
+
+    // Steps get a stable local uid so drag reorder and deletion animate correctly.
+    var stepUidCounter by remember { mutableStateOf(task.steps.size) }
+    var stepItems by remember {
+        mutableStateOf(task.steps.mapIndexed { index, text -> StepItem(index, text) })
+    }
+    var newStepText by remember { mutableStateOf("") }
 
     val timePickerState = rememberTimePickerState(is24Hour = is24Hr)
     val datePickerState = rememberDatePickerState()
@@ -160,8 +175,22 @@ fun TaskUpsertSheetContent(
             )
         }
 
+        val sheetListState = rememberLazyListState()
+        val stepsReorderState =
+            rememberReorderableLazyListState(sheetListState) { from, to ->
+                stepItems =
+                    stepItems.toMutableList().apply {
+                        val fromIndex = indexOfFirst { "step_${it.uid}" == from.key }
+                        val toIndex = indexOfFirst { "step_${it.uid}" == to.key }
+                        if (fromIndex >= 0 && toIndex >= 0) {
+                            add(toIndex, removeAt(fromIndex))
+                        }
+                    }
+            }
+
         LazyColumn(
             modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large),
+            state = sheetListState,
             verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
@@ -202,6 +231,106 @@ fun TaskUpsertSheetContent(
                         defaultAction()
                     },
                     modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                )
+            }
+
+            item {
+                OutlinedTextField(
+                    value = newTask.description,
+                    onValueChange = { newTask = newTask.copy(description = it) },
+                    shape = MaterialTheme.shapes.medium,
+                    placeholder = { Text(text = stringResource(Res.string.task_description)) },
+                    minLines = 2,
+                    keyboardOptions =
+                        KeyboardOptions.Default.copy(
+                            capitalization = KeyboardCapitalization.Sentences
+                        ),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            // steps: add, remove and drag to reorder
+            item {
+                Text(
+                    text = stringResource(Res.string.steps),
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+
+            items(stepItems, key = { "step_${it.uid}" }) { step ->
+                ReorderableItem(stepsReorderState, key = "step_${step.uid}") {
+                    ListItem(
+                        modifier = Modifier.clip(MaterialTheme.shapes.medium),
+                        colors = listItemColors(),
+                        headlineContent = { Text(text = step.text) },
+                        leadingContent = {
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.drag_indicator),
+                                contentDescription = "Reorder",
+                                modifier = Modifier.draggableHandle(),
+                            )
+                        },
+                        trailingContent = {
+                            IconButton(
+                                onClick = { stepItems = stepItems.filter { it.uid != step.uid } }
+                            ) {
+                                Icon(
+                                    imageVector = vectorResource(Res.drawable.delete),
+                                    contentDescription = "Delete",
+                                )
+                            }
+                        },
+                    )
+                }
+            }
+
+            item {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedTextField(
+                        value = newStepText,
+                        onValueChange = { newStepText = it },
+                        shape = MaterialTheme.shapes.medium,
+                        placeholder = { Text(text = stringResource(Res.string.add_step)) },
+                        singleLine = true,
+                        modifier = Modifier.weight(1f),
+                    )
+
+                    FilledTonalIconButton(
+                        onClick = {
+                            stepItems = stepItems + StepItem(stepUidCounter++, newStepText.trim())
+                            newStepText = ""
+                        },
+                        enabled = newStepText.isNotBlank(),
+                    ) {
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.add),
+                            contentDescription = stringResource(Res.string.add_step),
+                        )
+                    }
+                }
+            }
+
+            item {
+                ListItem(
+                    modifier = Modifier.clip(detachedItemShape()),
+                    colors = listItemColors(),
+                    leadingContent = {
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.light_mode),
+                            contentDescription = null,
+                        )
+                    },
+                    headlineContent = { Text(text = stringResource(Res.string.add_to_today)) },
+                    trailingContent = {
+                        ExpressiveSwitch(
+                            checked = newTask.isToday,
+                            onCheckedChange = { newTask = newTask.copy(isToday = it) },
+                        )
+                    },
                 )
             }
 
@@ -273,7 +402,12 @@ fun TaskUpsertSheetContent(
 
                         Button(
                             onClick = {
-                                onUpsert(newTask.copy(title = textFieldState.text.toString()))
+                                onUpsert(
+                                    newTask.copy(
+                                        title = textFieldState.text.toString(),
+                                        steps = stepItems.map { it.text }.filter { it.isNotBlank() },
+                                    )
+                                )
                                 onDismissRequest()
                             },
                             shapes =
@@ -288,7 +422,10 @@ fun TaskUpsertSheetContent(
                                     isValidDateTime &&
                                     (newTask.reminder != task.reminder ||
                                         textFieldState.text.toString() != task.title ||
-                                        newTask.categoryId != task.categoryId),
+                                        newTask.categoryId != task.categoryId ||
+                                        newTask.description != task.description ||
+                                        newTask.isToday != task.isToday ||
+                                        stepItems.map { it.text } != task.steps),
                         ) {
                             Text(
                                 stringResource(

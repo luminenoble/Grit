@@ -84,7 +84,13 @@ class TasksViewModel(
                 }
 
                 is ChangeCategory -> {
-                    _state.update { it.copy(currentCategory = action.category) }
+                    _state.update {
+                        it.copy(currentCategory = action.category, isTodayView = false)
+                    }
+                }
+
+                SelectTodayView -> {
+                    _state.update { it.copy(isTodayView = true) }
                 }
 
                 is AddCategory -> {

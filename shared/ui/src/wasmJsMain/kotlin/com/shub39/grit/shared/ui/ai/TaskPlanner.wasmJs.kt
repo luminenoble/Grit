@@ -18,6 +18,6 @@ package com.shub39.grit.shared.ui.ai
 
 actual fun createTaskPlanner(): TaskPlanner =
     object : TaskPlanner {
-        override suspend fun decompose(summary: String): List<PlannedTask> =
+        override suspend fun decompose(summary: String): PlannedTaskPlan =
             throw UnsupportedOperationException("AI 分解功能仅在 Android 上可用")
     }

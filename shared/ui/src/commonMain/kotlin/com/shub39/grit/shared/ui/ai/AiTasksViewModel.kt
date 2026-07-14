@@ -29,7 +29,7 @@ sealed interface AiState {
 
     data object Loading : AiState
 
-    data class Suggestions(val tasks: List<PlannedTask>) : AiState
+    data class Suggestions(val plan: PlannedTaskPlan) : AiState
 
     data class Error(val message: String) : AiState
 }
@@ -50,7 +50,7 @@ class AiTasksViewModel : ViewModel() {
                 runCatching { planner.decompose(summary) }
                     .fold(
                         onSuccess = {
-                            if (it.isEmpty()) AiState.Error("没有生成任务，换个描述再试试")
+                            if (it.title.isBlank()) AiState.Error("没有生成任务，换个描述再试试")
                             else AiState.Suggestions(it)
                         },
                         onFailure = { AiState.Error(it.message ?: "生成失败") },

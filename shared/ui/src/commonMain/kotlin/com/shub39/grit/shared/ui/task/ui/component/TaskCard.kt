@@ -31,6 +31,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shub39.grit.core.now
@@ -53,6 +55,7 @@ import com.shub39.grit.shared.ui.theme.gritSemanticColors
 import com.shub39.grit.shared.ui.theme.liquidGlass
 import grit.shared.ui.generated.resources.*
 import kotlinx.datetime.LocalDateTime
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
 @Composable
@@ -63,6 +66,7 @@ fun TaskCard(
     is24Hr: Boolean,
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(GritRadius.md),
+    onDetailsClick: (() -> Unit)? = null,
 ) {
     val semantic = gritSemanticColors()
 
@@ -113,10 +117,27 @@ fun TaskCard(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(GritSpacing.lg),
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(
+                        start = if (onDetailsClick != null) GritSpacing.xs else GritSpacing.lg,
+                        end = GritSpacing.lg,
+                        top = GritSpacing.sm,
+                        bottom = GritSpacing.sm,
+                    ),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            if (onDetailsClick != null) {
+                IconButton(onClick = onDetailsClick) {
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.info),
+                        contentDescription = "Details",
+                        tint = cardContent.copy(alpha = 0.7f),
+                    )
+                }
+            }
+
+            Column(modifier = Modifier.weight(1f).padding(vertical = GritSpacing.sm)) {
                 Text(
                     text = task.title,
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
@@ -127,6 +148,36 @@ fun TaskCard(
                             TextDecoration.None
                         },
                 )
+
+                if (task.description.isNotBlank()) {
+                    Text(
+                        text = task.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = cardContent.copy(alpha = 0.75f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+
+                if (task.steps.isNotEmpty()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(GritSpacing.xs),
+                    ) {
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.bulleted_list),
+                            contentDescription = null,
+                            modifier = Modifier.size(12.dp),
+                            tint = cardContent.copy(alpha = 0.75f),
+                        )
+
+                        Text(
+                            text = stringResource(Res.string.steps_count, task.steps.size),
+                            color = cardContent.copy(alpha = 0.75f),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                }
 
                 if (task.reminder != null) {
                     val reminderColor = if (isOverdue) semantic.error else cardContent

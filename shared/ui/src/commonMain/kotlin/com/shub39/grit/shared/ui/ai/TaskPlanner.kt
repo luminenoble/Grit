@@ -25,13 +25,13 @@ object AiKeyHolder {
     var apiKey: String = ""
 }
 
-/** A single task suggested by the AI, before it is persisted. */
-data class PlannedTask(val title: String)
+/** A task plan suggested by the AI: one task with a description and ordered steps. */
+data class PlannedTaskPlan(val title: String, val description: String, val steps: List<String>)
 
-/** Breaks a free-form goal into a list of concrete, actionable task titles. */
+/** Turns a free-form goal into a single task with a description and concrete steps. */
 interface TaskPlanner {
     /** @throws Exception on network / auth / parsing failure. */
-    suspend fun decompose(summary: String): List<PlannedTask>
+    suspend fun decompose(summary: String): PlannedTaskPlan
 }
 
 /** Platform factory: real DeepSeek implementation on Android, a stub elsewhere. */

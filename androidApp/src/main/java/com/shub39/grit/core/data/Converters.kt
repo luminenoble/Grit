@@ -24,6 +24,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.json.Json
 
 object Converters {
     val allDays = dayOfWeekToString(DayOfWeek.entries.toSet())
@@ -59,5 +60,22 @@ object Converters {
     @ColumnTypeConverter
     fun dayToTimestamp(date: LocalDate): Long {
         return date.toEpochDays()
+    }
+
+    // JSON keeps step text safe regardless of separators or special characters.
+    @ColumnTypeConverter
+    fun stringListToJson(value: List<String>): String {
+        return Json.encodeToString(value)
+    }
+
+    @ColumnTypeConverter
+    fun stringListFromJson(value: String): List<String> {
+        return if (value.isBlank()) emptyList()
+        else
+            try {
+                Json.decodeFromString(value)
+            } catch (_: Exception) {
+                emptyList()
+            }
     }
 }

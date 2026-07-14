@@ -43,16 +43,18 @@ private class DeepSeekTaskPlanner : TaskPlanner {
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    override suspend fun decompose(summary: String): List<PlannedTask> =
+    override suspend fun decompose(summary: String): PlannedTaskPlan =
         withContext(Dispatchers.IO) {
             val key = AiKeyHolder.apiKey
             require(key.isNotBlank()) { "AI 服务未配置密钥" }
 
             val system =
-                "You are a task-planning assistant. Break the user's goal into 3-8 concrete, " +
-                    "actionable to-do items ordered logically. Reply ONLY with a JSON object of the " +
-                    "form {\"tasks\": [\"task 1\", \"task 2\"]}. Each task is a short imperative phrase " +
-                    "written in the SAME language as the user's goal. No commentary."
+                "You are a task-planning assistant. Turn the user's goal into ONE actionable " +
+                    "task with concrete sub-steps. Reply ONLY with a JSON object of the form " +
+                    "{\"title\": \"short task title\", \"description\": \"one or two sentences of " +
+                    "context\", \"steps\": [\"step 1\", \"step 2\"]}. Provide 3-8 steps ordered " +
+                    "logically, each a short imperative phrase. Write everything in the SAME " +
+                    "language as the user's goal. No commentary."
 
             val payload =
                 buildJsonObject {
@@ -115,18 +117,23 @@ private class DeepSeekTaskPlanner : TaskPlanner {
                     ?.jsonPrimitive
                     ?.content ?: error("响应内容为空")
 
-            val tasks =
-                json.parseToJsonElement(content).jsonObject["tasks"]?.jsonArray
-                    ?: error("响应中没有找到 tasks 字段")
+            val plan = json.parseToJsonElement(content).jsonObject
 
-            tasks
-                .mapNotNull { it.asTaskTitle()?.trim() }
-                .filter { it.isNotEmpty() }
-                .map { PlannedTask(it) }
+            val title =
+                plan["title"]?.asText()?.trim().orEmpty().ifBlank { error("响应中没有找到 title 字段") }
+            val description = plan["description"]?.asText()?.trim().orEmpty()
+            val steps =
+                plan["steps"]
+                    ?.jsonArray
+                    .orEmpty()
+                    .mapNotNull { it.asText()?.trim() }
+                    .filter { it.isNotEmpty() }
+
+            PlannedTaskPlan(title = title, description = description, steps = steps)
         }
 
     /** Accepts either a plain string entry or an object with a title/task/name field. */
-    private fun JsonElement.asTaskTitle(): String? =
+    private fun JsonElement.asText(): String? =
         when (this) {
             is JsonPrimitive -> contentOrNull
             is JsonObject ->

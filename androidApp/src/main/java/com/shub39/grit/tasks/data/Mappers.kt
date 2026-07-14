@@ -29,6 +29,9 @@ fun Task.toTaskEntity(): TaskEntity {
         index = index,
         status = status,
         reminder = reminder,
+        description = description,
+        isToday = isToday,
+        steps = steps,
     )
 }
 
@@ -40,6 +43,9 @@ fun TaskEntity.toTask(): Task {
         index = index,
         status = status,
         reminder = reminder,
+        description = description,
+        isToday = isToday,
+        steps = steps,
     )
 }
 

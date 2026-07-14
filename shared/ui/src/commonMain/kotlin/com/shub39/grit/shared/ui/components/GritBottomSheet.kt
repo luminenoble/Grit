@@ -41,7 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.shub39.grit.shared.ui.theme.LiquidGlassDefaults
 import com.shub39.grit.shared.ui.theme.liquidGlass
 
 @Composable
@@ -71,12 +70,11 @@ fun GritBottomSheet(
         Column(
             modifier =
                 Modifier.fillMaxWidth()
+                    // Opaque fill: input surfaces need full readability; the sheen and
+                    // specular edge alone carry the glass look.
                     .liquidGlass(
                         shape = sheetShape,
-                        fill =
-                            MaterialTheme.colorScheme.surfaceContainerLow.copy(
-                                alpha = LiquidGlassDefaults.OVERLAY_ALPHA
-                            ),
+                        fill = MaterialTheme.colorScheme.surfaceContainerLow,
                     )
                     .windowInsetsPadding(BottomSheetDefaults.windowInsets),
             horizontalAlignment = Alignment.CenterHorizontally,

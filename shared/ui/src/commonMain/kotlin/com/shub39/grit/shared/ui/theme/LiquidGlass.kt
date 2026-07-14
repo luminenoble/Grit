@@ -42,9 +42,6 @@ object LiquidGlassDefaults {
     /** Container fill alpha for cards laid over the app background. */
     const val CARD_ALPHA = 0.60f
 
-    /** Fill alpha for surfaces floating over dimmed content (dialogs, sheets). */
-    const val OVERLAY_ALPHA = 0.85f
-
     /** Fill alpha for the floating navigation pill. */
     const val NAV_ALPHA = 0.72f
 }

@@ -23,7 +23,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -112,6 +112,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+
+/** Sentinel id for the virtual "Today" category, which is not persisted. */
+private const val TODAY_VIEW_ID = -1L
 
 @Composable
 fun TaskList(state: TaskState, onAction: (TaskAction) -> Unit, onEditCategories: () -> Unit) =
@@ -258,6 +261,7 @@ fun TaskList(state: TaskState, onAction: (TaskAction) -> Unit, onEditCategories:
                         index = state.tasks[state.currentCategory]?.size ?: 0,
                         status = false,
                         reminder = null,
+                        isToday = state.isTodayView,
                     ),
                 is24Hr = state.is24Hour,
                 categories = state.tasks.keys.toList(),
@@ -272,21 +276,21 @@ fun TaskList(state: TaskState, onAction: (TaskAction) -> Unit, onEditCategories:
 
             AiDecomposeSheet(
                 onDismiss = { showAiSheet = false },
-                onCreateTasks = { titles ->
-                    val base = state.tasks[category]?.size ?: 0
-                    titles.forEachIndexed { i, title ->
-                        onAction(
-                            TaskAction.UpsertTask(
-                                Task(
-                                    categoryId = category.id,
-                                    title = title,
-                                    index = base + i,
-                                    status = false,
-                                    reminder = null,
-                                )
+                onCreateTask = { title, description, steps ->
+                    onAction(
+                        TaskAction.UpsertTask(
+                            Task(
+                                categoryId = category.id,
+                                title = title,
+                                description = description,
+                                steps = steps,
+                                index = state.tasks[category]?.size ?: 0,
+                                status = false,
+                                reminder = null,
+                                isToday = state.isTodayView,
                             )
                         )
-                    }
+                    )
                 },
             )
         }
@@ -387,9 +391,28 @@ private fun CategorySelector(
         contentPadding = PaddingValues(vertical = 8.dp, horizontal = 16.dp),
     ) {
         if (!isExpanded) {
+            // Virtual "Today" category: tasks flagged isToday across all categories.
+            item(key = "today_selector") {
+                ToggleButton(
+                    checked = state.isTodayView,
+                    onCheckedChange = {
+                        onAction(TaskAction.SelectTodayView)
+                        onReorderModeChange(false)
+                    },
+                ) {
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.light_mode),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = stringResource(Res.string.today))
+                }
+            }
+
             items(state.tasks.keys.toList(), key = { it.id }) { category ->
                 ToggleButton(
-                    checked = category == state.currentCategory,
+                    checked = !state.isTodayView && category == state.currentCategory,
                     onCheckedChange = {
                         onAction(TaskAction.ChangeCategory(category))
                         onReorderModeChange(false)
@@ -452,19 +475,23 @@ private fun CompactTasksView(
     ) {
         val motionScheme = MaterialTheme.motionScheme
         AnimatedContent(
-            targetState = state.currentCategory?.id,
+            targetState = if (state.isTodayView) TODAY_VIEW_ID else state.currentCategory?.id,
             transitionSpec = {
                 fadeIn(motionScheme.fastEffectsSpec()) togetherWith
                     fadeOut(motionScheme.fastEffectsSpec())
             },
         ) { categoryId ->
+            val isTodayView = categoryId == TODAY_VIEW_ID
             val category = state.tasks.keys.firstOrNull { it.id == categoryId }
-            if (category != null) {
+            if (isTodayView || category != null) {
+                val sourceTasks =
+                    if (isTodayView) state.todayTasks else state.tasks[category] ?: emptyList()
+
                 val lazyListState = rememberLazyListState()
                 var reorderableTasks by
                     remember(state.tasks.values) {
                         mutableStateOf(
-                            (state.tasks[category] ?: emptyList()).run {
+                            sourceTasks.run {
                                 if (state.reorderTasks) {
                                     filter { !it.status }
                                 } else this
@@ -511,7 +538,7 @@ private fun CompactTasksView(
 
                             TaskCard(
                                 task = task,
-                                dragState = isReorderMode,
+                                dragState = isReorderMode && !isTodayView,
                                 reorderIcon = {
                                     Icon(
                                         imageVector = vectorResource(Res.drawable.drag_indicator),
@@ -532,31 +559,43 @@ private fun CompactTasksView(
                                 },
                                 is24Hr = state.is24Hour,
                                 shape = cardShape,
+                                onDetailsClick = { onEditTask(task) },
                                 modifier =
                                     Modifier.fillMaxWidth()
                                         .clip(cardShape)
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (!isReorderMode) {
-                                                    val updatedTask =
-                                                        task.copy(status = !task.status)
+                                        .clickable {
+                                            if (!isReorderMode) {
+                                                val updatedTask = task.copy(status = !task.status)
 
-                                                    onAction(TaskAction.UpsertTask(updatedTask))
-                                                }
-                                            },
-                                            onLongClick = {
-                                                if (!isReorderMode && !task.status) {
-                                                    onEditTask(task)
-                                                }
-                                            },
+                                                onAction(TaskAction.UpsertTask(updatedTask))
+                                            }
+                                        }
+                                        .then(
+                                            // Long press drags to reorder; the Today view mixes
+                                            // categories whose indices can't be reordered.
+                                            if (!isTodayView) {
+                                                Modifier.longPressDraggableHandle(
+                                                    onDragStopped = {
+                                                        onAction(
+                                                            TaskAction.ReorderTasks(
+                                                                reorderableTasks.mapIndexed { i, t
+                                                                    ->
+                                                                    i to t
+                                                                }
+                                                            )
+                                                        )
+                                                    }
+                                                )
+                                            } else {
+                                                Modifier
+                                            }
                                         ),
                             )
                         }
                     }
 
                     if (state.reorderTasks) {
-                        val completedTasks =
-                            (state.tasks[category] ?: emptyList()).filter { it.status }
+                        val completedTasks = sourceTasks.filter { it.status }
 
                         if (reorderableTasks.isNotEmpty()) {
                             item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -593,20 +632,15 @@ private fun CompactTasksView(
                                 reorderIcon = {},
                                 is24Hr = state.is24Hour,
                                 shape = cardShape,
+                                onDetailsClick = { onEditTask(task) },
                                 modifier =
-                                    Modifier.fillMaxWidth()
-                                        .clip(cardShape)
-                                        .combinedClickable(
-                                            onClick = {
-                                                if (!isReorderMode) {
-                                                    val updatedTask =
-                                                        task.copy(status = !task.status)
+                                    Modifier.fillMaxWidth().clip(cardShape).clickable {
+                                        if (!isReorderMode) {
+                                            val updatedTask = task.copy(status = !task.status)
 
-                                                    onAction(TaskAction.UpsertTask(updatedTask))
-                                                }
-                                            },
-                                            onLongClick = {},
-                                        ),
+                                            onAction(TaskAction.UpsertTask(updatedTask))
+                                        }
+                                    },
                             )
                         }
                     }
@@ -626,7 +660,14 @@ private fun ExpandedTasksView(
     onAction: (TaskAction) -> Unit,
     onEditTask: (Task) -> Unit,
 ) {
-    val tasksAndCategories = state.tasks.toList()
+    val todayCategory =
+        Category(
+            id = TODAY_VIEW_ID,
+            name = stringResource(Res.string.today),
+            index = -1,
+            color = CategoryColors.GRAY.color,
+        )
+    val tasksAndCategories = listOf(todayCategory to state.todayTasks) + state.tasks.toList()
 
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Adaptive(minSize = 350.dp),
@@ -636,6 +677,7 @@ private fun ExpandedTasksView(
         modifier = Modifier.fillMaxSize(),
     ) {
         items(tasksAndCategories, key = { it.first.id }) { (category, tasks) ->
+            val isTodayPanel = category.id == TODAY_VIEW_ID
             val displayTasks = if (state.reorderTasks) tasks.filter { !it.status } else tasks
             var showReorderDialog by remember { mutableStateOf(false) }
 
@@ -668,7 +710,7 @@ private fun ExpandedTasksView(
                             FilledTonalIconToggleButton(
                                 checked = showReorderDialog,
                                 onCheckedChange = { showReorderDialog = it },
-                                enabled = displayTasks.size > 1,
+                                enabled = !isTodayPanel && displayTasks.size > 1,
                             ) {
                                 Icon(
                                     imageVector = vectorResource(Res.drawable.reorder),
@@ -707,17 +749,12 @@ private fun ExpandedTasksView(
                             reorderIcon = {},
                             is24Hr = state.is24Hour,
                             shape = cardShape,
+                            onDetailsClick = { onEditTask(task) },
                             modifier =
-                                Modifier.animateItem()
-                                    .fillMaxWidth()
-                                    .clip(cardShape)
-                                    .combinedClickable(
-                                        onClick = {
-                                            val updatedTask = task.copy(status = !task.status)
-                                            onAction(TaskAction.UpsertTask(updatedTask))
-                                        },
-                                        onLongClick = { if (!task.status) onEditTask(task) },
-                                    ),
+                                Modifier.animateItem().fillMaxWidth().clip(cardShape).clickable {
+                                    val updatedTask = task.copy(status = !task.status)
+                                    onAction(TaskAction.UpsertTask(updatedTask))
+                                },
                         )
                     }
 
@@ -757,16 +794,12 @@ private fun ExpandedTasksView(
                                 reorderIcon = {},
                                 is24Hr = state.is24Hour,
                                 shape = cardShape,
+                                onDetailsClick = { onEditTask(task) },
                                 modifier =
-                                    Modifier.fillMaxWidth()
-                                        .clip(cardShape)
-                                        .combinedClickable(
-                                            onClick = {
-                                                val updatedTask = task.copy(status = !task.status)
-                                                onAction(TaskAction.UpsertTask(updatedTask))
-                                            },
-                                            onLongClick = { if (!task.status) onEditTask(task) },
-                                        ),
+                                    Modifier.fillMaxWidth().clip(cardShape).clickable {
+                                        val updatedTask = task.copy(status = !task.status)
+                                        onAction(TaskAction.UpsertTask(updatedTask))
+                                    },
                             )
                         }
                     }

@@ -69,6 +69,9 @@ fun TaskSchema.toTask(): Task {
         status = status,
         index = index,
         reminder = reminder?.let { Converters.dateFromTimestamp(it) },
+        description = description,
+        isToday = isToday,
+        steps = steps,
     )
 }
 
@@ -80,6 +83,9 @@ fun Task.toTaskSchema(): TaskSchema {
         status = status,
         index = index,
         reminder = reminder?.let { Converters.dateToTimestamp(it) },
+        description = description,
+        isToday = isToday,
+        steps = steps,
     )
 }
 
