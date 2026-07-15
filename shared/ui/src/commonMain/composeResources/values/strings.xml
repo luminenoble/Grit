@@ -84,6 +84,8 @@
     <string name="steps">Steps</string>
     <string name="add_step">Add step</string>
     <string name="steps_count">%1$d steps</string>
+    <string name="steps_progress">%1$d/%2$d steps</string>
+    <string name="hide_completed">Hide completed tasks</string>
     <string name="widget_text_size">Widget text size</string>
     <string name="widget_text_size_desc">Smaller text fits more tasks in the tasks widget</string>
     <string name="text_size_small">Small</string>

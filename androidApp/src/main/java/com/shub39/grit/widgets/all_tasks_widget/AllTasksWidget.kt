@@ -102,6 +102,10 @@ class AllTasksWidget : GlanceAppWidget(), KoinComponent {
                     SCOPE_TODAY -> tasks.mapValues { entry -> entry.value.filter { it.isToday } }
                     else -> tasks.filterKeys { it.id == widgetScope }
                 }
+                // Categories flagged hideCompleted keep their done tasks out of the widget too.
+                .mapValues { (category, list) ->
+                    if (category.hideCompleted) list.filter { !it.status } else list
+                }
             val title =
                 when (widgetScope) {
                     SCOPE_ALL -> "Tasks"

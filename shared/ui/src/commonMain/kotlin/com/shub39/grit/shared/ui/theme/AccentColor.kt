@@ -17,6 +17,7 @@
 package com.shub39.grit.shared.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 
@@ -61,4 +62,24 @@ fun Color.toHexString(): String {
 /** Black or white, whichever reads better on this color. */
 fun Color.bestContentColor(): Color {
     return if (luminance() > 0.5f) Color.Black else Color.White
+}
+
+/** How many shade variants an accent cycles through before repeating. */
+private const val ACCENT_VARIANT_CYCLE = 5
+
+/**
+ * Shade variant for list position [position]: the same hue nudged lighter or darker in a cycle of
+ * [ACCENT_VARIANT_CYCLE], so stacked cards sharing one accent don't read as a flat block. Neighbors
+ * alternate direction to keep adjacent cards visibly distinct.
+ */
+fun Color.accentVariant(position: Int): Color {
+    return when (
+        ((position % ACCENT_VARIANT_CYCLE) + ACCENT_VARIANT_CYCLE) % ACCENT_VARIANT_CYCLE
+    ) {
+        0 -> this
+        1 -> lerp(this, Color.White, 0.22f)
+        2 -> lerp(this, Color.Black, 0.18f)
+        3 -> lerp(this, Color.White, 0.40f)
+        else -> lerp(this, Color.Black, 0.34f)
+    }
 }

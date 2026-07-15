@@ -20,7 +20,16 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 /**
- * Task Category the color parameter is unused, waiting for its day like the pink suit in joji's
- * basement
+ * Task Category
+ *
+ * @param color : accent color for the category and its tasks, hex or legacy name
+ * @param hideCompleted : when set, completed tasks in this category stay hidden in lists and
+ *   widgets
  */
-data class Category(val id: Long = 0, val name: String, val index: Int = 0, val color: String)
+data class Category(
+    val id: Long = 0,
+    val name: String,
+    val index: Int = 0,
+    val color: String,
+    val hideCompleted: Boolean = false,
+)

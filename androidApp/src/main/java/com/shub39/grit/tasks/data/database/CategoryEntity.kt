@@ -16,6 +16,7 @@
  */
 package com.shub39.grit.tasks.data.database
 
+import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.PrimaryKey
 
@@ -25,4 +26,5 @@ data class CategoryEntity(
     val name: String,
     val index: Int = 0,
     val color: String,
+    @ColumnInfo(defaultValue = "0") val hideCompleted: Boolean = false,
 )

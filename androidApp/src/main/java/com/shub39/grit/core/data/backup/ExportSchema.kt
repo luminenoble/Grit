@@ -16,6 +16,7 @@
  */
 package com.shub39.grit.core.data.backup
 
+import com.shub39.grit.core.tasks.TaskStep
 import com.shub39.grit.habits.data.database.HabitDatabase
 import com.shub39.grit.tasks.data.database.TaskDatabase
 import kotlinx.serialization.Serializable
@@ -55,8 +56,14 @@ data class TaskSchema(
     val reminder: Long? = null,
     val description: String = "",
     val isToday: Boolean = false,
-    val steps: List<String> = emptyList(),
+    val steps: List<TaskStep> = emptyList(),
 )
 
 @Serializable
-data class CategorySchema(val id: Long = 0, val name: String, val index: Int = 0, val color: String)
+data class CategorySchema(
+    val id: Long = 0,
+    val name: String,
+    val index: Int = 0,
+    val color: String,
+    val hideCompleted: Boolean = false,
+)

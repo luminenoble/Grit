@@ -29,7 +29,7 @@ import kotlinx.serialization.Serializable
  * @param reminder : [LocalDateTime] if reminder is set
  * @param description : optional free-form details
  * @param isToday : whether the task also shows in the virtual "Today" category
- * @param steps : ordered sub-steps of the task
+ * @param steps : ordered sub-steps of the task, each individually checkable
  */
 @Serializable
 data class Task(
@@ -41,5 +41,5 @@ data class Task(
     val reminder: LocalDateTime? = null,
     val description: String = "",
     val isToday: Boolean = false,
-    val steps: List<String> = emptyList(),
+    val steps: List<TaskStep> = emptyList(),
 )

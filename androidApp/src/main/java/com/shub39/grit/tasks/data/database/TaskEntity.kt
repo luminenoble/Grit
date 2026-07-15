@@ -21,6 +21,7 @@ import androidx.room3.Entity
 import androidx.room3.ForeignKey
 import androidx.room3.Index
 import androidx.room3.PrimaryKey
+import com.shub39.grit.core.tasks.TaskStep
 import kotlinx.datetime.LocalDateTime
 
 @Entity(
@@ -45,5 +46,5 @@ data class TaskEntity(
     @ColumnInfo(name = "reminder", defaultValue = "NULL") val reminder: LocalDateTime? = null,
     @ColumnInfo(defaultValue = "") val description: String = "",
     @ColumnInfo(defaultValue = "0") val isToday: Boolean = false,
-    @ColumnInfo(defaultValue = "[]") val steps: List<String> = emptyList(),
+    @ColumnInfo(defaultValue = "[]") val steps: List<TaskStep> = emptyList(),
 )

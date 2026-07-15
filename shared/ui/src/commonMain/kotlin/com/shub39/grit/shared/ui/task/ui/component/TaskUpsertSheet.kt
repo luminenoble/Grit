@@ -66,10 +66,12 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.now
 import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.core.tasks.Task
+import com.shub39.grit.core.tasks.TaskStep
 import com.shub39.grit.core.toFormattedString
 import com.shub39.grit.shared.ui.components.ExpressiveSwitch
 import com.shub39.grit.shared.ui.components.GritBottomSheet
@@ -91,7 +93,7 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 /** A step being edited, with a stable [uid] independent of its list position. */
-private data class StepItem(val uid: Int, val text: String)
+private data class StepItem(val uid: Int, val text: String, val done: Boolean = false)
 
 @Composable
 expect fun TaskUpsertSheet(
@@ -131,7 +133,9 @@ fun TaskUpsertSheetContent(
     // Steps get a stable local uid so drag reorder and deletion animate correctly.
     var stepUidCounter by remember { mutableStateOf(task.steps.size) }
     var stepItems by remember {
-        mutableStateOf(task.steps.mapIndexed { index, text -> StepItem(index, text) })
+        mutableStateOf(
+            task.steps.mapIndexed { index, step -> StepItem(index, step.text, step.done) }
+        )
     }
     var newStepText by remember { mutableStateOf("") }
 
@@ -263,22 +267,51 @@ fun TaskUpsertSheetContent(
                     ListItem(
                         modifier = Modifier.clip(MaterialTheme.shapes.medium),
                         colors = listItemColors(),
-                        headlineContent = { Text(text = step.text) },
-                        leadingContent = {
-                            Icon(
-                                imageVector = vectorResource(Res.drawable.drag_indicator),
-                                contentDescription = "Reorder",
-                                modifier = Modifier.draggableHandle(),
+                        headlineContent = {
+                            Text(
+                                text = step.text,
+                                textDecoration =
+                                    if (step.done) TextDecoration.LineThrough
+                                    else TextDecoration.None,
                             )
                         },
-                        trailingContent = {
+                        leadingContent = {
                             IconButton(
-                                onClick = { stepItems = stepItems.filter { it.uid != step.uid } }
+                                onClick = {
+                                    stepItems =
+                                        stepItems.map {
+                                            if (it.uid == step.uid) it.copy(done = !it.done) else it
+                                        }
+                                }
                             ) {
                                 Icon(
-                                    imageVector = vectorResource(Res.drawable.delete),
-                                    contentDescription = "Delete",
+                                    imageVector =
+                                        vectorResource(
+                                            if (step.done) Res.drawable.check_circle
+                                            else Res.drawable.circle_border
+                                        ),
+                                    contentDescription = "Toggle done",
                                 )
+                            }
+                        },
+                        trailingContent = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = vectorResource(Res.drawable.drag_indicator),
+                                    contentDescription = "Reorder",
+                                    modifier = Modifier.draggableHandle(),
+                                )
+
+                                IconButton(
+                                    onClick = {
+                                        stepItems = stepItems.filter { it.uid != step.uid }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = vectorResource(Res.drawable.delete),
+                                        contentDescription = "Delete",
+                                    )
+                                }
                             }
                         },
                     )
@@ -405,7 +438,10 @@ fun TaskUpsertSheetContent(
                                 onUpsert(
                                     newTask.copy(
                                         title = textFieldState.text.toString(),
-                                        steps = stepItems.map { it.text }.filter { it.isNotBlank() },
+                                        steps =
+                                            stepItems
+                                                .filter { it.text.isNotBlank() }
+                                                .map { TaskStep(it.text, it.done) },
                                     )
                                 )
                                 onDismissRequest()
@@ -425,7 +461,7 @@ fun TaskUpsertSheetContent(
                                         newTask.categoryId != task.categoryId ||
                                         newTask.description != task.description ||
                                         newTask.isToday != task.isToday ||
-                                        stepItems.map { it.text } != task.steps),
+                                        stepItems.map { TaskStep(it.text, it.done) } != task.steps),
                         ) {
                             Text(
                                 stringResource(

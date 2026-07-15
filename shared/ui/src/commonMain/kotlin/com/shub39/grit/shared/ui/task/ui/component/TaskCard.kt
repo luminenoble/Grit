@@ -21,6 +21,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,8 +37,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shub39.grit.core.now
 import com.shub39.grit.core.tasks.Task
+import com.shub39.grit.core.tasks.TaskStep
 import com.shub39.grit.core.toFormattedString
 import com.shub39.grit.shared.ui.theme.GritRadius
 import com.shub39.grit.shared.ui.theme.GritSpacing
@@ -68,6 +74,7 @@ fun TaskCard(
     shape: Shape = RoundedCornerShape(GritRadius.md),
     onDetailsClick: (() -> Unit)? = null,
     accent: Color? = null,
+    onStepsChange: ((List<TaskStep>) -> Unit)? = null,
 ) {
     val semantic = gritSemanticColors()
 
@@ -167,9 +174,18 @@ fun TaskCard(
                 }
 
                 if (task.steps.isNotEmpty()) {
+                    // Tapping the progress row unfolds the steps so they can be checked off
+                    // without opening the details sheet.
+                    var stepsExpanded by remember(task.id) { mutableStateOf(false) }
+                    val doneSteps = task.steps.count { it.done }
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(GritSpacing.xs),
+                        modifier =
+                            Modifier.clip(RoundedCornerShape(GritRadius.sm))
+                                .clickable { stepsExpanded = !stepsExpanded }
+                                .padding(vertical = 2.dp),
                     ) {
                         Icon(
                             imageVector = vectorResource(Res.drawable.bulleted_list),
@@ -179,10 +195,76 @@ fun TaskCard(
                         )
 
                         Text(
-                            text = stringResource(Res.string.steps_count, task.steps.size),
+                            text =
+                                stringResource(
+                                    Res.string.steps_progress,
+                                    doneSteps,
+                                    task.steps.size,
+                                ),
                             color = cardContent.copy(alpha = 0.75f),
                             style = MaterialTheme.typography.labelSmall,
                         )
+
+                        Icon(
+                            imageVector =
+                                vectorResource(
+                                    if (stepsExpanded) Res.drawable.collapse
+                                    else Res.drawable.expand
+                                ),
+                            contentDescription = null,
+                            modifier = Modifier.size(12.dp),
+                            tint = cardContent.copy(alpha = 0.75f),
+                        )
+                    }
+
+                    AnimatedVisibility(visible = stepsExpanded) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            task.steps.forEachIndexed { stepIndex, step ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(GritSpacing.xs),
+                                    modifier =
+                                        Modifier.fillMaxWidth()
+                                            .clip(RoundedCornerShape(GritRadius.sm))
+                                            .then(
+                                                if (onStepsChange != null) {
+                                                    Modifier.clickable {
+                                                        onStepsChange(
+                                                            task.steps.mapIndexed { i, s ->
+                                                                if (i == stepIndex)
+                                                                    s.copy(done = !s.done)
+                                                                else s
+                                                            }
+                                                        )
+                                                    }
+                                                } else Modifier
+                                            )
+                                            .padding(vertical = 4.dp),
+                                ) {
+                                    Icon(
+                                        imageVector =
+                                            vectorResource(
+                                                if (step.done) Res.drawable.check_circle
+                                                else Res.drawable.circle_border
+                                            ),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint =
+                                            cardContent.copy(alpha = if (step.done) 0.9f else 0.6f),
+                                    )
+
+                                    Text(
+                                        text = step.text,
+                                        color =
+                                            cardContent.copy(alpha = if (step.done) 0.6f else 0.9f),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        textDecoration =
+                                            if (step.done) TextDecoration.LineThrough
+                                            else TextDecoration.None,
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 

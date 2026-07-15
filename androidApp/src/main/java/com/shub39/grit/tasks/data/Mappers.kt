@@ -50,9 +50,21 @@ fun TaskEntity.toTask(): Task {
 }
 
 fun CategoryEntity.toCategory(): Category {
-    return Category(id = id, name = name, index = index, color = color)
+    return Category(
+        id = id,
+        name = name,
+        index = index,
+        color = color,
+        hideCompleted = hideCompleted,
+    )
 }
 
 fun Category.toCategoryEntity(): CategoryEntity {
-    return CategoryEntity(id = id, name = name, color = color, index = index)
+    return CategoryEntity(
+        id = id,
+        name = name,
+        color = color,
+        index = index,
+        hideCompleted = hideCompleted,
+    )
 }

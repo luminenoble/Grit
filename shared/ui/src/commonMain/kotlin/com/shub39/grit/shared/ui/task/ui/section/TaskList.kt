@@ -88,6 +88,7 @@ import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.core.tasks.CategoryColors
 import com.shub39.grit.core.tasks.Task
+import com.shub39.grit.core.tasks.TaskStep
 import com.shub39.grit.shared.ui.LocalWindowSizeClass
 import com.shub39.grit.shared.ui.components.Empty
 import com.shub39.grit.shared.ui.components.GritDialog
@@ -103,6 +104,7 @@ import com.shub39.grit.shared.ui.task.ui.component.CategoryUpsertSheet
 import com.shub39.grit.shared.ui.task.ui.component.TaskCard
 import com.shub39.grit.shared.ui.task.ui.component.TaskUpsertSheet
 import com.shub39.grit.shared.ui.theme.GritRadius
+import com.shub39.grit.shared.ui.theme.accentVariant
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
 import com.shub39.grit.shared.ui.theme.flexFontRounded
 import com.shub39.grit.shared.ui.theme.parseAccentColor
@@ -284,7 +286,7 @@ fun TaskList(state: TaskState, onAction: (TaskAction) -> Unit, onEditCategories:
                                 categoryId = category.id,
                                 title = title,
                                 description = description,
-                                steps = steps,
+                                steps = steps.map { TaskStep(it) },
                                 index = state.tasks[category]?.size ?: 0,
                                 status = false,
                                 reminder = null,
@@ -490,8 +492,14 @@ private fun CompactTasksView(
             val isTodayView = categoryId == TODAY_VIEW_ID
             val category = state.tasks.keys.firstOrNull { it.id == categoryId }
             if (isTodayView || category != null) {
+                // Categories flagged hideCompleted keep their done tasks out of every view.
+                val hiddenDoneCategoryIds =
+                    remember(state.tasks.keys) {
+                        state.tasks.keys.filter { it.hideCompleted }.map { it.id }.toSet()
+                    }
                 val sourceTasks =
-                    if (isTodayView) state.todayTasks else state.tasks[category] ?: emptyList()
+                    (if (isTodayView) state.todayTasks else state.tasks[category] ?: emptyList())
+                        .filter { !(it.status && it.categoryId in hiddenDoneCategoryIds) }
                 val accentByCategory =
                     remember(state.tasks.keys) {
                         state.tasks.keys.associate { it.id to parseAccentColor(it.color) }
@@ -570,7 +578,10 @@ private fun CompactTasksView(
                                 is24Hr = state.is24Hour,
                                 shape = cardShape,
                                 onDetailsClick = { onEditTask(task) },
-                                accent = accentByCategory[task.categoryId],
+                                accent = accentByCategory[task.categoryId]?.accentVariant(index),
+                                onStepsChange = {
+                                    onAction(TaskAction.UpsertTask(task.copy(steps = it)))
+                                },
                                 modifier =
                                     Modifier.fillMaxWidth()
                                         .clip(cardShape)
@@ -644,7 +655,10 @@ private fun CompactTasksView(
                                 is24Hr = state.is24Hour,
                                 shape = cardShape,
                                 onDetailsClick = { onEditTask(task) },
-                                accent = accentByCategory[task.categoryId],
+                                accent = accentByCategory[task.categoryId]?.accentVariant(index),
+                                onStepsChange = {
+                                    onAction(TaskAction.UpsertTask(task.copy(steps = it)))
+                                },
                                 modifier =
                                     Modifier.fillMaxWidth().clip(cardShape).clickable {
                                         if (!isReorderMode) {
@@ -679,7 +693,19 @@ private fun ExpandedTasksView(
             index = -1,
             color = CategoryColors.GRAY.color,
         )
-    val tasksAndCategories = listOf(todayCategory to state.todayTasks) + state.tasks.toList()
+    // Categories flagged hideCompleted keep their done tasks out of every view.
+    val hiddenDoneCategoryIds =
+        remember(state.tasks.keys) {
+            state.tasks.keys.filter { it.hideCompleted }.map { it.id }.toSet()
+        }
+    val tasksAndCategories =
+        listOf(
+            todayCategory to
+                state.todayTasks.filter { !(it.status && it.categoryId in hiddenDoneCategoryIds) }
+        ) +
+            state.tasks.map { (cat, tasks) ->
+                cat to if (cat.hideCompleted) tasks.filter { !it.status } else tasks
+            }
     val accentByCategory =
         remember(state.tasks.keys) {
             state.tasks.keys.associate { it.id to parseAccentColor(it.color) }
@@ -766,7 +792,10 @@ private fun ExpandedTasksView(
                             is24Hr = state.is24Hour,
                             shape = cardShape,
                             onDetailsClick = { onEditTask(task) },
-                            accent = accentByCategory[task.categoryId],
+                            accent = accentByCategory[task.categoryId]?.accentVariant(index),
+                            onStepsChange = {
+                                onAction(TaskAction.UpsertTask(task.copy(steps = it)))
+                            },
                             modifier =
                                 Modifier.animateItem().fillMaxWidth().clip(cardShape).clickable {
                                     val updatedTask = task.copy(status = !task.status)
@@ -812,7 +841,10 @@ private fun ExpandedTasksView(
                                 is24Hr = state.is24Hour,
                                 shape = cardShape,
                                 onDetailsClick = { onEditTask(task) },
-                                accent = accentByCategory[task.categoryId],
+                                accent = accentByCategory[task.categoryId]?.accentVariant(index),
+                                onStepsChange = {
+                                    onAction(TaskAction.UpsertTask(task.copy(steps = it)))
+                                },
                                 modifier =
                                     Modifier.fillMaxWidth().clip(cardShape).clickable {
                                         val updatedTask = task.copy(status = !task.status)

@@ -94,9 +94,21 @@ fun Task.toTaskSchema(): TaskSchema {
 }
 
 fun CategorySchema.toCategory(): Category {
-    return Category(id = id, name = name, index = index, color = color)
+    return Category(
+        id = id,
+        name = name,
+        index = index,
+        color = color,
+        hideCompleted = hideCompleted,
+    )
 }
 
 fun Category.toCategorySchema(): CategorySchema {
-    return CategorySchema(id = id, name = name, index = index, color = color)
+    return CategorySchema(
+        id = id,
+        name = name,
+        index = index,
+        color = color,
+        hideCompleted = hideCompleted,
+    )
 }

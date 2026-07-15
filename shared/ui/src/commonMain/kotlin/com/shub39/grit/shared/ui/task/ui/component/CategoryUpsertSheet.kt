@@ -56,6 +56,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.shared.ui.components.ColorPickerDialog
+import com.shub39.grit.shared.ui.components.ExpressiveSwitch
 import com.shub39.grit.shared.ui.components.GritBottomSheet
 import com.shub39.grit.shared.ui.components.detachedItemShape
 import com.shub39.grit.shared.ui.components.listItemColors
@@ -160,6 +161,25 @@ fun CategoryUpsertSheet(
                                         ?: MaterialTheme.colorScheme.primaryContainer
                                 )
                                 .clickable { colorPickerDialog = true }
+                    )
+                },
+            )
+
+            // Completed tasks in this category stay hidden in lists and widgets
+            ListItem(
+                colors = listItemColors(),
+                modifier = Modifier.clip(detachedItemShape()),
+                leadingContent = {
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.check_circle),
+                        contentDescription = null,
+                    )
+                },
+                headlineContent = { Text(text = stringResource(Res.string.hide_completed)) },
+                trailingContent = {
+                    ExpressiveSwitch(
+                        checked = newCategory.hideCompleted,
+                        onCheckedChange = { newCategory = newCategory.copy(hideCompleted = it) },
                     )
                 },
             )
