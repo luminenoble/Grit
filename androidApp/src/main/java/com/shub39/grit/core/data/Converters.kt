@@ -63,6 +63,16 @@ object Converters {
         return date.toEpochDays()
     }
 
+    @ColumnTypeConverter
+    fun nullableDayFromTimestamp(value: Long?): LocalDate? {
+        return value?.let { LocalDate.fromEpochDays(it) }
+    }
+
+    @ColumnTypeConverter
+    fun nullableDayToTimestamp(date: LocalDate?): Long? {
+        return date?.toEpochDays()
+    }
+
     // JSON keeps step text safe regardless of separators or special characters.
     @ColumnTypeConverter
     fun stringListToJson(value: List<String>): String {

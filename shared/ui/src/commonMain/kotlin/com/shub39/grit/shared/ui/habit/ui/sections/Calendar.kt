@@ -85,7 +85,13 @@ fun Calendar(
     val windowSizeClass = LocalWindowSizeClass.current
     val today = LocalDate.now()
     val doneDates =
-        remember(currentHabit.statuses) { currentHabit.statuses.map { it.date }.toSet() }
+        remember(currentHabit.statuses) {
+            currentHabit.statuses.filter { !it.skipped }.map { it.date }.toSet()
+        }
+    val skippedDates =
+        remember(currentHabit.statuses) {
+            currentHabit.statuses.filter { it.skipped }.map { it.date }.toSet()
+        }
     val edgeWeeks = listOf(state.startingDay, daysStartingFrom(state.startingDay).last())
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -137,6 +143,7 @@ fun Calendar(
                         state = state,
                         modifier = modifier,
                         doneDates = doneDates,
+                        skippedDates = skippedDates,
                         currentHabit = currentHabit,
                         edgeWeeks = edgeWeeks,
                         onDateClick = onDateClick,
@@ -147,6 +154,7 @@ fun Calendar(
                     MonthlyCalendar(
                         state = state,
                         doneDates = doneDates,
+                        skippedDates = skippedDates,
                         today = today,
                         currentHabit = currentHabit,
                         edgeWeeks = edgeWeeks,
@@ -164,6 +172,7 @@ private fun YearlyCalendar(
     state: HabitState,
     modifier: Modifier,
     doneDates: Set<LocalDate>,
+    skippedDates: Set<LocalDate>,
     currentHabit: HabitWithAnalytics,
     onDateClick: (Habit, LocalDate) -> Unit,
     edgeWeeks: List<DayOfWeek>,
@@ -210,6 +219,7 @@ private fun YearlyCalendar(
                 YearlyCalendarDayContent(
                     day = day,
                     doneDates = doneDates,
+                    skippedDates = skippedDates,
                     today = today,
                     habitDays = currentHabit.habit.days,
                     edgeWeeks = edgeWeeks,
@@ -224,6 +234,7 @@ private fun YearlyCalendar(
 private fun MonthlyCalendar(
     state: HabitState,
     doneDates: Set<LocalDate>,
+    skippedDates: Set<LocalDate>,
     today: LocalDate,
     currentHabit: HabitWithAnalytics,
     edgeWeeks: List<DayOfWeek>,
@@ -248,6 +259,7 @@ private fun MonthlyCalendar(
             MonthlyCalendarDayContent(
                 day = day,
                 doneDates = doneDates,
+                skippedDates = skippedDates,
                 today = today,
                 habitDays = currentHabit.habit.days,
                 edgeWeeks = edgeWeeks,

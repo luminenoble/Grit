@@ -237,6 +237,30 @@ fun HabitCard(
                             )
                         }
                     }
+
+                    habitWithAnalytics.habit.deadline?.let { deadline ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.calendar_month),
+                                contentDescription = null,
+                                modifier = Modifier.size(12.dp),
+                                tint =
+                                    if (deadline < today) semantic.warning
+                                    else cardContent.copy(alpha = 0.75f),
+                            )
+
+                            Text(
+                                text = deadline.toFormattedString(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color =
+                                    if (deadline < today) semantic.warning
+                                    else cardContent.copy(alpha = 0.75f),
+                            )
+                        }
+                    }
                 }
             },
             trailingContent = {
@@ -297,7 +321,10 @@ fun HabitCard(
                 contentPadding = PaddingValues(8.dp),
                 state = weekState,
                 dayContent = { weekDay ->
-                    val done = habitWithAnalytics.statuses.any { it.date == weekDay.date }
+                    val status =
+                        habitWithAnalytics.statuses.firstOrNull { it.date == weekDay.date }
+                    val done = status != null && !status.skipped
+                    val skipped = status?.skipped == true
                     val validDay =
                         weekDay.date <= today &&
                             weekDay.date.dayOfWeek in habitWithAnalytics.habit.days
@@ -309,11 +336,11 @@ fun HabitCard(
                                     if (done) {
                                         val donePrevious =
                                             habitWithAnalytics.statuses.any {
-                                                it.date == weekDay.date.minusDays(1)
+                                                it.date == weekDay.date.minusDays(1) && !it.skipped
                                             }
                                         val doneAfter =
                                             habitWithAnalytics.statuses.any {
-                                                it.date == weekDay.date.plusDays(1)
+                                                it.date == weekDay.date.plusDays(1) && !it.skipped
                                             }
                                         val shape =
                                             when {
@@ -336,6 +363,13 @@ fun HabitCard(
                                             }
 
                                         Modifier.background(color = doneColor, shape = shape)
+                                    } else if (skipped) {
+                                        // Holiday/skip placeholder: neutral outlined pill.
+                                        Modifier.background(
+                                            color =
+                                                MaterialTheme.colorScheme.surfaceContainerHighest,
+                                            shape = RoundedCornerShape(20.dp),
+                                        )
                                     } else Modifier
                                 )
                                 .clip(shape = RoundedCornerShape(20.dp))

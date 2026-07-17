@@ -102,22 +102,34 @@ class HabitRepository(
             .combine(habitStatuses) { habitsFlow, habitStatusesFlow ->
                 habitsFlow.map { habit ->
                     val habitStatusesForHabit = habitStatusesFlow.filter { it.habitId == habit.id }
-                    val dates = habitStatusesForHabit.map { it.date }
+                    // Completions drive analytics; skipped (holiday) marks are neutral.
+                    val completions = habitStatusesForHabit.filter { !it.skipped }
+                    val dates = completions.map { it.date }
+                    val skippedDays = habitStatusesForHabit.filter { it.skipped }.map { it.date }.toSet()
 
                     HabitWithAnalytics(
                         habit = habit,
                         statuses = habitStatusesForHabit,
                         currentStreak =
-                            countCurrentStreak(dates = dates, eligibleWeekdays = habit.days),
-                        bestStreak = countBestStreak(dates = dates, eligibleWeekdays = habit.days),
+                            countCurrentStreak(
+                                dates = dates,
+                                eligibleWeekdays = habit.days,
+                                skippedDays = skippedDays,
+                            ),
+                        bestStreak =
+                            countBestStreak(
+                                dates = dates,
+                                eligibleWeekdays = habit.days,
+                                skippedDays = skippedDays,
+                            ),
                         weeklyComparisonData =
                             prepareLineChartData(
                                 firstDay = firstDayOfWeek.value,
-                                habitStatuses = habitStatusesForHabit,
+                                habitStatuses = completions,
                             ),
                         weekDayFrequencyData = prepareWeekDayFrequencyData(dates = dates),
                         startedDaysAgo = habit.time.date.daysUntil(LocalDate.now()).toLong(),
-                        consistency = calculateConsistency(dates, habit.days),
+                        consistency = calculateConsistency(dates, habit.days, skippedDays),
                     )
                 }
             }
@@ -127,7 +139,9 @@ class HabitRepository(
     override fun getCompletedHabitIds(): Flow<List<Long>> {
         return habitStatuses
             .map { habitStatuses ->
-                habitStatuses.filter { it.date == LocalDate.now() }.map { it.habitId }
+                habitStatuses
+                    .filter { it.date == LocalDate.now() && !it.skipped }
+                    .map { it.habitId }
             }
             .flowOn(Dispatchers.Default)
     }
@@ -137,9 +151,11 @@ class HabitRepository(
             .combine(habitStatuses) { habitsFlow, habitStatusesFlow ->
                 val habitConsistencies =
                     habitsFlow.map { habit ->
-                        val dates =
-                            habitStatusesFlow.filter { it.habitId == habit.id }.map { it.date }
-                        habit.title to calculateConsistency(dates, habit.days)
+                        val statusesForHabit = habitStatusesFlow.filter { it.habitId == habit.id }
+                        val dates = statusesForHabit.filter { !it.skipped }.map { it.date }
+                        val skippedDays =
+                            statusesForHabit.filter { it.skipped }.map { it.date }.toSet()
+                        habit.title to calculateConsistency(dates, habit.days, skippedDays)
                     }
 
                 val consistencies = habitConsistencies.map { it.second }
@@ -153,10 +169,12 @@ class HabitRepository(
                         .take(3)
                         .map { HabitRanking(it.first, it.second) }
 
+                val completions = habitStatusesFlow.filter { !it.skipped }
+
                 OverallAnalytics(
-                    heatMapData = prepareHeatMapData(habitStatusesFlow),
+                    heatMapData = prepareHeatMapData(completions),
                     weekDayFrequencyData =
-                        prepareWeekDayFrequencyData(habitStatusesFlow.map { it.date }),
+                        prepareWeekDayFrequencyData(completions.map { it.date }),
                     consistency = overallConsistency,
                     topHabits = topHabits,
                 )
@@ -167,7 +185,8 @@ class HabitRepository(
     override fun getHabitsWithStatus(): Flow<List<Pair<Habit, Boolean>>> {
         return habits.combine(habitStatuses) { habitsFlow, statusFlow ->
             habitsFlow.map { habit ->
-                val dates = statusFlow.filter { it.habitId == habit.id }.map { it.date }
+                val dates =
+                    statusFlow.filter { it.habitId == habit.id && !it.skipped }.map { it.date }
 
                 habit to dates.any { it == LocalDate.now() }
             }
@@ -191,7 +210,7 @@ class HabitRepository(
     }
 
     override suspend fun getCompletedHabitsForDate(date: LocalDate): List<Habit> {
-        val completedStatuses = habitStatusDao.getCompletedStatuses(date)
+        val completedStatuses = habitStatusDao.getCompletedStatuses(date).filter { !it.skipped }
         return completedStatuses.mapNotNull { habitDao.getHabitById(it.habitId)?.toHabit() }
     }
 }

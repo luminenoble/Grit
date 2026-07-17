@@ -19,4 +19,16 @@ package com.shub39.grit.core.habits
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
-@Serializable data class HabitStatus(val id: Long = 0, val habitId: Long, val date: LocalDate)
+/**
+ * A single mark against a habit on a [date].
+ *
+ * @property skipped when true this is a holiday/rest placeholder rather than a completion; skipped
+ *   days do not count as completions but are neutral for streaks (they never break one).
+ */
+@Serializable
+data class HabitStatus(
+    val id: Long = 0,
+    val habitId: Long,
+    val date: LocalDate,
+    val skipped: Boolean = false,
+)

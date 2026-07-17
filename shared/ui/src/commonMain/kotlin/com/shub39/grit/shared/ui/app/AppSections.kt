@@ -31,6 +31,8 @@ sealed interface AppSections : NavKey {
 
     @Serializable data object TaskPages : AppSections
 
+    @Serializable data object StatsPages : AppSections
+
     @Serializable data object SettingsPages : AppSections
 
     companion object {
@@ -39,17 +41,20 @@ sealed interface AppSections : NavKey {
                 polymorphic(NavKey::class) {
                     subclass(TaskPages::class, TaskPages.serializer())
                     subclass(HabitPages::class, HabitPages.serializer())
+                    subclass(StatsPages::class, StatsPages.serializer())
                     subclass(SettingsPages::class, SettingsPages.serializer())
                 }
             }
         }
 
-        val mainRoutes: List<AppSections> = listOf(TaskPages, HabitPages, SettingsPages)
+        val mainRoutes: List<AppSections> =
+            listOf(TaskPages, HabitPages, StatsPages, SettingsPages)
 
         fun AppSections.toStringRes(): StringResource {
             return when (this) {
                 HabitPages -> Res.string.habits
                 TaskPages -> Res.string.tasks
+                StatsPages -> Res.string.statistics
                 SettingsPages -> Res.string.settings
             }
         }
@@ -58,6 +63,7 @@ sealed interface AppSections : NavKey {
             return when (this) {
                 HabitPages -> Res.drawable.alarm
                 TaskPages -> Res.drawable.check_list
+                StatsPages -> Res.drawable.analytics
                 SettingsPages -> Res.drawable.settings
             }
         }

@@ -20,6 +20,7 @@ import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.PrimaryKey
 import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 
 @Entity(tableName = "habit_index")
@@ -33,4 +34,5 @@ data class HabitEntity(
     @ColumnInfo(name = "reminder", defaultValue = "1") val reminder: Boolean,
     @ColumnInfo(defaultValue = "[]") val steps: List<String> = emptyList(),
     @ColumnInfo(defaultValue = "") val color: String = "",
+    @ColumnInfo(name = "deadline", defaultValue = "NULL") val deadline: LocalDate? = null,
 )

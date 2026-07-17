@@ -39,6 +39,7 @@ fun Habit.toHabitSchema(): HabitSchema {
         reminder = reminder,
         steps = steps,
         color = color,
+        deadline = deadline?.let { Converters.dayToTimestamp(it) },
     )
 }
 
@@ -54,15 +55,26 @@ fun HabitSchema.toHabit(): Habit {
         reminder = reminder,
         steps = steps,
         color = color,
+        deadline = deadline?.let { Converters.dayFromTimestamp(it) },
     )
 }
 
 fun HabitStatus.toHabitStatusSchema(): HabitStatusSchema {
-    return HabitStatusSchema(id = id, habitId = habitId, date = Converters.dayToTimestamp(date))
+    return HabitStatusSchema(
+        id = id,
+        habitId = habitId,
+        date = Converters.dayToTimestamp(date),
+        skipped = skipped,
+    )
 }
 
 fun HabitStatusSchema.toHabitStatus(): HabitStatus {
-    return HabitStatus(id = id, habitId = habitId, date = Converters.dayFromTimestamp(date))
+    return HabitStatus(
+        id = id,
+        habitId = habitId,
+        date = Converters.dayFromTimestamp(date),
+        skipped = skipped,
+    )
 }
 
 fun TaskSchema.toTask(): Task {

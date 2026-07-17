@@ -43,6 +43,8 @@ import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,6 +56,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
@@ -77,6 +80,11 @@ import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.habits.Habit
 import com.shub39.grit.core.now
 import com.shub39.grit.core.toFormattedString
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import com.shub39.grit.shared.ui.ai.createTaskPlanner
 import com.shub39.grit.shared.ui.components.ColorPickerDialog
 import com.shub39.grit.shared.ui.components.ExpressiveSwitch
@@ -137,6 +145,7 @@ fun HabitUpsertSheetContent(
 
     var timePickerDialog by remember { mutableStateOf(false) }
     var colorPickerDialog by remember { mutableStateOf(false) }
+    var deadlinePickerDialog by remember { mutableStateOf(false) }
 
     // Steps get a stable local uid so drag reorder and deletion animate correctly.
     var stepUidCounter by remember { mutableStateOf(newHabit.steps.size) }
@@ -417,6 +426,37 @@ fun HabitUpsertSheetContent(
                 )
             }
 
+            // Optional target/deadline date for establishing the habit.
+            item {
+                ListItem(
+                    colors = listItemColors(),
+                    modifier =
+                        Modifier.clip(detachedItemShape()).clickable { deadlinePickerDialog = true },
+                    leadingContent = {
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.calendar_month),
+                            contentDescription = null,
+                        )
+                    },
+                    headlineContent = { Text(text = stringResource(Res.string.deadline)) },
+                    supportingContent = {
+                        newHabit.deadline?.let { Text(text = it.toFormattedString()) }
+                    },
+                    trailingContent = {
+                        ExpressiveSwitch(
+                            checked = newHabit.deadline != null,
+                            onCheckedChange = { checked ->
+                                if (checked) {
+                                    deadlinePickerDialog = true
+                                } else {
+                                    updateHabit(newHabit.copy(deadline = null))
+                                }
+                            },
+                        )
+                    },
+                )
+            }
+
             item {
                 Spacer(modifier = Modifier.height(4.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -577,6 +617,17 @@ fun HabitUpsertSheetContent(
             )
         }
 
+        if (deadlinePickerDialog) {
+            DeadlinePickerDialog(
+                initialDate = newHabit.deadline,
+                onDismiss = { deadlinePickerDialog = false },
+                onConfirm = {
+                    updateHabit(newHabit.copy(deadline = it))
+                    deadlinePickerDialog = false
+                },
+            )
+        }
+
         if (timePickerDialog) {
             val timePickerState =
                 rememberTimePickerState(
@@ -606,6 +657,45 @@ fun HabitUpsertSheetContent(
                 },
             )
         }
+    }
+}
+
+@OptIn(ExperimentalTime::class)
+@Composable
+private fun DeadlinePickerDialog(
+    initialDate: LocalDate?,
+    onDismiss: () -> Unit,
+    onConfirm: (LocalDate) -> Unit,
+) {
+    val datePickerState =
+        rememberDatePickerState(
+            initialSelectedDateMillis =
+                initialDate?.let {
+                    it.toEpochDays() * 24L * 60L * 60L * 1000L
+                }
+        )
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val date =
+                            Instant.fromEpochMilliseconds(millis)
+                                .toLocalDateTime(TimeZone.UTC)
+                                .date
+                        onConfirm(date)
+                    }
+                },
+                enabled = datePickerState.selectedDateMillis != null,
+            ) {
+                Text(stringResource(Res.string.done))
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.cancel)) } },
+    ) {
+        DatePicker(state = datePickerState)
     }
 }
 

@@ -14,6 +14,34 @@
 [<img alt="Get it on izzyondroid" src="badges/izzyondroid.png" width="180px">](https://apt.izzysoft.de/fdroid/index/apk/com.shub39.grit)
 [<img alt="Get it on fdroid" src="badges/fdroid.png" width="180px">](https://f-droid.org/en/packages/com.shub39.grit/)
 
+# 本分支 DIY 定制说明（中文）
+
+> 本仓库在原版 [Grit](https://github.com/shub39/Grit) 基础上做了一系列个人向的定制与优化，
+> 以下按主题简要记录整个 DIY 过程。
+
+## 颜色优化
+- 为 App 与桌面小组件引入 **液态玻璃（liquid glass）** 视觉风格，半透明磨砂 + 渐变，界面更通透。
+- 支持 **每个分类 / 每个习惯的强调色（accent color）**，并按列表位置生成深浅变体（shade variants），避免整块纯色。
+
+## UI 优化
+- 新增 **「今天」视图**：跨分类聚合当天要做的任务。
+- 底部导航改为仿 iOS 26 的液态玻璃胶囊，选中项展开显示文字。
+- 修复玻璃修饰符导致的底部弹窗（ModalBottomSheet）异常；小组件支持自定义文字大小。
+
+## 逻辑细化
+- 任务支持 **描述、可勾选的子步骤（steps）**；分类支持「隐藏已完成」。
+- 习惯支持 **子步骤**，小组件可限定分类范围。
+
+## AI
+- 接入 **DeepSeek**，可对任务 / 习惯进行 **AI 智能分解**，一键生成步骤（密钥经 `local.properties` → `BuildConfig` 注入）。
+
+## 本次新增的三项任务
+1. **任务详情独立成页**：点击任务详情不再从底部「拉起」弹窗，而是打开一个独立界面；且新界面 **焦点不落在输入框**，避免一进入就弹出键盘。
+2. **习惯截止日期 + 假日跳过**：习惯新增可选 **截止日期**；打卡状态由「完成 / 未完成」两态扩展为 **完成 → 跳过（假日占位）→ 未完成** 三态循环。跳过日在连续打卡（streak）与连贯性统计中视为中性，不会中断连击、也不计入分母。
+3. **独立统计界面**：在导航栏新增与「设置」同级的 **统计** 界面，可选择 **单个习惯 / 所有习惯** 查看热力图与连贯性，并可按 **单个分类 / 所有分类** 查看任务完成率。
+
+> 数据层：习惯数据库升级至 schema v7（`habit_status.skipped`、`habit_index.deadline` 两列，均带默认值，走 Room AutoMigration 6→7），备份/恢复格式同步兼容。
+
 # Screenshots
 
 | ![Image 1](fastlane/metadata/android/en-US/images/phoneScreenshots/1.png) | ![Image 2](fastlane/metadata/android/en-US/images/phoneScreenshots/2.png) |

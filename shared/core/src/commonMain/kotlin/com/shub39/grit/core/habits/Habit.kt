@@ -17,6 +17,7 @@
 package com.shub39.grit.core.habits
 
 import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
@@ -33,4 +34,6 @@ data class Habit(
     val steps: List<String> = emptyList(),
     /** Accent color as a hex string ("#AARRGGBB"); empty means theme default. */
     val color: String = "",
+    /** Optional target date by which the habit should be established; null means open-ended. */
+    val deadline: LocalDate? = null,
 )

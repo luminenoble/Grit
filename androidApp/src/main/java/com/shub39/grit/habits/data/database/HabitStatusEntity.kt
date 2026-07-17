@@ -16,6 +16,7 @@
  */
 package com.shub39.grit.habits.data.database
 
+import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.ForeignKey
 import androidx.room3.Index
@@ -39,4 +40,5 @@ data class HabitStatusEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val habitId: Long,
     val date: LocalDate,
+    @ColumnInfo(name = "skipped", defaultValue = "0") val skipped: Boolean = false,
 )

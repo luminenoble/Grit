@@ -85,6 +85,7 @@ fun YearlyCalendarDayContent(
     habitDays: Set<DayOfWeek>,
     edgeWeeks: List<DayOfWeek>,
     modifier: Modifier = Modifier,
+    skippedDates: Set<LocalDate> = emptySet(),
     style: TextStyle =
         MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontFamily = flexFontRounded()),
     onDateClick: (LocalDate) -> Unit,
@@ -92,6 +93,7 @@ fun YearlyCalendarDayContent(
     if (day.position != DayPosition.MonthDate) return
 
     val done = day.date in doneDates
+    val skipped = day.date in skippedDates
     val validDate = day.date <= today && day.date.dayOfWeek in habitDays
 
     val donePrevious = day.date.minusDays(1) in doneDates
@@ -155,6 +157,15 @@ fun YearlyCalendarDayContent(
                     )
                 }
             }
+        } else if (skipped) {
+            Box(
+                modifier =
+                    Modifier.matchParentSize()
+                        .background(
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            shape = CircleShape,
+                        )
+            )
         } else if (validDate) {
             Box(
                 modifier =
@@ -177,12 +188,14 @@ fun MonthlyCalendarDayContent(
     edgeWeeks: List<DayOfWeek>,
     onDateClick: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
+    skippedDates: Set<LocalDate> = emptySet(),
     height: Dp = 40.dp,
     style: TextStyle = MaterialTheme.typography.bodyLarge.copy(fontFamily = flexFontRounded()),
 ) {
     if (day.position != DayPosition.MonthDate) return
 
     val done = day.date in doneDates
+    val skipped = day.date in skippedDates
     val validDate = day.date <= today && day.date.dayOfWeek in habitDays
 
     val donePrevious = day.date.minusDays(1) in doneDates
@@ -250,6 +263,22 @@ fun MonthlyCalendarDayContent(
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                 }
+            }
+        } else if (skipped) {
+            Box(
+                modifier =
+                    Modifier.fillMaxSize()
+                        .background(
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            shape = CircleShape,
+                        ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = day.date.day.toString(),
+                    style = style,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                )
             }
         } else {
             Text(

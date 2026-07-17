@@ -88,4 +88,16 @@
     <string name="calendar">日历</string>
     <string name="monthly">每月</string>
     <string name="yearly">每年</string>
+    <string name="deadline">截止日期</string>
+    <string name="skip">跳过</string>
+    <string name="skipped">已跳过</string>
+    <string name="statistics">统计</string>
+    <string name="all_habits">所有习惯</string>
+    <string name="all_categories">所有分类</string>
+    <string name="habits_stats">习惯统计</string>
+    <string name="tasks_stats">任务统计</string>
+    <string name="completion_rate">完成率</string>
+    <string name="completed_of_total">已完成 %1$d / %2$d</string>
+    <string name="task_details">任务详情</string>
+    <string name="pending">待办</string>
 </resources>

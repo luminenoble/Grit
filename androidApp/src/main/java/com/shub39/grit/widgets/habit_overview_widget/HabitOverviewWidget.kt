@@ -99,6 +99,12 @@ class HabitOverviewWidget : GlanceAppWidget(), KoinComponent {
                                         date = LocalDate.now(),
                                     )
                                 } else {
+                                    // Clear any existing (e.g. skipped) mark first so the day
+                                    // ends up with a single completed row.
+                                    repo.deleteHabitStatus(
+                                        habitId = habitWithStatus.first.id,
+                                        date = LocalDate.now(),
+                                    )
                                     repo.insertHabitStatus(
                                         habitStatus =
                                             HabitStatus(

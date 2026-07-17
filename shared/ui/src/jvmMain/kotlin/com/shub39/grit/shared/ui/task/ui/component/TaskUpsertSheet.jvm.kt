@@ -35,6 +35,8 @@ actual fun TaskUpsertSheet(
     is24Hr: Boolean,
     modifier: Modifier,
     isEditSheet: Boolean,
+    fullScreen: Boolean,
+    autoFocusTitle: Boolean,
 ) {
     var showDateTimePicker by remember { mutableStateOf(false) }
 
@@ -51,5 +53,7 @@ actual fun TaskUpsertSheet(
         updateDateTimePickerVisibility = { showDateTimePicker = it },
         onPermissionRequest = {},
         modifier = modifier,
+        fullScreen = fullScreen,
+        autoFocusTitle = autoFocusTitle,
     )
 }

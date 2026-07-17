@@ -20,9 +20,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -38,6 +40,7 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialShapes
@@ -105,6 +108,10 @@ expect fun TaskUpsertSheet(
     is24Hr: Boolean,
     modifier: Modifier = Modifier,
     isEditSheet: Boolean = false,
+    /** Render as a full navigable screen (with a top bar) instead of a bottom sheet. */
+    fullScreen: Boolean = false,
+    /** Auto-focus the title field (and raise the keyboard) when shown. */
+    autoFocusTitle: Boolean = true,
 )
 
 @Composable
@@ -121,6 +128,8 @@ fun TaskUpsertSheetContent(
     updateDateTimePickerVisibility: (Boolean) -> Unit,
     onPermissionRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    fullScreen: Boolean = false,
+    autoFocusTitle: Boolean = true,
 ) {
     var newTask by remember { mutableStateOf(task) }
 
@@ -146,37 +155,40 @@ fun TaskUpsertSheetContent(
             newTask.reminder!! > LocalDateTime.now()
         } else true
 
-    GritBottomSheet(
-        modifier = modifier.imePadding(),
-        padding = 0.dp,
-        onDismissRequest = onDismissRequest,
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier =
-                    Modifier.size(48.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = MaterialShapes.Pill.toShape(),
-                        ),
+    val sheetContent: @Composable ColumnScope.() -> Unit = {
+        if (!fullScreen) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             ) {
-                Icon(
-                    imageVector =
-                        vectorResource(if (isEditSheet) Res.drawable.edit else Res.drawable.add),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier =
+                        Modifier.size(48.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = MaterialShapes.Pill.toShape(),
+                            ),
+                ) {
+                    Icon(
+                        imageVector =
+                            vectorResource(if (isEditSheet) Res.drawable.edit else Res.drawable.add),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+
+                Text(
+                    text =
+                        stringResource(
+                            if (isEditSheet) Res.string.edit_task else Res.string.add_task
+                        ),
+                    style =
+                        MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = flexFontEmphasis()
+                        ),
                 )
             }
-
-            Text(
-                text =
-                    stringResource(if (isEditSheet) Res.string.edit_task else Res.string.add_task),
-                style = MaterialTheme.typography.headlineSmall.copy(fontFamily = flexFontEmphasis()),
-            )
         }
 
         val sheetListState = rememberLazyListState()
@@ -215,10 +227,12 @@ fun TaskUpsertSheetContent(
                 val keyboardController = LocalSoftwareKeyboardController.current
                 val focusRequester = remember { FocusRequester() }
 
-                LaunchedEffect(Unit) {
-                    delay(400.milliseconds)
-                    focusRequester.requestFocus()
-                    keyboardController?.show()
+                LaunchedEffect(autoFocusTitle) {
+                    if (autoFocusTitle) {
+                        delay(400.milliseconds)
+                        focusRequester.requestFocus()
+                        keyboardController?.show()
+                    }
                 }
 
                 OutlinedTextField(
@@ -472,6 +486,42 @@ fun TaskUpsertSheetContent(
                     }
                 }
             }
+        }
+    }
+
+    if (fullScreen) {
+        Column(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .imePadding()
+                    .background(MaterialTheme.colorScheme.background)
+        ) {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(Res.string.task_details),
+                        fontFamily = flexFontEmphasis(),
+                    )
+                },
+                navigationIcon = {
+                    FilledTonalIconButton(onClick = onDismissRequest) {
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.nav_arrow_back),
+                            contentDescription = "Navigate Back",
+                        )
+                    }
+                },
+            )
+            sheetContent()
+        }
+    } else {
+        GritBottomSheet(
+            modifier = modifier.imePadding(),
+            padding = 0.dp,
+            onDismissRequest = onDismissRequest,
+        ) {
+            sheetContent()
         }
     }
 

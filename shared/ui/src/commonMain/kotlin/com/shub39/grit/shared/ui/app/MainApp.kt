@@ -58,6 +58,7 @@ import com.shub39.grit.shared.ui.app.AppSections.Companion.toStringRes
 import com.shub39.grit.shared.ui.habit.ui.HabitsGraph
 import com.shub39.grit.shared.ui.navigation.fadeTransitionMetadata
 import com.shub39.grit.shared.ui.setting.ui.SettingsGraph
+import com.shub39.grit.shared.ui.stats.StatsPage
 import com.shub39.grit.shared.ui.task.ui.TasksPage
 import com.shub39.grit.shared.ui.theme.LiquidGlassDefaults
 import com.shub39.grit.shared.ui.theme.liquidGlass
@@ -135,6 +136,18 @@ fun MainApp(state: MainAppState, onNavigateToPaywall: () -> Unit) {
                                     onNavigateToPaywall = onNavigateToPaywall,
                                 )
                             }
+
+                            entry<AppSections.StatsPages>(metadata = fadeTransitionMetadata()) {
+                                val hvm: HabitViewModel = koinViewModel()
+                                val tvm: TasksViewModel = koinViewModel()
+                                val habitsPageState by hvm.state.collectAsStateWithLifecycle()
+                                val taskPageState by tvm.state.collectAsStateWithLifecycle()
+
+                                StatsPage(
+                                    habitState = habitsPageState,
+                                    taskState = taskPageState,
+                                )
+                            }
                         },
                 )
             }
@@ -185,6 +198,18 @@ fun MainApp(state: MainAppState, onNavigateToPaywall: () -> Unit) {
                                     onAction = hvm::onAction,
                                     isUserSubscribed = state.isUserSubscribed,
                                     onNavigateToPaywall = onNavigateToPaywall,
+                                )
+                            }
+
+                            entry<AppSections.StatsPages>(metadata = fadeTransitionMetadata()) {
+                                val hvm: HabitViewModel = koinViewModel()
+                                val tvm: TasksViewModel = koinViewModel()
+                                val habitsPageState by hvm.state.collectAsStateWithLifecycle()
+                                val taskPageState by tvm.state.collectAsStateWithLifecycle()
+
+                                StatsPage(
+                                    habitState = habitsPageState,
+                                    taskState = taskPageState,
                                 )
                             }
                         },

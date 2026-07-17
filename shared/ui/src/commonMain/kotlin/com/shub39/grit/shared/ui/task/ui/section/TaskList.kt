@@ -120,7 +120,12 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 private const val TODAY_VIEW_ID = -1L
 
 @Composable
-fun TaskList(state: TaskState, onAction: (TaskAction) -> Unit, onEditCategories: () -> Unit) =
+fun TaskList(
+    state: TaskState,
+    onAction: (TaskAction) -> Unit,
+    onEditCategories: () -> Unit,
+    onOpenTaskDetails: (Task) -> Unit,
+) =
     PageFill {
         val windowSizeClass = LocalWindowSizeClass.current
 
@@ -129,7 +134,6 @@ fun TaskList(state: TaskState, onAction: (TaskAction) -> Unit, onEditCategories:
         var showDeleteDialog by remember { mutableStateOf(false) }
         var showAiSheet by remember { mutableStateOf(false) }
         var editState by remember { mutableStateOf(false) }
-        var editTask: Task? by remember { mutableStateOf(null) }
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -164,14 +168,14 @@ fun TaskList(state: TaskState, onAction: (TaskAction) -> Unit, onEditCategories:
                     state = state,
                     isReorderMode = editState,
                     onAction = onAction,
-                    onEditTask = { editTask = it },
+                    onEditTask = onOpenTaskDetails,
                     isCompact = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact,
                 )
             } else {
                 ExpandedTasksView(
                     state = state,
                     onAction = onAction,
-                    onEditTask = { editTask = it },
+                    onEditTask = onOpenTaskDetails,
                 )
             }
         }
@@ -236,21 +240,6 @@ fun TaskList(state: TaskState, onAction: (TaskAction) -> Unit, onEditCategories:
                 onUpsertCategory = {
                     onAction(TaskAction.AddCategory(it))
                     showCategoryAddSheet = false
-                },
-            )
-        }
-
-        if (editTask != null) {
-            TaskUpsertSheet(
-                task = editTask!!,
-                categories = state.tasks.keys.toList(),
-                onDismissRequest = { editTask = null },
-                isEditSheet = true,
-                is24Hr = state.is24Hour,
-                onUpsert = { onAction(TaskAction.UpsertTask(it)) },
-                onDelete = {
-                    editTask?.let { onAction(TaskAction.DeleteTask(it)) }
-                    editTask = null
                 },
             )
         }

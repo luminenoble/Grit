@@ -203,17 +203,30 @@ class HabitViewModel(
         scheduler.cancel(habit)
     }
 
+    // Tapping a day cycles through three states: none -> completed -> skipped (holiday) -> none.
     private suspend fun insertHabitStatus(habit: Habit, date: LocalDate) {
-        val isHabitCompleted =
+        val existing =
             _state.value.habitsWithAnalytics
-                .find { it.habit == habit }
+                .find { it.habit.id == habit.id }
                 ?.statuses
-                ?.any { it.date == date } ?: false
+                ?.filter { it.date == date }
+                ?: emptyList()
 
-        if (isHabitCompleted) {
-            repo.deleteHabitStatus(habit.id, date)
-        } else {
-            repo.insertHabitStatus(HabitStatus(habitId = habit.id, date = date))
+        val isSkipped = existing.any { it.skipped }
+        val isCompleted = existing.any { !it.skipped }
+
+        when {
+            // completed -> skipped
+            isCompleted -> {
+                repo.deleteHabitStatus(habit.id, date)
+                repo.insertHabitStatus(
+                    HabitStatus(habitId = habit.id, date = date, skipped = true)
+                )
+            }
+            // skipped -> none
+            isSkipped -> repo.deleteHabitStatus(habit.id, date)
+            // none -> completed
+            else -> repo.insertHabitStatus(HabitStatus(habitId = habit.id, date = date))
         }
     }
 }

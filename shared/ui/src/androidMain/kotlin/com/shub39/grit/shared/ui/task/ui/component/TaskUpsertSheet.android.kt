@@ -43,6 +43,8 @@ actual fun TaskUpsertSheet(
     is24Hr: Boolean,
     modifier: Modifier,
     isEditSheet: Boolean,
+    fullScreen: Boolean,
+    autoFocusTitle: Boolean,
 ) {
     val context = LocalContext.current
 
@@ -85,5 +87,7 @@ actual fun TaskUpsertSheet(
             }
         },
         modifier = modifier,
+        fullScreen = fullScreen,
+        autoFocusTitle = autoFocusTitle,
     )
 }

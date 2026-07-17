@@ -33,6 +33,7 @@ import kotlinx.datetime.plus
 fun countCurrentStreak(
     dates: List<LocalDate>,
     eligibleWeekdays: Set<DayOfWeek> = DayOfWeek.entries.toSet(),
+    skippedDays: Set<LocalDate> = emptySet(),
 ): Int {
     if (dates.isEmpty()) return 0
 
@@ -46,11 +47,15 @@ fun countCurrentStreak(
     // Check if we need to account for eligible days between lastDate and today
     val daysBetween = lastDate.daysUntil(today)
     if (daysBetween > 0) {
-        // Check if there are any eligible days we missed between lastDate and today
+        // Check if there are any eligible (non-skipped) days we missed between lastDate and today
         var hasEligibleDayMissed = false
         for (i in 1..daysBetween) {
             val checkDate = lastDate.plus(DatePeriod(days = i))
-            if (eligibleWeekdays.contains(checkDate.dayOfWeek) && checkDate < today) {
+            if (
+                eligibleWeekdays.contains(checkDate.dayOfWeek) &&
+                    checkDate < today &&
+                    checkDate !in skippedDays
+            ) {
                 hasEligibleDayMissed = true
                 break
             }
@@ -63,8 +68,8 @@ fun countCurrentStreak(
         val currentDate = filteredDates[i]
         val nextDate = filteredDates[i + 1]
 
-        // Check if these are consecutive eligible days
-        if (areConsecutiveEligibleDays(currentDate, nextDate, eligibleWeekdays)) {
+        // Check if these are consecutive eligible days (skipped days bridge the gap)
+        if (areConsecutiveEligibleDays(currentDate, nextDate, eligibleWeekdays, skippedDays)) {
             streak++
         } else {
             break
@@ -76,6 +81,7 @@ fun countCurrentStreak(
 fun countBestStreak(
     dates: List<LocalDate>,
     eligibleWeekdays: Set<DayOfWeek> = DayOfWeek.entries.toSet(),
+    skippedDays: Set<LocalDate> = emptySet(),
 ): Int {
     if (dates.isEmpty()) return 0
 
@@ -89,7 +95,7 @@ fun countBestStreak(
         val previousDate = filteredDates[i - 1]
         val currentDate = filteredDates[i]
 
-        if (areConsecutiveEligibleDays(previousDate, currentDate, eligibleWeekdays)) {
+        if (areConsecutiveEligibleDays(previousDate, currentDate, eligibleWeekdays, skippedDays)) {
             currentConsecutive++
         } else {
             maxConsecutive = maxOf(maxConsecutive, currentConsecutive)
@@ -157,11 +163,12 @@ private fun areConsecutiveEligibleDays(
     date1: LocalDate,
     date2: LocalDate,
     eligibleWeekdays: Set<DayOfWeek>,
+    skippedDays: Set<LocalDate> = emptySet(),
 ): Boolean {
     var checkDate = date1.plus(1, DateTimeUnit.DAY)
     while (checkDate < date2) {
-        if (eligibleWeekdays.contains(checkDate.dayOfWeek)) {
-            // Found an eligible day between date1 and date2, so they're not consecutive
+        if (eligibleWeekdays.contains(checkDate.dayOfWeek) && checkDate !in skippedDays) {
+            // Found an eligible, non-skipped day between date1 and date2 → not consecutive
             return false
         }
         checkDate = checkDate.plus(1, DateTimeUnit.DAY)
@@ -169,7 +176,11 @@ private fun areConsecutiveEligibleDays(
     return checkDate == date2
 }
 
-fun calculateConsistency(dates: List<LocalDate>, eligibleWeekdays: Set<DayOfWeek>): Float {
+fun calculateConsistency(
+    dates: List<LocalDate>,
+    eligibleWeekdays: Set<DayOfWeek>,
+    skippedDays: Set<LocalDate> = emptySet(),
+): Float {
     val eligibleDates = dates.filter { it.dayOfWeek in eligibleWeekdays }
     val firstCompletionDate = eligibleDates.minOrNull() ?: return 0f
     val today = LocalDate.now()
@@ -177,7 +188,8 @@ fun calculateConsistency(dates: List<LocalDate>, eligibleWeekdays: Set<DayOfWeek
     var totalEligibleDays = 0
     var current = firstCompletionDate
     while (current <= today) {
-        if (current.dayOfWeek in eligibleWeekdays) {
+        // Skipped (holiday) days are excluded from the denominator so they don't hurt consistency.
+        if (current.dayOfWeek in eligibleWeekdays && current !in skippedDays) {
             totalEligibleDays++
         }
         current = current.plus(1, DateTimeUnit.DAY)

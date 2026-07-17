@@ -42,9 +42,16 @@ data class HabitSchema(
     val reminder: Boolean,
     val steps: List<String> = emptyList(),
     val color: String = "",
+    val deadline: Long? = null,
 )
 
-@Serializable data class HabitStatusSchema(val id: Long = 0, val habitId: Long, val date: Long)
+@Serializable
+data class HabitStatusSchema(
+    val id: Long = 0,
+    val habitId: Long,
+    val date: Long,
+    val skipped: Boolean = false,
+)
 
 @Serializable
 data class TaskSchema(

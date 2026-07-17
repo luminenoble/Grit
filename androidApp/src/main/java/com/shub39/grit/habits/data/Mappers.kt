@@ -32,11 +32,12 @@ fun HabitEntity.toHabit(): Habit {
         reminder = reminder,
         steps = steps,
         color = color,
+        deadline = deadline,
     )
 }
 
 fun HabitStatusEntity.toHabitStatus(): HabitStatus {
-    return HabitStatus(id = id, habitId = habitId, date = date)
+    return HabitStatus(id = id, habitId = habitId, date = date, skipped = skipped)
 }
 
 fun Habit.toHabitEntity(): HabitEntity {
@@ -50,9 +51,10 @@ fun Habit.toHabitEntity(): HabitEntity {
         reminder = reminder,
         steps = steps,
         color = color,
+        deadline = deadline,
     )
 }
 
 fun HabitStatus.toHabitStatusEntity(): HabitStatusEntity {
-    return HabitStatusEntity(id = id, habitId = habitId, date = date)
+    return HabitStatusEntity(id = id, habitId = habitId, date = date, skipped = skipped)
 }
