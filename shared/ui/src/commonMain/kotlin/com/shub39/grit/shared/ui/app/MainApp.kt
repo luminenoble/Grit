@@ -146,6 +146,9 @@ fun MainApp(state: MainAppState, onNavigateToPaywall: () -> Unit) {
                                 StatsPage(
                                     habitState = habitsPageState,
                                     taskState = taskPageState,
+                                    isUserSubscribed = state.isUserSubscribed,
+                                    onNavigateToPaywall = onNavigateToPaywall,
+                                    onHabitAction = hvm::onAction,
                                 )
                             }
                         },
@@ -210,6 +213,9 @@ fun MainApp(state: MainAppState, onNavigateToPaywall: () -> Unit) {
                                 StatsPage(
                                     habitState = habitsPageState,
                                     taskState = taskPageState,
+                                    isUserSubscribed = state.isUserSubscribed,
+                                    onNavigateToPaywall = onNavigateToPaywall,
+                                    onHabitAction = hvm::onAction,
                                 )
                             }
                         },

@@ -40,6 +40,8 @@ actual fun HabitUpsertSheet(
     is24Hr: Boolean,
     modifier: Modifier,
     isEditSheet: Boolean,
+    fullScreen: Boolean,
+    autoFocusTitle: Boolean,
 ) {
     val context = LocalContext.current
 
@@ -79,5 +81,7 @@ actual fun HabitUpsertSheet(
             }
         },
         modifier = modifier,
+        fullScreen = fullScreen,
+        autoFocusTitle = autoFocusTitle,
     )
 }

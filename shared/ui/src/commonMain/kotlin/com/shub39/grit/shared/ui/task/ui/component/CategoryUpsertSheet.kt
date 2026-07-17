@@ -21,6 +21,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -31,12 +33,14 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonShapes
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -75,6 +79,8 @@ fun CategoryUpsertSheet(
     category: Category,
     onDismiss: () -> Unit,
     onUpsertCategory: (Category) -> Unit,
+    fullScreen: Boolean = false,
+    autoFocusTitle: Boolean = true,
 ) {
     var newCategory by remember { mutableStateOf(category) }
     var colorPickerDialog by remember { mutableStateOf(false) }
@@ -85,47 +91,50 @@ fun CategoryUpsertSheet(
             initialSelection = TextRange(newCategory.name.length),
         )
 
-    GritBottomSheet(
-        modifier = modifier.imePadding(),
-        padding = 0.dp,
-        onDismissRequest = onDismiss,
-    ) {
+    val body: @Composable ColumnScope.() -> Unit = {
         val keyboardController = LocalSoftwareKeyboardController.current
         val focusRequester = remember { FocusRequester() }
 
-        LaunchedEffect(Unit) {
-            delay(400)
-            focusRequester.requestFocus()
-            keyboardController?.show()
+        LaunchedEffect(autoFocusTitle) {
+            if (autoFocusTitle) {
+                delay(400)
+                focusRequester.requestFocus()
+                keyboardController?.show()
+            }
         }
 
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier =
-                    Modifier.size(48.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = MaterialShapes.Pill.toShape(),
+            if (!fullScreen) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier =
+                        Modifier.size(48.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = MaterialShapes.Pill.toShape(),
+                            ),
+                ) {
+                    Icon(
+                        imageVector =
+                            vectorResource(if (isEditSheet) Res.drawable.edit else Res.drawable.add),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+                Text(
+                    text =
+                        stringResource(
+                            if (isEditSheet) Res.string.edit_categories else Res.string.add_category
                         ),
-            ) {
-                Icon(
-                    imageVector =
-                        vectorResource(if (isEditSheet) Res.drawable.edit else Res.drawable.add),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    style =
+                        MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = flexFontEmphasis()
+                        ),
                 )
             }
-            Text(
-                text =
-                    stringResource(
-                        if (isEditSheet) Res.string.edit_categories else Res.string.add_category
-                    ),
-                style = MaterialTheme.typography.headlineSmall.copy(fontFamily = flexFontEmphasis()),
-            )
 
             OutlinedTextField(
                 state = textFieldState,
@@ -207,6 +216,42 @@ fun CategoryUpsertSheet(
                 onSelect = { newCategory = newCategory.copy(color = it.toHexString()) },
                 onDismiss = { colorPickerDialog = false },
             )
+        }
+    }
+
+    if (fullScreen) {
+        Column(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .imePadding()
+                    .background(MaterialTheme.colorScheme.background)
+        ) {
+            TopAppBar(
+                title = {
+                    Text(
+                        text =
+                            stringResource(
+                                if (isEditSheet) Res.string.edit_categories
+                                else Res.string.add_category
+                            ),
+                        fontFamily = flexFontEmphasis(),
+                    )
+                },
+                navigationIcon = {
+                    FilledTonalIconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.nav_arrow_back),
+                            contentDescription = "Navigate Back",
+                        )
+                    }
+                },
+            )
+            body()
+        }
+    } else {
+        GritBottomSheet(modifier = modifier.imePadding(), padding = 0.dp, onDismissRequest = onDismiss) {
+            body()
         }
     }
 }

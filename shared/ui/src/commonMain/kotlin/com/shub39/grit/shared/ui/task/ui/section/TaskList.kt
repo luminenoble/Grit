@@ -100,9 +100,7 @@ import com.shub39.grit.shared.ui.components.middleItemShape
 import com.shub39.grit.shared.ui.task.TaskAction
 import com.shub39.grit.shared.ui.task.TaskState
 import com.shub39.grit.shared.ui.task.ui.component.AiDecomposeSheet
-import com.shub39.grit.shared.ui.task.ui.component.CategoryUpsertSheet
 import com.shub39.grit.shared.ui.task.ui.component.TaskCard
-import com.shub39.grit.shared.ui.task.ui.component.TaskUpsertSheet
 import com.shub39.grit.shared.ui.theme.GritRadius
 import com.shub39.grit.shared.ui.theme.accentVariant
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
@@ -125,12 +123,12 @@ fun TaskList(
     onAction: (TaskAction) -> Unit,
     onEditCategories: () -> Unit,
     onOpenTaskDetails: (Task) -> Unit,
+    onAddTask: () -> Unit,
+    onAddCategory: () -> Unit,
 ) =
     PageFill {
         val windowSizeClass = LocalWindowSizeClass.current
 
-        var showTaskAddSheet by remember { mutableStateOf(false) }
-        var showCategoryAddSheet by remember { mutableStateOf(false) }
         var showDeleteDialog by remember { mutableStateOf(false) }
         var showAiSheet by remember { mutableStateOf(false) }
         var editState by remember { mutableStateOf(false) }
@@ -157,7 +155,7 @@ fun TaskList(
                 state = state,
                 isReorderMode = editState,
                 onAction = onAction,
-                onAddCategoryClick = { showCategoryAddSheet = true },
+                onAddCategoryClick = onAddCategory,
                 onEditCategoriesClick = onEditCategories,
                 isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded,
                 onReorderModeChange = { editState = it },
@@ -181,7 +179,7 @@ fun TaskList(
         }
 
         MediumFloatingActionButton(
-            onClick = { showTaskAddSheet = true },
+            onClick = onAddTask,
             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
             contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
             modifier =
@@ -230,36 +228,6 @@ fun TaskList(
                     onAction(TaskAction.DeleteTasks)
                     showDeleteDialog = false
                 },
-            )
-        }
-
-        if (showCategoryAddSheet) {
-            CategoryUpsertSheet(
-                onDismiss = { showCategoryAddSheet = false },
-                category = Category(name = "", color = CategoryColors.GRAY.color),
-                onUpsertCategory = {
-                    onAction(TaskAction.AddCategory(it))
-                    showCategoryAddSheet = false
-                },
-            )
-        }
-
-        if (showTaskAddSheet && state.currentCategory != null) {
-            TaskUpsertSheet(
-                task =
-                    Task(
-                        categoryId = state.currentCategory.id,
-                        title = "",
-                        index = state.tasks[state.currentCategory]?.size ?: 0,
-                        status = false,
-                        reminder = null,
-                        isToday = state.isTodayView,
-                    ),
-                is24Hr = state.is24Hour,
-                categories = state.tasks.keys.toList(),
-                onDismissRequest = { showTaskAddSheet = false },
-                onUpsert = { onAction(TaskAction.UpsertTask(it)) },
-                onDelete = {},
             )
         }
 

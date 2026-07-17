@@ -16,21 +16,25 @@
  */
 package com.shub39.grit.shared.ui.stats
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
@@ -43,36 +47,49 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.kizitonwose.calendar.compose.VerticalCalendar
+import com.kizitonwose.calendar.compose.heatmapcalendar.rememberHeatMapCalendarState
 import com.kizitonwose.calendar.compose.rememberCalendarState
-import com.kizitonwose.calendar.core.DayPosition
+import com.kizitonwose.calendar.core.minusMonths
 import com.kizitonwose.calendar.core.now
 import com.shub39.grit.shared.ui.components.PageFill
 import com.shub39.grit.shared.ui.habit.HabitState
-import com.shub39.grit.shared.ui.habit.ui.component.CalendarMonthHeader
+import com.shub39.grit.shared.ui.habit.HabitsAction
+import com.shub39.grit.shared.ui.habit.ui.component.stats.CalendarMap
+import com.shub39.grit.shared.ui.habit.ui.component.stats.StartStats
+import com.shub39.grit.shared.ui.habit.ui.component.stats.WeekDayBreakdown
+import com.shub39.grit.shared.ui.habit.ui.component.stats.WeeklyActivity
+import com.shub39.grit.shared.ui.habit.ui.component.stats.WeeklyBooleanHeatMap
 import com.shub39.grit.shared.ui.task.TaskState
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
 import com.shub39.grit.shared.ui.theme.flexFontRounded
 import grit.shared.ui.generated.resources.*
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.Month
 import kotlinx.datetime.YearMonth
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Top-level statistics hub, a peer of Settings in the navigation bar. Lets the user scope the
- * habit heat map to a single habit or all habits, and the task completion summary to a single
- * category or all categories.
+ * Top-level statistics hub, a peer of Settings in the navigation bar. Two click-switched tabs:
+ * a habit tab (scoped to a single habit or all habits, reusing the habit analytics widgets) and a
+ * task tab (completion rate scoped to a single category or all categories).
  */
 @Composable
-fun StatsPage(habitState: HabitState, taskState: TaskState, modifier: Modifier = Modifier) =
+fun StatsPage(
+    habitState: HabitState,
+    taskState: TaskState,
+    isUserSubscribed: Boolean,
+    onNavigateToPaywall: () -> Unit,
+    onHabitAction: (HabitsAction) -> Unit,
+    modifier: Modifier = Modifier,
+) =
     PageFill(modifier = modifier.background(MaterialTheme.colorScheme.background)) {
+        var tab by rememberSaveable { mutableStateOf(0) }
+
         Column(modifier = Modifier.fillMaxSize()) {
             TopAppBar(
                 title = {
@@ -87,93 +104,167 @@ fun StatsPage(habitState: HabitState, taskState: TaskState, modifier: Modifier =
                     ),
             )
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+            // Click-switched segmented control (no swipe).
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement =
+                    Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
             ) {
-                item { HabitStatsSection(habitState) }
-                item { TaskStatsSection(taskState) }
+                ToggleButton(
+                    checked = tab == 0,
+                    onCheckedChange = { tab = 0 },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(text = stringResource(Res.string.habits_stats))
+                }
+                ToggleButton(
+                    checked = tab == 1,
+                    onCheckedChange = { tab = 1 },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(text = stringResource(Res.string.tasks_stats))
+                }
+            }
+
+            AnimatedContent(targetState = tab, modifier = Modifier.fillMaxSize()) { current ->
+                if (current == 0) {
+                    HabitStatsTab(
+                        state = habitState,
+                        isUserSubscribed = isUserSubscribed,
+                        onNavigateToPaywall = onNavigateToPaywall,
+                        onAction = onHabitAction,
+                    )
+                } else {
+                    TaskStatsTab(state = taskState)
+                }
             }
         }
     }
 
 @Composable
-private fun HabitStatsSection(state: HabitState) {
-    // null = all habits
-    var selectedHabitId: Long? by remember { mutableStateOf(null) }
+private fun HabitStatsTab(
+    state: HabitState,
+    isUserSubscribed: Boolean,
+    onNavigateToPaywall: () -> Unit,
+    onAction: (HabitsAction) -> Unit,
+) {
+    var selectedHabitId: Long? by rememberSaveable { mutableStateOf(null) }
 
     val habits = state.habitsWithAnalytics
     val selected = habits.firstOrNull { it.habit.id == selectedHabitId }
 
-    val heatMap: Map<LocalDate, Int>
-    val maxCount: Int
-    if (selected == null) {
-        heatMap = state.overallAnalytics.heatMapData
-        maxCount = habits.size.coerceAtLeast(1)
-    } else {
-        heatMap =
-            selected.statuses.filter { !it.skipped }.groupingBy { it.date }.eachCount()
-        maxCount = 1
-    }
-
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = stringResource(Res.string.habits_stats),
-            style = MaterialTheme.typography.titleLarge.copy(fontFamily = flexFontRounded()),
+    val currentMonth = remember { YearMonth.now() }
+    val heatMapState =
+        rememberHeatMapCalendarState(
+            startMonth = currentMonth.minusMonths(12),
+            endMonth = currentMonth,
+            firstVisibleMonth = currentMonth,
+            firstDayOfWeek = state.startingDay,
+        )
+    val calendarState =
+        rememberCalendarState(
+            startMonth = currentMonth.minusMonths(12),
+            endMonth = currentMonth,
+            firstVisibleMonth = currentMonth,
+            firstDayOfWeek = state.startingDay,
         )
 
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            ToggleButton(
-                checked = selectedHabitId == null,
-                onCheckedChange = { selectedHabitId = null },
-            ) {
-                Text(text = stringResource(Res.string.all_habits))
-            }
+    // Single habit → that habit's marks; all habits → every completion combined.
+    val statuses =
+        selected?.statuses?.filter { !it.skipped }
+            ?: habits.flatMap { it.statuses }.filter { !it.skipped }
+    val days = selected?.habit?.days ?: DayOfWeek.entries.toSet()
+    val onDateClick: (LocalDate) -> Unit =
+        if (selected != null) { date -> onAction(HabitsAction.InsertStatus(selected.habit, date)) }
+        else { _ -> }
 
-            habits.forEach { hwa ->
+    val maxWidth = 380.dp
+    LazyVerticalStaggeredGrid(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        columns = StaggeredGridCells.Adaptive(minSize = maxWidth),
+        contentPadding = PaddingValues(top = 8.dp, bottom = 60.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalItemSpacing = 16.dp,
+    ) {
+        item(span = StaggeredGridItemSpan.FullLine) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToggleButton(
-                    checked = selectedHabitId == hwa.habit.id,
-                    onCheckedChange = { selectedHabitId = hwa.habit.id },
+                    checked = selectedHabitId == null,
+                    onCheckedChange = { selectedHabitId = null },
                 ) {
-                    Text(text = hwa.habit.title, maxLines = 1)
+                    Text(text = stringResource(Res.string.all_habits))
+                }
+                habits.forEach { hwa ->
+                    ToggleButton(
+                        checked = selectedHabitId == hwa.habit.id,
+                        onCheckedChange = { selectedHabitId = hwa.habit.id },
+                    ) {
+                        Text(text = hwa.habit.title, maxLines = 1)
+                    }
                 }
             }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (selected == null) {
-                StatTile(
-                    label = stringResource(Res.string.consistency),
-                    value = "${(state.overallAnalytics.consistency * 100).toInt()}%",
-                    modifier = Modifier.weight(1f),
+        if (selected != null) {
+            item {
+                StartStats(
+                    consistency = selected.consistency,
+                    startDate = selected.habit.time.date,
+                    bestStreak = selected.bestStreak,
+                    currentStreak = selected.currentStreak,
                 )
-            } else {
-                StatTile(
-                    label = stringResource(Res.string.streak),
-                    value = selected.currentStreak.toString(),
-                    modifier = Modifier.weight(1f),
-                )
-                StatTile(
-                    label = stringResource(Res.string.consistency),
-                    value = "${(selected.consistency * 100).toInt()}%",
-                    modifier = Modifier.weight(1f),
+            }
+        } else {
+            item {
+                ConsistencyCard(consistency = state.overallAnalytics.consistency)
+            }
+        }
+
+        item {
+            WeeklyBooleanHeatMap(
+                heatMapState = heatMapState,
+                days = days,
+                statuses = statuses,
+                onDateClick = onDateClick,
+            )
+        }
+
+        item {
+            CalendarMap(
+                canSeeContent = isUserSubscribed,
+                calendarState = calendarState,
+                statuses = statuses,
+                days = days,
+                onNavigateToPaywall = onNavigateToPaywall,
+                onNavigateToCalendar = {},
+                onDateClick = onDateClick,
+            )
+        }
+
+        if (selected != null) {
+            item {
+                WeeklyActivity(
+                    lineChartData = selected.weeklyComparisonData,
+                    modifier = Modifier.widthIn(max = maxWidth),
                 )
             }
         }
 
-        HeatMapCalendar(
-            heatMapData = heatMap,
-            maxCount = maxCount,
-            startingDay = state.startingDay,
-        )
+        item {
+            WeekDayBreakdown(
+                canSeeContent = isUserSubscribed,
+                weekDayData =
+                    selected?.weekDayFrequencyData ?: state.overallAnalytics.weekDayFrequencyData,
+                onNavigateToPaywall = onNavigateToPaywall,
+                modifier = Modifier.widthIn(max = maxWidth),
+            )
+        }
     }
 }
 
 @Composable
-private fun TaskStatsSection(state: TaskState) {
-    // null = all categories
-    var selectedCategoryId: Long? by remember { mutableStateOf(null) }
+private fun TaskStatsTab(state: TaskState) {
+    var selectedCategoryId: Long? by rememberSaveable { mutableStateOf(null) }
 
     val categories = state.tasks.keys.toList()
     val tasks =
@@ -184,157 +275,142 @@ private fun TaskStatsSection(state: TaskState) {
     val completed = tasks.count { it.status }
     val rate = if (total > 0) completed.toFloat() / total else 0f
 
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = stringResource(Res.string.tasks_stats),
-            style = MaterialTheme.typography.titleLarge.copy(fontFamily = flexFontRounded()),
-        )
-
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            ToggleButton(
-                checked = selectedCategoryId == null,
-                onCheckedChange = { selectedCategoryId = null },
-            ) {
-                Text(text = stringResource(Res.string.all_categories))
-            }
-
-            categories.forEach { category ->
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(top = 8.dp, bottom = 60.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        item {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 ToggleButton(
-                    checked = selectedCategoryId == category.id,
-                    onCheckedChange = { selectedCategoryId = category.id },
+                    checked = selectedCategoryId == null,
+                    onCheckedChange = { selectedCategoryId = null },
                 ) {
-                    Text(text = category.name, maxLines = 1)
+                    Text(text = stringResource(Res.string.all_categories))
+                }
+                categories.forEach { category ->
+                    ToggleButton(
+                        checked = selectedCategoryId == category.id,
+                        onCheckedChange = { selectedCategoryId = category.id },
+                    ) {
+                        Text(text = category.name, maxLines = 1)
+                    }
                 }
             }
         }
 
-        Card(
-            colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                ),
-            shape = RoundedCornerShape(20.dp),
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+        item {
+            Card(
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    ),
+                shape = RoundedCornerShape(20.dp),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(Res.string.completion_rate),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f),
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(Res.string.completion_rate),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(
+                            text = "${(rate * 100).toInt()}%",
+                            style =
+                                MaterialTheme.typography.titleLarge.copy(
+                                    fontFamily = flexFontRounded()
+                                ),
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+
+                    LinearProgressIndicator(
+                        progress = { rate },
+                        modifier = Modifier.fillMaxWidth().height(8.dp),
                     )
+
                     Text(
-                        text = "${(rate * 100).toInt()}%",
-                        style =
-                            MaterialTheme.typography.titleLarge.copy(
-                                fontFamily = flexFontRounded()
-                            ),
-                        color = MaterialTheme.colorScheme.primary,
+                        text = stringResource(Res.string.completed_of_total, completed, total),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+            }
+        }
 
-                LinearProgressIndicator(
-                    progress = { rate },
-                    modifier = Modifier.fillMaxWidth().height(8.dp),
-                )
+        // Per-category breakdown when viewing all categories.
+        if (selectedCategoryId == null && categories.isNotEmpty()) {
+            items(categories, key = { it.id }) { category ->
+                val catTasks = state.tasks[category].orEmpty()
+                val catTotal = catTasks.size
+                val catDone = catTasks.count { it.status }
+                val catRate = if (catTotal > 0) catDone.toFloat() / catTotal else 0f
 
-                Text(
-                    text = stringResource(Res.string.completed_of_total, completed, total),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Card(
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                        ),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = category.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                maxLines = 1,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Text(
+                                text =
+                                    stringResource(
+                                        Res.string.completed_of_total,
+                                        catDone,
+                                        catTotal,
+                                    ),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        LinearProgressIndicator(
+                            progress = { catRate },
+                            modifier = Modifier.fillMaxWidth().height(6.dp),
+                        )
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun StatTile(label: String, value: String, modifier: Modifier = Modifier) {
+private fun ConsistencyCard(consistency: Float) {
     Card(
-        modifier = modifier,
         colors =
             CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         shape = RoundedCornerShape(20.dp),
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Text(
-                text = value,
-                style = MaterialTheme.typography.headlineMedium.copy(fontFamily = flexFontRounded()),
+                text = "${(consistency * 100).toInt()}%",
+                style = MaterialTheme.typography.displaySmall.copy(fontFamily = flexFontRounded()),
                 color = MaterialTheme.colorScheme.primary,
             )
             Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
+                text = stringResource(Res.string.consistency),
+                style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
             )
         }
     }
-}
-
-@Composable
-private fun HeatMapCalendar(
-    heatMapData: Map<LocalDate, Int>,
-    maxCount: Int,
-    startingDay: kotlinx.datetime.DayOfWeek,
-) {
-    val today = LocalDate.now()
-    val calendarState =
-        rememberCalendarState(
-            startMonth = YearMonth(year = 2024, month = Month.JANUARY),
-            endMonth = YearMonth.now(),
-            firstVisibleMonth = YearMonth.now(),
-            firstDayOfWeek = startingDay,
-        )
-
-    VerticalCalendar(
-        modifier =
-            Modifier.fillMaxWidth()
-                .heightIn(max = 520.dp)
-                .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)),
-        state = calendarState,
-        monthHeader = { calendarMonth -> CalendarMonthHeader(calendarMonth = calendarMonth) },
-        contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp),
-        reverseLayout = true,
-        dayContent = { day ->
-            if (day.date > today || day.position != DayPosition.MonthDate) return@VerticalCalendar
-            val count = heatMapData[day.date]
-
-            Box(
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .aspectRatio(1f)
-                        .padding(1.dp)
-                        .background(
-                            shape = RoundedCornerShape(8.dp),
-                            color =
-                                when (count) {
-                                    null,
-                                    0 -> MaterialTheme.colorScheme.surfaceContainerHighest
-                                    else ->
-                                        MaterialTheme.colorScheme.primary.copy(
-                                            alpha =
-                                                (count.toFloat() / maxCount).coerceIn(0.15f, 1f)
-                                        )
-                                },
-                        ),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = day.date.day.toString(),
-                    style = MaterialTheme.typography.bodySmall,
-                    fontFamily = flexFontRounded(),
-                    color =
-                        if (count != null && count > 0 && count.toFloat() / maxCount > 0.5f)
-                            MaterialTheme.colorScheme.onPrimary
-                        else MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        },
-    )
 }

@@ -124,22 +124,4 @@ fun HabitsList(
             }
         }
     }
-
-    // add dialog
-    if (state.showHabitAddSheet) {
-        HabitUpsertSheet(
-            habit =
-                Habit(
-                    title = "",
-                    description = "",
-                    time = LocalDateTime.now(),
-                    days = DayOfWeek.entries.toSet(),
-                    index = state.habitsWithAnalytics.size,
-                    reminder = false,
-                ),
-            onDismissRequest = { onAction(HabitsAction.DismissAddHabitDialog) },
-            onUpsertHabit = { onAction(HabitsAction.AddHabit(it)) },
-            is24Hr = state.is24Hr,
-        )
-    }
 }

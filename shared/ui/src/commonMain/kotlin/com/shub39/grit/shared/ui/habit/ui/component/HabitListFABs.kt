@@ -52,6 +52,7 @@ fun BoxScope.HabitListFABs(
     onAction: (HabitsAction) -> Unit,
     onNavigateToPaywall: () -> Unit,
     isUserSubscribed: Boolean,
+    onNavigateToUpsert: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val windowSizeClass = LocalWindowSizeClass.current
@@ -92,7 +93,7 @@ fun BoxScope.HabitListFABs(
             }
 
             MediumFloatingActionButton(
-                onClick = { onAction(HabitsAction.OnAddHabitClicked) },
+                onClick = onNavigateToUpsert,
                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                 contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                 modifier =
@@ -125,7 +126,7 @@ fun BoxScope.HabitListFABs(
             MediumFloatingActionButton(
                 onClick = {
                     if (isUserSubscribed || state.habitsWithAnalytics.size <= 5) {
-                        onAction(HabitsAction.OnAddHabitClicked)
+                        onNavigateToUpsert()
                     } else {
                         onNavigateToPaywall()
                     }

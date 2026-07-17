@@ -62,6 +62,9 @@ import com.shub39.grit.shared.ui.components.endItemShape
 import com.shub39.grit.shared.ui.components.leadingItemShape
 import com.shub39.grit.shared.ui.components.listItemColors
 import com.shub39.grit.shared.ui.components.middleItemShape
+import com.shub39.grit.core.tasks.Category
+import com.shub39.grit.core.tasks.CategoryColors
+import com.shub39.grit.core.tasks.Task
 import com.shub39.grit.shared.ui.navigation.horizontalTransitionMetadata
 import com.shub39.grit.shared.ui.task.TaskAction
 import com.shub39.grit.shared.ui.task.TaskState
@@ -86,6 +89,12 @@ private sealed interface TaskRoutes : NavKey {
 
     /** Full-screen editor for an existing task, opened from the list. */
     @Serializable data class Detail(val taskId: Long) : TaskRoutes
+
+    /** Full-screen editor for creating a new task in the current category. */
+    @Serializable data object AddTask : TaskRoutes
+
+    /** Full-screen category editor; [categoryId] == 0 means create a new category. */
+    @Serializable data class CategoryEdit(val categoryId: Long) : TaskRoutes
 }
 
 private val taskConfiguration = SavedStateConfiguration {
@@ -93,6 +102,8 @@ private val taskConfiguration = SavedStateConfiguration {
         polymorphic(NavKey::class) {
             subclass(TaskRoutes.List::class, TaskRoutes.List.serializer())
             subclass(TaskRoutes.Detail::class, TaskRoutes.Detail.serializer())
+            subclass(TaskRoutes.AddTask::class, TaskRoutes.AddTask.serializer())
+            subclass(TaskRoutes.CategoryEdit::class, TaskRoutes.CategoryEdit.serializer())
         }
     }
 }
@@ -113,7 +124,68 @@ fun TasksPage(state: TaskState, onAction: (TaskAction) -> Unit) {
                         onEditCategories = { showCategoryEditor = true },
                         // Opening task details pushes a full screen instead of a bottom sheet.
                         onOpenTaskDetails = { backStack.add(TaskRoutes.Detail(it.id)) },
+                        onAddTask = { backStack.add(TaskRoutes.AddTask) },
+                        onAddCategory = { backStack.add(TaskRoutes.CategoryEdit(0L)) },
                     )
+                }
+
+                entry<TaskRoutes.AddTask>(metadata = horizontalTransitionMetadata()) {
+                    val category = state.currentCategory
+
+                    if (category == null) {
+                        LaunchedEffect(Unit) {
+                            if (backStack.size != 1) backStack.removeLastOrNull()
+                        }
+                    } else {
+                        TaskUpsertSheet(
+                            task =
+                                Task(
+                                    categoryId = category.id,
+                                    title = "",
+                                    index = state.tasks[category]?.size ?: 0,
+                                    status = false,
+                                    reminder = null,
+                                    isToday = state.isTodayView,
+                                ),
+                            categories = state.tasks.keys.toList(),
+                            isEditSheet = false,
+                            is24Hr = state.is24Hour,
+                            fullScreen = true,
+                            autoFocusTitle = false,
+                            onDismissRequest = {
+                                if (backStack.size != 1) backStack.removeLastOrNull()
+                            },
+                            onUpsert = { onAction(TaskAction.UpsertTask(it)) },
+                            onDelete = {},
+                        )
+                    }
+                }
+
+                entry<TaskRoutes.CategoryEdit>(metadata = horizontalTransitionMetadata()) { route ->
+                    val isEditing = route.categoryId != 0L
+                    val category =
+                        if (isEditing) state.tasks.keys.firstOrNull { it.id == route.categoryId }
+                        else Category(name = "", color = CategoryColors.GRAY.color)
+
+                    if (category == null) {
+                        LaunchedEffect(Unit) {
+                            if (backStack.size != 1) backStack.removeLastOrNull()
+                        }
+                    } else {
+                        CategoryUpsertSheet(
+                            isEditSheet = isEditing,
+                            category = category,
+                            fullScreen = true,
+                            autoFocusTitle = false,
+                            onDismiss = {
+                                if (backStack.size != 1) backStack.removeLastOrNull()
+                            },
+                            onUpsertCategory = {
+                                onAction(TaskAction.AddCategory(it))
+                                if (backStack.size != 1) backStack.removeLastOrNull()
+                            },
+                        )
+                    }
                 }
 
                 entry<TaskRoutes.Detail>(metadata = horizontalTransitionMetadata()) { route ->
@@ -151,6 +223,10 @@ fun TasksPage(state: TaskState, onAction: (TaskAction) -> Unit) {
             state = state,
             onAction = onAction,
             onDismissRequest = { showCategoryEditor = false },
+            onEditCategory = {
+                showCategoryEditor = false
+                backStack.add(TaskRoutes.CategoryEdit(it.id))
+            },
         )
     }
 }
@@ -160,6 +236,7 @@ private fun CategoryEditDialog(
     state: TaskState,
     onAction: (TaskAction) -> Unit,
     onDismissRequest: () -> Unit,
+    onEditCategory: (Category) -> Unit,
 ) {
     GritDialog(onDismissRequest = onDismissRequest, padding = 0.dp) {
         var categories by remember(state.tasks) { mutableStateOf(state.tasks.keys.toList()) }
@@ -215,7 +292,6 @@ private fun CategoryEditDialog(
                 contentPadding = PaddingValues(bottom = 16.dp),
             ) {
                 itemsIndexed(categories, key = { _, it -> it.id }) { index, category ->
-                    var showEditSheet by remember { mutableStateOf(false) }
                     var showDeleteDialog by remember { mutableStateOf(false) }
 
                     ReorderableItem(reorderableListState, key = category.id) {
@@ -243,7 +319,7 @@ private fun CategoryEditDialog(
                             },
                             trailingContent = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    IconButton(onClick = { showEditSheet = true }) {
+                                    IconButton(onClick = { onEditCategory(category) }) {
                                         Icon(
                                             imageVector = vectorResource(Res.drawable.edit),
                                             contentDescription = "Edit",
@@ -323,19 +399,6 @@ private fun CategoryEditDialog(
                                 }
                             }
                         }
-                    }
-
-                    if (showEditSheet) {
-                        CategoryUpsertSheet(
-                            isEditSheet = true,
-                            modifier = Modifier,
-                            category = category,
-                            onDismiss = { showEditSheet = false },
-                            onUpsertCategory = {
-                                onAction(TaskAction.AddCategory(it))
-                                showEditSheet = false
-                            },
-                        )
                     }
                 }
             }

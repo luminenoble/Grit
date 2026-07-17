@@ -51,11 +51,14 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.shub39.grit.core.habits.Habit
+import com.shub39.grit.core.now
 import com.shub39.grit.shared.ui.LocalWindowSizeClass
 import com.shub39.grit.shared.ui.components.PageFill
 import com.shub39.grit.shared.ui.habit.HabitState
 import com.shub39.grit.shared.ui.habit.HabitsAction
 import com.shub39.grit.shared.ui.habit.ui.component.HabitListFABs
+import com.shub39.grit.shared.ui.habit.ui.component.HabitUpsertSheet
 import com.shub39.grit.shared.ui.habit.ui.sections.AnalyticsPage
 import com.shub39.grit.shared.ui.habit.ui.sections.Calendar
 import com.shub39.grit.shared.ui.habit.ui.sections.CalendarHeatMap
@@ -66,6 +69,8 @@ import com.shub39.grit.shared.ui.navigation.verticalTransitionMetadata
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
 import com.shub39.grit.shared.ui.theme.flexFontRounded
 import grit.shared.ui.generated.resources.*
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -83,6 +88,9 @@ private sealed interface HabitRoutes : NavKey {
     @Serializable data object Calendar : HabitRoutes
 
     @Serializable data object CalendarHeatMap : HabitRoutes
+
+    /** Full-screen habit editor; [habitId] == null means create a new habit. */
+    @Serializable data class Upsert(val habitId: Long?) : HabitRoutes
 }
 
 private val config = SavedStateConfiguration {
@@ -93,6 +101,7 @@ private val config = SavedStateConfiguration {
             subclass(HabitRoutes.OverallAnalytics::class, HabitRoutes.OverallAnalytics.serializer())
             subclass(HabitRoutes.Calendar::class, HabitRoutes.Calendar.serializer())
             subclass(HabitRoutes.CalendarHeatMap::class, HabitRoutes.CalendarHeatMap.serializer())
+            subclass(HabitRoutes.Upsert::class, HabitRoutes.Upsert.serializer())
         }
     }
 }
@@ -157,6 +166,9 @@ fun HabitsGraph(
                                     onAction = onAction,
                                     onNavigateToPaywall = onNavigateToPaywall,
                                     isUserSubscribed = isUserSubscribed,
+                                    onNavigateToUpsert = {
+                                        backstack.add(HabitRoutes.Upsert(null))
+                                    },
                                 )
                             }
                         }
@@ -172,7 +184,21 @@ fun HabitsGraph(
                             onNavigateToPaywall = onNavigateToPaywall,
                             onNavigateToCalendar = { backstack.add(HabitRoutes.Calendar) },
                             isUserSubscribed = isUserSubscribed,
+                            onEditHabit = {
+                                backstack.add(HabitRoutes.Upsert(state.analyticsHabitId))
+                            },
                             modifier = Modifier.background(MaterialTheme.colorScheme.background),
+                        )
+                    }
+
+                    entry<HabitRoutes.Upsert>(metadata = verticalTransitionMetadata()) { route ->
+                        HabitUpsertEntry(
+                            state = state,
+                            habitId = route.habitId,
+                            onAction = onAction,
+                            onDismiss = {
+                                if (backstack.size != 1) backstack.removeLastOrNull()
+                            },
                         )
                     }
 
@@ -241,6 +267,8 @@ private fun ExpandedScreen(
     isUserSubscribed: Boolean,
 ) {
     Column(modifier = modifier.background(MaterialTheme.colorScheme.background)) {
+        val backstack = rememberNavBackStack(config, HabitRoutes.HabitAnalytics)
+
         HabitsTopAppBar(state = state, onAction = onAction, scrollBehavior = scrollBehavior)
 
         Row(modifier = Modifier.weight(1f)) {
@@ -273,6 +301,7 @@ private fun ExpandedScreen(
                     onAction = onAction,
                     onNavigateToPaywall = onNavigateToPaywall,
                     isUserSubscribed = isUserSubscribed,
+                    onNavigateToUpsert = { backstack.add(HabitRoutes.Upsert(null)) },
                 )
             }
 
@@ -281,8 +310,6 @@ private fun ExpandedScreen(
                 shape = RoundedCornerShape(topStart = 28.dp),
                 modifier = Modifier.weight(1f),
             ) {
-                val backstack = rememberNavBackStack(config, HabitRoutes.HabitAnalytics)
-
                 LaunchedEffect(state.analyticsHabitId) {
                     backstack.add(
                         if (state.analyticsHabitId != null) {
@@ -309,10 +336,25 @@ private fun ExpandedScreen(
                                     onNavigateToPaywall = onNavigateToPaywall,
                                     onNavigateToCalendar = { backstack.add(HabitRoutes.Calendar) },
                                     isUserSubscribed = isUserSubscribed,
+                                    onEditHabit = {
+                                        backstack.add(HabitRoutes.Upsert(state.analyticsHabitId))
+                                    },
                                     modifier =
                                         Modifier.background(
                                             MaterialTheme.colorScheme.surfaceContainerHighest
                                         ),
+                                )
+                            }
+
+                            entry<HabitRoutes.Upsert>(metadata = verticalTransitionMetadata()) {
+                                route ->
+                                HabitUpsertEntry(
+                                    state = state,
+                                    habitId = route.habitId,
+                                    onAction = onAction,
+                                    onDismiss = {
+                                        if (backstack.size != 1) backstack.removeLastOrNull()
+                                    },
                                 )
                             }
 
@@ -373,6 +415,48 @@ private fun ExpandedScreen(
                 )
             }
         }
+    }
+}
+
+/** Builds the target habit (new template or existing) and renders the full-screen editor page. */
+@Composable
+private fun HabitUpsertEntry(
+    state: HabitState,
+    habitId: Long?,
+    onAction: (HabitsAction) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val habit =
+        if (habitId == null) {
+            Habit(
+                title = "",
+                description = "",
+                time = LocalDateTime.now(),
+                days = DayOfWeek.entries.toSet(),
+                index = state.habitsWithAnalytics.size,
+                reminder = false,
+            )
+        } else {
+            state.habitsWithAnalytics.firstOrNull { it.habit.id == habitId }?.habit
+        }
+
+    if (habit == null) {
+        LaunchedEffect(Unit) { onDismiss() }
+    } else {
+        HabitUpsertSheet(
+            habit = habit,
+            onDismissRequest = onDismiss,
+            onUpsertHabit = {
+                onAction(
+                    if (habitId == null) HabitsAction.AddHabit(it)
+                    else HabitsAction.UpdateHabit(it)
+                )
+            },
+            is24Hr = state.is24Hr,
+            isEditSheet = habitId != null,
+            fullScreen = true,
+            autoFocusTitle = false,
+        )
     }
 }
 

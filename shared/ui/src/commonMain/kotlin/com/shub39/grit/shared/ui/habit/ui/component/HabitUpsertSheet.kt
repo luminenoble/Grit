@@ -23,9 +23,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -55,6 +57,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
@@ -126,6 +129,8 @@ expect fun HabitUpsertSheet(
     is24Hr: Boolean,
     modifier: Modifier = Modifier,
     isEditSheet: Boolean = false,
+    fullScreen: Boolean = false,
+    autoFocusTitle: Boolean = true,
 )
 
 @Composable
@@ -139,6 +144,8 @@ fun HabitUpsertSheetContent(
     notificationPermission: Boolean,
     onRequestPermission: () -> Unit,
     modifier: Modifier = Modifier,
+    fullScreen: Boolean = false,
+    autoFocusTitle: Boolean = true,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
@@ -172,45 +179,48 @@ fun HabitUpsertSheetContent(
             initialSelection = TextRange(newHabit.description.length),
         )
 
-    LaunchedEffect(Unit) {
-        delay(400.milliseconds)
-        focusRequester.requestFocus()
-        keyboardController?.show()
+    LaunchedEffect(autoFocusTitle) {
+        if (autoFocusTitle) {
+            delay(400.milliseconds)
+            focusRequester.requestFocus()
+            keyboardController?.show()
+        }
     }
 
-    GritBottomSheet(
-        onDismissRequest = onDismissRequest,
-        padding = 0.dp,
-        modifier = modifier.imePadding(),
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier =
-                    Modifier.size(50.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = MaterialShapes.Pill.toShape(),
-                        ),
+    val body: @Composable ColumnScope.() -> Unit = {
+        if (!fullScreen) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             ) {
-                Icon(
-                    imageVector =
-                        vectorResource(if (isEditSheet) Res.drawable.edit else Res.drawable.add),
-                    contentDescription = "Edit Habit",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier =
+                        Modifier.size(50.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = MaterialShapes.Pill.toShape(),
+                            ),
+                ) {
+                    Icon(
+                        imageVector =
+                            vectorResource(if (isEditSheet) Res.drawable.edit else Res.drawable.add),
+                        contentDescription = "Edit Habit",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+
+                Text(
+                    text =
+                        stringResource(
+                            if (isEditSheet) Res.string.edit_habit else Res.string.add_habit
+                        ),
+                    style =
+                        MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = flexFontEmphasis()
+                        ),
                 )
             }
-
-            Text(
-                text =
-                    stringResource(
-                        if (isEditSheet) Res.string.edit_habit else Res.string.add_habit
-                    ),
-                style = MaterialTheme.typography.headlineSmall.copy(fontFamily = flexFontEmphasis()),
-            )
         }
 
         val sheetListState = rememberLazyListState()
@@ -656,6 +666,45 @@ fun HabitUpsertSheetContent(
                     timePickerDialog = false
                 },
             )
+        }
+    }
+
+    if (fullScreen) {
+        Column(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .imePadding()
+                    .background(MaterialTheme.colorScheme.background)
+        ) {
+            TopAppBar(
+                title = {
+                    Text(
+                        text =
+                            stringResource(
+                                if (isEditSheet) Res.string.edit_habit else Res.string.add_habit
+                            ),
+                        fontFamily = flexFontEmphasis(),
+                    )
+                },
+                navigationIcon = {
+                    FilledTonalIconButton(onClick = onDismissRequest) {
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.nav_arrow_back),
+                            contentDescription = "Navigate Back",
+                        )
+                    }
+                },
+            )
+            body()
+        }
+    } else {
+        GritBottomSheet(
+            onDismissRequest = onDismissRequest,
+            padding = 0.dp,
+            modifier = modifier.imePadding(),
+        ) {
+            body()
         }
     }
 }

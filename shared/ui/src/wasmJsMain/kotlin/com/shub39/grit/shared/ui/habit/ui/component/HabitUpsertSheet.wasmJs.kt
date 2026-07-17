@@ -32,6 +32,8 @@ actual fun HabitUpsertSheet(
     is24Hr: Boolean,
     modifier: Modifier,
     isEditSheet: Boolean,
+    fullScreen: Boolean,
+    autoFocusTitle: Boolean,
 ) {
     var newHabit by remember { mutableStateOf(habit) }
 
@@ -45,5 +47,7 @@ actual fun HabitUpsertSheet(
         notificationPermission = true,
         onRequestPermission = {},
         modifier = modifier,
+        fullScreen = fullScreen,
+        autoFocusTitle = autoFocusTitle,
     )
 }

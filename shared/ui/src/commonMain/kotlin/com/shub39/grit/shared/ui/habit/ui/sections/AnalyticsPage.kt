@@ -89,6 +89,7 @@ fun AnalyticsPage(
     onNavigateToPaywall: () -> Unit,
     onNavigateToCalendar: () -> Unit,
     isUserSubscribed: Boolean,
+    onEditHabit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val windowSizeClass = LocalWindowSizeClass.current
@@ -112,7 +113,6 @@ fun AnalyticsPage(
             firstDayOfWeek = state.startingDay,
         )
 
-    var editDialog by remember { mutableStateOf(false) }
     var deleteDialog by remember { mutableStateOf(false) }
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -170,7 +170,7 @@ fun AnalyticsPage(
                 }
 
                 FilledIconButton(
-                    onClick = { editDialog = true },
+                    onClick = onEditHabit,
                     shapes =
                         IconButtonShapes(
                             shape = CircleShape,
@@ -306,15 +306,5 @@ fun AnalyticsPage(
                 }
             }
         }
-    }
-
-    if (editDialog) {
-        HabitUpsertSheet(
-            habit = currentHabit.habit,
-            onDismissRequest = { editDialog = false },
-            onUpsertHabit = { onAction(HabitsAction.UpdateHabit(it)) },
-            is24Hr = state.is24Hr,
-            isEditSheet = true,
-        )
     }
 }
