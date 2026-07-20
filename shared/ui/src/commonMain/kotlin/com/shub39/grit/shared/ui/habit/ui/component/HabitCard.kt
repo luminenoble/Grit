@@ -71,6 +71,7 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
 /** Habit Card for list */
@@ -216,40 +217,27 @@ fun HabitCard(
                         )
                     }
 
-                    // Description shown inline so it's visible without opening the editor.
-                    if (habitWithAnalytics.habit.description.isNotBlank()) {
-                        Text(
-                            text = habitWithAnalytics.habit.description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = cardContent.copy(alpha = 0.85f),
-                            maxLines = 3,
-                        )
-                    }
-
-                    // Steps listed inline so the routine is visible without opening the editor.
                     if (habitWithAnalytics.habit.steps.isNotEmpty()) {
-                        Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                            habitWithAnalytics.habit.steps.forEach { step ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                ) {
-                                    Icon(
-                                        imageVector = vectorResource(Res.drawable.bulleted_list),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(12.dp),
-                                        tint = cardContent.copy(alpha = 0.75f),
-                                    )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.bulleted_list),
+                                contentDescription = null,
+                                modifier = Modifier.size(12.dp),
+                                tint = cardContent.copy(alpha = 0.75f),
+                            )
 
-                                    Text(
-                                        text = step,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = cardContent.copy(alpha = 0.85f),
-                                        maxLines = 1,
-                                        modifier = Modifier.basicMarquee(),
-                                    )
-                                }
-                            }
+                            Text(
+                                text =
+                                    stringResource(
+                                        Res.string.steps_count,
+                                        habitWithAnalytics.habit.steps.size,
+                                    ),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = cardContent.copy(alpha = 0.75f),
+                            )
                         }
                     }
 

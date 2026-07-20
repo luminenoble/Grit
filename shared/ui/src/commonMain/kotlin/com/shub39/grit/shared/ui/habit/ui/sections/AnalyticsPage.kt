@@ -131,15 +131,6 @@ fun AnalyticsPage(
                     fontFamily = flexFontEmphasis(),
                 )
             },
-            subtitle = {
-                if (currentHabit.habit.description.isNotEmpty()) {
-                    Text(
-                        text = currentHabit.habit.description,
-                        modifier = Modifier.basicMarquee(),
-                        fontFamily = flexFontRounded(),
-                    )
-                }
-            },
             windowInsets =
                 if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
                     WindowInsets(0)
@@ -196,10 +187,24 @@ fun AnalyticsPage(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalItemSpacing = 16.dp,
         ) {
+            // Description + steps live here on the detail page, not on the list card.
+            if (
+                currentHabit.habit.description.isNotBlank() ||
+                    currentHabit.habit.steps.isNotEmpty()
+            ) {
+                item {
+                    HabitDetailsCard(
+                        description = currentHabit.habit.description,
+                        steps = currentHabit.habit.steps,
+                        modifier = Modifier.widthIn(max = maxWidth),
+                    )
+                }
+            }
+
             item {
                 StartStats(
                     consistency = currentHabit.consistency,
-                    startDate = currentHabit.habit.time.date,
+                    startDate = currentHabit.habit.startDate ?: currentHabit.habit.time.date,
                     bestStreak = currentHabit.bestStreak,
                     currentStreak = currentHabit.currentStreak,
                 )
@@ -302,6 +307,74 @@ fun AnalyticsPage(
                             ),
                     ) {
                         Text(stringResource(Res.string.delete))
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Description and step routine of a habit, shown on its detail page. */
+@Composable
+private fun HabitDetailsCard(
+    description: String,
+    steps: List<String>,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        if (description.isNotBlank()) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = stringResource(Res.string.description),
+                    style =
+                        MaterialTheme.typography.labelMedium.copy(
+                            fontFamily = flexFontRounded(),
+                            color = MaterialTheme.colorScheme.primary,
+                        ),
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+
+        if (steps.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = stringResource(Res.string.steps),
+                    style =
+                        MaterialTheme.typography.labelMedium.copy(
+                            fontFamily = flexFontRounded(),
+                            color = MaterialTheme.colorScheme.primary,
+                        ),
+                )
+                steps.forEachIndexed { index, step ->
+                    Row(
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = "${index + 1}.",
+                            style =
+                                MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.primary
+                                ),
+                        )
+                        Text(
+                            text = step,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
                     }
                 }
             }
