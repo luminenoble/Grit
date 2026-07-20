@@ -301,7 +301,13 @@ private fun Content(
                                 Text(
                                     text = task.title,
                                     modifier =
-                                        GlanceModifier.fillMaxWidth().padding(taskTextPadding),
+                                        GlanceModifier.fillMaxWidth()
+                                            .padding(
+                                                horizontal = taskTextPadding,
+                                                vertical =
+                                                    if (task.steps.isEmpty()) taskTextPadding
+                                                    else taskTextPadding / 2,
+                                            ),
                                     style =
                                         TextStyle(
                                             fontSize = taskFontSize,
@@ -316,6 +322,24 @@ private fun Content(
                                         ),
                                     maxLines = 2,
                                 )
+
+                                // Surface step progress (e.g. "2/5 steps") on the widget.
+                                if (task.steps.isNotEmpty()) {
+                                    val doneSteps = task.steps.count { it.done }
+                                    Text(
+                                        text = "$doneSteps/${task.steps.size} steps",
+                                        modifier =
+                                            GlanceModifier.padding(
+                                                start = taskTextPadding,
+                                                bottom = taskTextPadding / 2,
+                                            ),
+                                        style =
+                                            TextStyle(
+                                                fontSize = taskFontSize * 0.8f,
+                                                color = GlanceTheme.colors.onSurfaceVariant,
+                                            ),
+                                    )
+                                }
                             }
                             Spacer(GlanceModifier.height(taskItemSpacing))
                         }

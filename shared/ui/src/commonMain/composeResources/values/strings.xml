@@ -103,6 +103,7 @@
     <string name="calendar">Calendar</string>
     <string name="monthly">Monthly</string>
     <string name="yearly" >Yearly</string>
+    <string name="start_date">Start date</string>
     <string name="deadline">Deadline</string>
     <string name="skip">Skip</string>
     <string name="skipped">Skipped</string>

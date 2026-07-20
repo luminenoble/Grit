@@ -42,6 +42,7 @@ data class HabitSchema(
     val reminder: Boolean,
     val steps: List<String> = emptyList(),
     val color: String = "",
+    val startDate: Long? = null,
     val deadline: Long? = null,
 )
 

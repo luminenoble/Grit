@@ -32,6 +32,7 @@ fun HabitEntity.toHabit(): Habit {
         reminder = reminder,
         steps = steps,
         color = color,
+        startDate = startDate,
         deadline = deadline,
     )
 }
@@ -51,6 +52,7 @@ fun Habit.toHabitEntity(): HabitEntity {
         reminder = reminder,
         steps = steps,
         color = color,
+        startDate = startDate,
         deadline = deadline,
     )
 }

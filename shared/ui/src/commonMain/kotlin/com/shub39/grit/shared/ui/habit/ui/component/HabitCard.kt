@@ -71,7 +71,6 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
-import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
 /** Habit Card for list */
@@ -139,9 +138,12 @@ fun HabitCard(
     val cardBackgroundEnd =
         accent?.copy(alpha = if (completed) 0.32f else if (canCompleteToday) 0.12f else 0.07f)
 
+    // Explicit start date wins; otherwise fall back to the habit's creation date.
+    val habitStart = habitWithAnalytics.habit.startDate ?: habitWithAnalytics.habit.time.date
+
     val weekState =
         rememberWeekCalendarState(
-            startDate = habitWithAnalytics.habit.time.date.minus(1, DateTimeUnit.YEAR),
+            startDate = habitStart.minus(1, DateTimeUnit.YEAR),
             endDate = today,
             firstVisibleWeekDate = today,
             firstDayOfWeek = startingDay,
@@ -206,7 +208,7 @@ fun HabitCard(
                 }
             },
             supportingContent = {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     if (habitWithAnalytics.habit.reminder) {
                         Text(
                             text = habitWithAnalytics.habit.time.time.toFormattedString(is24Hr),
@@ -214,24 +216,57 @@ fun HabitCard(
                         )
                     }
 
+                    // Description shown inline so it's visible without opening the editor.
+                    if (habitWithAnalytics.habit.description.isNotBlank()) {
+                        Text(
+                            text = habitWithAnalytics.habit.description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = cardContent.copy(alpha = 0.85f),
+                            maxLines = 3,
+                        )
+                    }
+
+                    // Steps listed inline so the routine is visible without opening the editor.
                     if (habitWithAnalytics.habit.steps.isNotEmpty()) {
+                        Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                            habitWithAnalytics.habit.steps.forEach { step ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    Icon(
+                                        imageVector = vectorResource(Res.drawable.bulleted_list),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(12.dp),
+                                        tint = cardContent.copy(alpha = 0.75f),
+                                    )
+
+                                    Text(
+                                        text = step,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = cardContent.copy(alpha = 0.85f),
+                                        maxLines = 1,
+                                        modifier = Modifier.basicMarquee(),
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    habitWithAnalytics.habit.startDate?.let { startDate ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
                             Icon(
-                                imageVector = vectorResource(Res.drawable.bulleted_list),
+                                imageVector = vectorResource(Res.drawable.calendar_month),
                                 contentDescription = null,
                                 modifier = Modifier.size(12.dp),
                                 tint = cardContent.copy(alpha = 0.75f),
                             )
 
                             Text(
-                                text =
-                                    stringResource(
-                                        Res.string.steps_count,
-                                        habitWithAnalytics.habit.steps.size,
-                                    ),
+                                text = startDate.toFormattedString(),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = cardContent.copy(alpha = 0.75f),
                             )

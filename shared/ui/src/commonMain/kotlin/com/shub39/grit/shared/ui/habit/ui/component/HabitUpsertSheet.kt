@@ -152,6 +152,7 @@ fun HabitUpsertSheetContent(
 
     var timePickerDialog by remember { mutableStateOf(false) }
     var colorPickerDialog by remember { mutableStateOf(false) }
+    var startDatePickerDialog by remember { mutableStateOf(false) }
     var deadlinePickerDialog by remember { mutableStateOf(false) }
 
     // Steps get a stable local uid so drag reorder and deletion animate correctly.
@@ -359,7 +360,21 @@ fun HabitUpsertSheetContent(
                     ListItem(
                         modifier = Modifier.clip(MaterialTheme.shapes.medium),
                         colors = listItemColors(),
-                        headlineContent = { Text(text = step.text) },
+                        // Editable inline so existing steps can be reworded after creation.
+                        headlineContent = {
+                            OutlinedTextField(
+                                value = step.text,
+                                onValueChange = { newText ->
+                                    stepItems =
+                                        stepItems.map {
+                                            if (it.uid == step.uid) it.copy(text = newText) else it
+                                        }
+                                },
+                                shape = MaterialTheme.shapes.small,
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        },
                         leadingContent = {
                             Icon(
                                 imageVector = vectorResource(Res.drawable.drag_indicator),
@@ -431,6 +446,39 @@ fun HabitUpsertSheetContent(
                                             ?: MaterialTheme.colorScheme.primaryContainer
                                     )
                                     .clickable { colorPickerDialog = true }
+                        )
+                    },
+                )
+            }
+
+            // Optional explicit start date for the habit period.
+            item {
+                ListItem(
+                    colors = listItemColors(),
+                    modifier =
+                        Modifier.clip(detachedItemShape()).clickable {
+                            startDatePickerDialog = true
+                        },
+                    leadingContent = {
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.calendar_month),
+                            contentDescription = null,
+                        )
+                    },
+                    headlineContent = { Text(text = stringResource(Res.string.start_date)) },
+                    supportingContent = {
+                        Text(text = (newHabit.startDate ?: newHabit.time.date).toFormattedString())
+                    },
+                    trailingContent = {
+                        ExpressiveSwitch(
+                            checked = newHabit.startDate != null,
+                            onCheckedChange = { checked ->
+                                if (checked) {
+                                    startDatePickerDialog = true
+                                } else {
+                                    updateHabit(newHabit.copy(startDate = null))
+                                }
+                            },
                         )
                     },
                 )
@@ -624,6 +672,17 @@ fun HabitUpsertSheetContent(
                     parseAccentColor(newHabit.color) ?: MaterialTheme.colorScheme.primary,
                 onSelect = { updateHabit(newHabit.copy(color = it.toHexString())) },
                 onDismiss = { colorPickerDialog = false },
+            )
+        }
+
+        if (startDatePickerDialog) {
+            DeadlinePickerDialog(
+                initialDate = newHabit.startDate ?: newHabit.time.date,
+                onDismiss = { startDatePickerDialog = false },
+                onConfirm = {
+                    updateHabit(newHabit.copy(startDate = it))
+                    startDatePickerDialog = false
+                },
             )
         }
 

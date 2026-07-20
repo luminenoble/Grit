@@ -16,6 +16,8 @@
  */
 package com.shub39.grit.tasks.data.repository
 
+import android.content.Context
+import androidx.glance.appwidget.updateAll
 import com.shub39.grit.core.data.notification.GritNotificationManager
 import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.core.tasks.Task
@@ -26,6 +28,7 @@ import com.shub39.grit.tasks.data.toCategory
 import com.shub39.grit.tasks.data.toCategoryEntity
 import com.shub39.grit.tasks.data.toTask
 import com.shub39.grit.tasks.data.toTaskEntity
+import com.shub39.grit.widgets.all_tasks_widget.AllTasksWidget
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -35,10 +38,17 @@ import org.koin.core.annotation.Single
 
 @Single(binds = [TaskRepo::class])
 class TasksRepository(
+    private val context: Context,
     private val tasksDao: TasksDao,
     private val categoryDao: CategoryDao,
     private val notificationManager: GritNotificationManager,
 ) : TaskRepo {
+
+    // Push the current DB state to the home-screen widget so it never shows stale
+    // (e.g. already-deleted) tasks after the app process has been torn down.
+    private suspend fun refreshWidgets() {
+        runCatching { AllTasksWidget().updateAll(context) }
+    }
 
     private val tasksFlow =
         tasksDao
@@ -88,25 +98,31 @@ class TasksRepository(
         if (task.status) {
             notificationManager.cancelNotification(task)
         }
+        refreshWidgets()
     }
 
     override suspend fun deleteTask(task: Task) {
         tasksDao.deleteTask(task.toTaskEntity())
+        refreshWidgets()
     }
 
     override suspend fun deleteAllTasks() {
         tasksDao.deleteAllTasks()
+        refreshWidgets()
     }
 
     override suspend fun upsertCategory(category: Category) {
         categoryDao.upsertCategory(category.toCategoryEntity())
+        refreshWidgets()
     }
 
     override suspend fun deleteCategory(category: Category) {
         categoryDao.deleteCategory(category.toCategoryEntity())
+        refreshWidgets()
     }
 
     override suspend fun deleteAllCategories() {
         categoryDao.deleteAllCategories()
+        refreshWidgets()
     }
 }

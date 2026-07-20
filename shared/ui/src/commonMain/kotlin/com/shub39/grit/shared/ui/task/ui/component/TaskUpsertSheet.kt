@@ -43,6 +43,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -281,12 +282,25 @@ fun TaskUpsertSheetContent(
                     ListItem(
                         modifier = Modifier.clip(MaterialTheme.shapes.medium),
                         colors = listItemColors(),
+                        // Editable inline so existing steps can be reworded after creation.
                         headlineContent = {
-                            Text(
-                                text = step.text,
-                                textDecoration =
-                                    if (step.done) TextDecoration.LineThrough
-                                    else TextDecoration.None,
+                            OutlinedTextField(
+                                value = step.text,
+                                onValueChange = { newText ->
+                                    stepItems =
+                                        stepItems.map {
+                                            if (it.uid == step.uid) it.copy(text = newText) else it
+                                        }
+                                },
+                                textStyle =
+                                    LocalTextStyle.current.copy(
+                                        textDecoration =
+                                            if (step.done) TextDecoration.LineThrough
+                                            else TextDecoration.None
+                                    ),
+                                shape = MaterialTheme.shapes.small,
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
                             )
                         },
                         leadingContent = {

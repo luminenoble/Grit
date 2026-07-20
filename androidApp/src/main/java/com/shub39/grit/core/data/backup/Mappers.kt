@@ -39,6 +39,7 @@ fun Habit.toHabitSchema(): HabitSchema {
         reminder = reminder,
         steps = steps,
         color = color,
+        startDate = startDate?.let { Converters.dayToTimestamp(it) },
         deadline = deadline?.let { Converters.dayToTimestamp(it) },
     )
 }
@@ -55,6 +56,7 @@ fun HabitSchema.toHabit(): Habit {
         reminder = reminder,
         steps = steps,
         color = color,
+        startDate = startDate?.let { Converters.dayFromTimestamp(it) },
         deadline = deadline?.let { Converters.dayFromTimestamp(it) },
     )
 }

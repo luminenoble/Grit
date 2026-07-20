@@ -34,6 +34,7 @@ import com.shub39.grit.core.data.Converters
             AutoMigration(from = 4, to = 5),
             AutoMigration(from = 5, to = 6),
             AutoMigration(from = 6, to = 7),
+            AutoMigration(from = 7, to = 8),
         ],
 )
 @ColumnTypeConverters(Converters::class)
@@ -43,7 +44,7 @@ abstract class HabitDatabase : RoomDatabase() {
     abstract fun habitStatusDao(): HabitStatusDao
 
     companion object {
-        const val SCHEMA_VERSION = 7
+        const val SCHEMA_VERSION = 8
         const val DB_NAME = "habit_database"
 
         val migrate_3_4 =
