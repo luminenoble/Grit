@@ -21,10 +21,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -129,15 +126,8 @@ fun AiDecomposeSheet(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                }
 
-                // Capped height so a long AI-generated plan scrolls instead of overflowing
-                // the bottom sheet and hiding the "add" button below it.
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth().heightIn(max = 280.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    itemsIndexed(plan.steps) { index, step ->
+                    plan.steps.forEachIndexed { index, step ->
                         Row(
                             modifier =
                                 Modifier.fillMaxWidth()
