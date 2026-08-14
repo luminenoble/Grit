@@ -34,6 +34,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonShapes
 import androidx.compose.material3.DatePicker
@@ -43,7 +44,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -148,6 +148,9 @@ fun TaskUpsertSheetContent(
         )
     }
     var newStepText by remember { mutableStateOf("") }
+    // Steps are edited in a dedicated dialog (large enough for the full text) instead of
+    // inline, so the row only needs to show the text and offer edit/reorder actions.
+    var editingStep by remember { mutableStateOf<StepItem?>(null) }
 
     val timePickerState = rememberTimePickerState(is24Hour = is24Hr)
     val datePickerState = rememberDatePickerState()
@@ -206,7 +209,12 @@ fun TaskUpsertSheetContent(
             }
 
         LazyColumn(
-            modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large),
+            modifier =
+                Modifier.fillMaxWidth()
+                    .clip(MaterialTheme.shapes.large)
+                    // Full screen: bound this to the space left under the TopAppBar so it
+                    // scrolls internally instead of pushing content past the screen edge.
+                    .then(if (fullScreen) Modifier.weight(1f) else Modifier),
             state = sheetListState,
             verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -282,25 +290,12 @@ fun TaskUpsertSheetContent(
                     ListItem(
                         modifier = Modifier.clip(MaterialTheme.shapes.medium),
                         colors = listItemColors(),
-                        // Editable inline so existing steps can be reworded after creation.
                         headlineContent = {
-                            OutlinedTextField(
-                                value = step.text,
-                                onValueChange = { newText ->
-                                    stepItems =
-                                        stepItems.map {
-                                            if (it.uid == step.uid) it.copy(text = newText) else it
-                                        }
-                                },
-                                textStyle =
-                                    LocalTextStyle.current.copy(
-                                        textDecoration =
-                                            if (step.done) TextDecoration.LineThrough
-                                            else TextDecoration.None
-                                    ),
-                                shape = MaterialTheme.shapes.small,
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
+                            Text(
+                                text = step.text,
+                                textDecoration =
+                                    if (step.done) TextDecoration.LineThrough
+                                    else TextDecoration.None,
                             )
                         },
                         leadingContent = {
@@ -330,14 +325,10 @@ fun TaskUpsertSheetContent(
                                     modifier = Modifier.draggableHandle(),
                                 )
 
-                                IconButton(
-                                    onClick = {
-                                        stepItems = stepItems.filter { it.uid != step.uid }
-                                    }
-                                ) {
+                                IconButton(onClick = { editingStep = step }) {
                                     Icon(
-                                        imageVector = vectorResource(Res.drawable.delete),
-                                        contentDescription = "Delete",
+                                        imageVector = vectorResource(Res.drawable.edit),
+                                        contentDescription = "Edit",
                                     )
                                 }
                             }
@@ -537,6 +528,57 @@ fun TaskUpsertSheetContent(
         ) {
             sheetContent()
         }
+    }
+
+    editingStep?.let { step ->
+        var editingText by remember(step.uid) { mutableStateOf(step.text) }
+
+        AlertDialog(
+            onDismissRequest = { editingStep = null },
+            title = { Text(text = stringResource(Res.string.edit_step)) },
+            text = {
+                OutlinedTextField(
+                    value = editingText,
+                    onValueChange = { editingText = it },
+                    shape = MaterialTheme.shapes.medium,
+                    minLines = 3,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        stepItems =
+                            stepItems.map {
+                                if (it.uid == step.uid) it.copy(text = editingText) else it
+                            }
+                        editingStep = null
+                    },
+                    enabled = editingText.isNotBlank(),
+                ) {
+                    Text(stringResource(Res.string.save))
+                }
+            },
+            dismissButton = {
+                Row {
+                    TextButton(
+                        onClick = {
+                            stepItems = stepItems.filter { it.uid != step.uid }
+                            editingStep = null
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.delete),
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+
+                    TextButton(onClick = { editingStep = null }) {
+                        Text(stringResource(Res.string.cancel))
+                    }
+                }
+            },
+        )
     }
 
     if (showDateTimePicker) {
