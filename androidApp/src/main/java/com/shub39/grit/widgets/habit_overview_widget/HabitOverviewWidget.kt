@@ -63,8 +63,14 @@ import com.shub39.grit.app.MainActivity
 import com.shub39.grit.core.habits.Habit
 import com.shub39.grit.core.habits.HabitRepo
 import com.shub39.grit.core.habits.HabitStatus
+import com.shub39.grit.core.interfaces.SettingsDatastore
 import com.shub39.grit.core.now
+import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.widgets.WidgetSize
+import com.shub39.grit.widgets.bodyFontSize
+import com.shub39.grit.widgets.captionFontSize
+import com.shub39.grit.widgets.itemPadding
+import com.shub39.grit.widgets.itemSpacing
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -78,11 +84,13 @@ class HabitOverviewWidget : GlanceAppWidget(), KoinComponent {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val repo = get<HabitRepo>()
+        val settings = get<SettingsDatastore>()
 
         provideContent {
             val size = LocalSize.current
             val scope = rememberCoroutineScope()
             val habits by repo.getHabitsWithStatus().collectAsState(initial = emptyList())
+            val textSize by settings.getWidgetTextSizeFlow().collectAsState(WidgetTextSize.MEDIUM)
 
             key(size) {
                 GlanceTheme {
@@ -91,6 +99,7 @@ class HabitOverviewWidget : GlanceAppWidget(), KoinComponent {
                             habits.filter {
                                 it.first.days.any { day -> day == LocalDate.now().dayOfWeek }
                             },
+                        textSize = textSize,
                         onUpdateHabit = { habitWithStatus ->
                             scope.launch {
                                 if (habitWithStatus.second) {
@@ -160,9 +169,15 @@ private fun Content(
     onUpdateHabit: (Pair<Habit, Boolean>) -> Unit,
     onUpdateWidget: () -> Unit,
     modifier: GlanceModifier = GlanceModifier,
+    textSize: WidgetTextSize = WidgetTextSize.MEDIUM,
 ) {
     val size = LocalSize.current
     val roundedCornerSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+    // Smaller text tightens paddings too, so small widgets fit more habits.
+    val habitFontSize = textSize.bodyFontSize
+    val habitTextPadding = textSize.itemPadding
+    val habitItemSpacing = textSize.itemSpacing
 
     Column(
         modifier =
@@ -181,7 +196,8 @@ private fun Content(
             actions = {
                 Text(
                     text = "${habitsWithStatus.count { it.second }}/${habitsWithStatus.size}",
-                    style = TextStyle(color = GlanceTheme.colors.onSurface),
+                    style =
+                        TextStyle(fontSize = habitFontSize, color = GlanceTheme.colors.onSurface),
                 )
 
                 if (size.width >= WidgetSize.Width4) {
@@ -218,7 +234,7 @@ private fun Content(
                                     if (roundedCornerSupported) GlanceModifier.cornerRadius(16.dp)
                                     else GlanceModifier
                                 )
-                                .padding(vertical = 8.dp)
+                                .padding(vertical = habitItemSpacing * 2)
                                 .clickable {
                                     onUpdateHabit(habitWithStatus)
                                     onUpdateWidget()
@@ -244,11 +260,14 @@ private fun Content(
                             )
                         }
 
-                        Column(modifier = GlanceModifier.defaultWeight().padding(8.dp)) {
+                        Column(
+                            modifier = GlanceModifier.defaultWeight().padding(habitTextPadding)
+                        ) {
                             Text(
                                 text = habitWithStatus.first.title,
                                 style =
                                     TextStyle(
+                                        fontSize = habitFontSize,
                                         color =
                                             if (!habitWithStatus.second) {
                                                 GlanceTheme.colors.onSurface
@@ -267,6 +286,7 @@ private fun Content(
                                     text = habitWithStatus.first.description,
                                     style =
                                         TextStyle(
+                                            fontSize = textSize.captionFontSize,
                                             color =
                                                 if (!habitWithStatus.second) {
                                                     GlanceTheme.colors.onSurface
@@ -281,7 +301,7 @@ private fun Content(
                             }
                         }
                     }
-                    Spacer(modifier = GlanceModifier.height(4.dp))
+                    Spacer(modifier = GlanceModifier.height(habitItemSpacing))
                 }
             }
 

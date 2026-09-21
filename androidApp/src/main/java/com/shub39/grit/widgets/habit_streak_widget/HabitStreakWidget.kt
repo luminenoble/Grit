@@ -67,8 +67,12 @@ import com.shub39.grit.app.MainActivity
 import com.shub39.grit.core.habits.Habit
 import com.shub39.grit.core.habits.HabitRepo
 import com.shub39.grit.core.habits.HabitWithAnalytics
+import com.shub39.grit.core.interfaces.SettingsDatastore
 import com.shub39.grit.core.now
+import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.widgets.WidgetSize
+import com.shub39.grit.widgets.bodyFontSize
+import com.shub39.grit.widgets.scaledBy
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import org.koin.core.component.KoinComponent
@@ -85,10 +89,12 @@ class HabitStreakWidget : GlanceAppWidget(), KoinComponent {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val repo = get<HabitRepo>()
+        val settings = get<SettingsDatastore>()
 
         provideContent {
             val scope = rememberCoroutineScope()
             val size = LocalSize.current
+            val textSize by settings.getWidgetTextSizeFlow().collectAsState(WidgetTextSize.MEDIUM)
 
             val habitsWithAnalytics by repo.getHabitsWithAnalytics().collectAsState(emptyList())
             val sortedData = habitsWithAnalytics.sortedBy { it.habit.id }
@@ -103,6 +109,7 @@ class HabitStreakWidget : GlanceAppWidget(), KoinComponent {
                 GlanceTheme {
                     Content(
                         habitWithAnalytics = currentData,
+                        textSize = textSize,
                         onUpdateWidget = {
                             scope.launch { this@HabitStreakWidget.update(context, id) }
                         },
@@ -164,9 +171,16 @@ private fun Content(
     habitWithAnalytics: HabitWithAnalytics?,
     onUpdateWidget: () -> Unit,
     onChangeHabit: () -> Unit,
+    textSize: WidgetTextSize = WidgetTextSize.MEDIUM,
 ) {
     val size = LocalSize.current
     val roundedCornerSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+    // Stat numbers and their labels follow the widget text size setting.
+    val statFontSize = 24.sp.scaledBy(textSize)
+    val statFontSizeCompact = 14.sp.scaledBy(textSize)
+    val statLabelFontSize = 14.sp.scaledBy(textSize)
+    val statLabelFontSizeCompact = 10.sp.scaledBy(textSize)
 
     Column(
         modifier =
@@ -245,7 +259,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontWeight = FontWeight.Bold,
-                                                fontSize = 24.sp,
+                                                fontSize = statFontSize,
                                                 color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
@@ -256,6 +270,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontStyle = FontStyle.Italic,
+                                                fontSize = statLabelFontSize,
                                                 color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
@@ -270,7 +285,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontWeight = FontWeight.Bold,
-                                                fontSize = 14.sp,
+                                                fontSize = statFontSizeCompact,
                                                 color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
@@ -281,7 +296,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontStyle = FontStyle.Italic,
-                                                fontSize = 10.sp,
+                                                fontSize = statLabelFontSizeCompact,
                                                 color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
@@ -323,7 +338,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontWeight = FontWeight.Bold,
-                                                fontSize = 24.sp,
+                                                fontSize = statFontSize,
                                                 color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
@@ -334,6 +349,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontStyle = FontStyle.Italic,
+                                                fontSize = statLabelFontSize,
                                                 color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
@@ -348,7 +364,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontWeight = FontWeight.Bold,
-                                                fontSize = 14.sp,
+                                                fontSize = statFontSizeCompact,
                                                 color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
@@ -359,7 +375,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontStyle = FontStyle.Italic,
-                                                fontSize = 10.sp,
+                                                fontSize = statLabelFontSizeCompact,
                                                 color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
@@ -401,7 +417,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontWeight = FontWeight.Bold,
-                                                fontSize = 24.sp,
+                                                fontSize = statFontSize,
                                                 color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
@@ -412,6 +428,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontStyle = FontStyle.Italic,
+                                                fontSize = statLabelFontSize,
                                                 color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
@@ -426,7 +443,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontWeight = FontWeight.Bold,
-                                                fontSize = 14.sp,
+                                                fontSize = statFontSizeCompact,
                                                 color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
@@ -437,7 +454,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontStyle = FontStyle.Italic,
-                                                fontSize = 10.sp,
+                                                fontSize = statLabelFontSizeCompact,
                                                 color = GlanceTheme.colors.onSurface,
                                             ),
                                     )
@@ -454,7 +471,11 @@ private fun Content(
             Box(modifier = GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     text = "Nothing to show",
-                    style = TextStyle(color = GlanceTheme.colors.onSurface),
+                    style =
+                        TextStyle(
+                            fontSize = textSize.bodyFontSize,
+                            color = GlanceTheme.colors.onSurface,
+                        ),
                 )
             }
         }

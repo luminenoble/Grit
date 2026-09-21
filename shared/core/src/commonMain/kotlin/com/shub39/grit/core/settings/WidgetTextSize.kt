@@ -16,7 +16,7 @@
  */
 package com.shub39.grit.core.settings
 
-/** Text size of tasks in the tasks widget; smaller fits more tasks in tight spaces. */
+/** Text size of the home-screen widgets; smaller fits more items in tight spaces. */
 enum class WidgetTextSize {
     SMALL,
     MEDIUM,

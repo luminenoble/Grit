@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.glance.ColorFilter
@@ -70,6 +69,10 @@ import com.shub39.grit.core.tasks.CategoryColors
 import com.shub39.grit.core.tasks.Task
 import com.shub39.grit.core.tasks.TaskRepo
 import com.shub39.grit.widgets.WidgetSize
+import com.shub39.grit.widgets.bodyFontSize
+import com.shub39.grit.widgets.captionFontSize
+import com.shub39.grit.widgets.itemPadding
+import com.shub39.grit.widgets.itemSpacing
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -198,23 +201,9 @@ private fun Content(
     val roundedCornerSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     // Smaller text tightens paddings too, so small widgets fit more tasks.
-    val taskFontSize =
-        when (textSize) {
-            WidgetTextSize.SMALL -> 11.sp
-            WidgetTextSize.MEDIUM -> 14.sp
-            WidgetTextSize.LARGE -> 17.sp
-        }
-    val taskTextPadding =
-        when (textSize) {
-            WidgetTextSize.SMALL -> 4.dp
-            WidgetTextSize.MEDIUM -> 8.dp
-            WidgetTextSize.LARGE -> 10.dp
-        }
-    val taskItemSpacing =
-        when (textSize) {
-            WidgetTextSize.SMALL -> 2.dp
-            else -> 4.dp
-        }
+    val taskFontSize = textSize.bodyFontSize
+    val taskTextPadding = textSize.itemPadding
+    val taskItemSpacing = textSize.itemSpacing
 
     Column(
         modifier =
@@ -335,7 +324,7 @@ private fun Content(
                                             ),
                                         style =
                                             TextStyle(
-                                                fontSize = taskFontSize * 0.8f,
+                                                fontSize = textSize.captionFontSize,
                                                 color = GlanceTheme.colors.onSurfaceVariant,
                                             ),
                                     )
