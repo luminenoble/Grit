@@ -1,13 +1,5 @@
 [
   {
-    "version": "6.0.5",
-    "changes": [
-      "小组件字体大小设置现在对习惯小组件同样生效",
-      "设置页新增「检查更新」，可跳转 GitHub 最新 release 下载",
-      "任务详情步骤列表溢出修复，步骤编辑改为弹窗"
-    ]
-  },
-  {
     "version": "6.0.4",
     "changes": [
       "Updated Translations",
