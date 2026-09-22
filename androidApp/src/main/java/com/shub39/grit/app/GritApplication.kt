@@ -24,6 +24,7 @@ import com.shub39.grit.BuildConfig
 import com.shub39.grit.billing.BillingInitializer
 import com.shub39.grit.di.GritModules
 import com.shub39.grit.shared.ui.ai.AiKeyHolder
+import com.shub39.grit.shared.ui.update.AppVersionHolder
 import com.shub39.grit.widgets.all_tasks_widget.AllTasksWidgetReceiver
 import com.shub39.grit.widgets.habit_overview_widget.HabitOverviewWidgetReceiver
 import com.shub39.grit.widgets.habit_streak_widget.HabitStreakWidgetReceiver
@@ -40,6 +41,7 @@ class GritApplication : Application() {
         super.onCreate()
 
         AiKeyHolder.apiKey = BuildConfig.DEEPSEEK_API_KEY
+        AppVersionHolder.versionName = BuildConfig.VERSION_NAME
 
         startKoin<GritModules> {
             androidLogger()

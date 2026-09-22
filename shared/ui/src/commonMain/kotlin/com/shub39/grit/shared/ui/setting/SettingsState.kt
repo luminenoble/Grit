@@ -24,6 +24,7 @@ import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.core.settings.backup.ExportState
 import com.shub39.grit.core.settings.backup.RestoreState
 import com.shub39.grit.core.theme.Theme
+import com.shub39.grit.shared.ui.update.UpdateCheckState
 import kotlinx.datetime.DayOfWeek
 
 @Stable
@@ -32,6 +33,7 @@ data class SettingsState(
     val changelog: Changelog = emptyList(),
     val currentVersion: String? = null,
     val backupState: BackupState = BackupState(),
+    val updateCheck: UpdateCheckState = UpdateCheckState.Idle,
 
     // datastore
     val theme: Theme = Theme(),

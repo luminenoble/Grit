@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItem
@@ -41,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
@@ -56,8 +58,12 @@ import com.shub39.grit.shared.ui.components.middleItemShape
 import com.shub39.grit.shared.ui.setting.SettingsAction
 import com.shub39.grit.shared.ui.setting.SettingsState
 import com.shub39.grit.shared.ui.setting.ui.component.LocalePickerSheet
+import com.shub39.grit.shared.ui.setting.ui.component.UpdateAvailableDialog
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
 import com.shub39.grit.shared.ui.toStringRes
+import com.shub39.grit.shared.ui.update.AppVersionHolder
+import com.shub39.grit.shared.ui.update.UPDATE_REPO
+import com.shub39.grit.shared.ui.update.UpdateCheckState
 import grit.shared.ui.generated.resources.*
 import kotlinx.datetime.DayOfWeek
 import org.jetbrains.compose.resources.stringResource
@@ -75,6 +81,9 @@ fun RootPage(
     onNavigateToAppInfo: () -> Unit,
 ) {
     var showLocalePicker by remember { mutableStateOf(false) }
+
+    val uriHandler = LocalUriHandler.current
+    val appVersion = AppVersionHolder.versionName.ifBlank { state.currentVersion.orEmpty() }
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).fillMaxSize()) {
@@ -336,6 +345,48 @@ fun RootPage(
                             Modifier.clip(leadingItemShape()).clickable { onNavigateToAppInfo() },
                     )
 
+                    // Update check against the GitHub releases of this fork
+                    ListItem(
+                        colors = listItemColors(),
+                        leadingContent = {
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.github),
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp),
+                            )
+                        },
+                        supportingContent = {
+                            Text(
+                                text =
+                                    when (val check = state.updateCheck) {
+                                        UpdateCheckState.Idle -> "从 GitHub 获取最新版本"
+                                        UpdateCheckState.Checking -> "检查中…"
+                                        is UpdateCheckState.UpToDate ->
+                                            "已是最新版本 ${check.versionName}".trim()
+                                        UpdateCheckState.NoReleases -> "$UPDATE_REPO 还没有发布 release"
+                                        is UpdateCheckState.Available ->
+                                            "发现新版本 ${check.release.versionName}"
+                                        is UpdateCheckState.Failed -> "检查失败：${check.message}"
+                                    }
+                            )
+                        },
+                        trailingContent = {
+                            if (state.updateCheck is UpdateCheckState.Checking) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            } else {
+                                Icon(
+                                    imageVector = vectorResource(Res.drawable.open_link),
+                                    contentDescription = "Check for updates",
+                                )
+                            }
+                        },
+                        headlineContent = { Text(text = "检查更新") },
+                        modifier =
+                            Modifier.clip(middleItemShape()).clickable {
+                                onAction(SettingsAction.OnCheckForUpdates)
+                            },
+                    )
+
                     ListItem(
                         colors = listItemColors(),
                         leadingContent = {
@@ -363,6 +414,19 @@ fun RootPage(
 
         if (showLocalePicker) {
             LocalePickerSheet(onDismissRequest = { showLocalePicker = false })
+        }
+
+        val updateCheck = state.updateCheck
+        if (updateCheck is UpdateCheckState.Available) {
+            UpdateAvailableDialog(
+                release = updateCheck.release,
+                currentVersion = appVersion,
+                onDownload = {
+                    uriHandler.openUri(updateCheck.release.pageUrl)
+                    onAction(SettingsAction.OnDismissUpdateResult)
+                },
+                onDismissRequest = { onAction(SettingsAction.OnDismissUpdateResult) },
+            )
         }
     }
 }

@@ -56,4 +56,8 @@ sealed interface SettingsAction {
     data class ChangeBiometricLock(val pref: Boolean) : SettingsAction
 
     data class ChangeWidgetTextSize(val size: WidgetTextSize) : SettingsAction
+
+    data object OnCheckForUpdates : SettingsAction
+
+    data object OnDismissUpdateResult : SettingsAction
 }

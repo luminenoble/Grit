@@ -28,6 +28,11 @@ import com.shub39.grit.core.settings.backup.RestoreRepo
 import com.shub39.grit.shared.ui.setting.BackupState
 import com.shub39.grit.shared.ui.setting.SettingsAction
 import com.shub39.grit.shared.ui.setting.SettingsState
+import com.shub39.grit.shared.ui.update.AppVersionHolder
+import com.shub39.grit.shared.ui.update.UpdateCheckState
+import com.shub39.grit.shared.ui.update.UpdateChecker
+import com.shub39.grit.shared.ui.update.createUpdateChecker
+import com.shub39.grit.shared.ui.update.isNewerVersion
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -52,6 +57,8 @@ class SettingsViewModel(
     @Provided private val biometricUtils: BiometricUtils,
 ) : ViewModel() {
     private var observeJob: Job? = null
+
+    private val updateChecker: UpdateChecker = createUpdateChecker()
 
     private val _state = MutableStateFlow(SettingsState())
 
@@ -130,8 +137,40 @@ class SettingsViewModel(
                 is ChangeReorderTasks -> settingsDatastore.setTaskReorderPref(action.pref)
 
                 is ChangeWidgetTextSize -> settingsDatastore.setWidgetTextSize(action.size)
+
+                OnCheckForUpdates -> checkForUpdates()
+
+                OnDismissUpdateResult -> {
+                    _state.update { it.copy(updateCheck = UpdateCheckState.Idle) }
+                }
             }
         }
+
+    /** Manual check against the GitHub releases of the repo the app is built from. */
+    private suspend fun checkForUpdates() {
+        if (_state.value.updateCheck is UpdateCheckState.Checking) return
+
+        _state.update { it.copy(updateCheck = UpdateCheckState.Checking) }
+
+        // The changelog version is the fallback for platforms that never set the holder.
+        val current = AppVersionHolder.versionName.ifBlank { _state.value.currentVersion.orEmpty() }
+
+        val result =
+            runCatching { updateChecker.latestRelease() }
+                .fold(
+                    onSuccess = { release ->
+                        when {
+                            release == null -> UpdateCheckState.NoReleases
+                            isNewerVersion(release.versionName, current) ->
+                                UpdateCheckState.Available(release)
+                            else -> UpdateCheckState.UpToDate(current)
+                        }
+                    },
+                    onFailure = { UpdateCheckState.Failed(it.message ?: "检查更新失败") },
+                )
+
+        _state.update { it.copy(updateCheck = result) }
+    }
 
     private fun getBiometricStatus() {
         _state.update {
