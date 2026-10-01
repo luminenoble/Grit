@@ -19,6 +19,7 @@ package com.shub39.grit.habits.data.database
 import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.PrimaryKey
+import com.shub39.grit.core.tasks.Section
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -32,7 +33,7 @@ data class HabitEntity(
     val days: Set<DayOfWeek>,
     val time: LocalDateTime,
     @ColumnInfo(name = "reminder", defaultValue = "1") val reminder: Boolean,
-    @ColumnInfo(defaultValue = "[]") val steps: List<String> = emptyList(),
+    @ColumnInfo(name = "steps", defaultValue = "[]") val sections: List<Section> = emptyList(),
     @ColumnInfo(defaultValue = "") val color: String = "",
     @ColumnInfo(name = "start_date", defaultValue = "NULL") val startDate: LocalDate? = null,
     @ColumnInfo(name = "deadline", defaultValue = "NULL") val deadline: LocalDate? = null,

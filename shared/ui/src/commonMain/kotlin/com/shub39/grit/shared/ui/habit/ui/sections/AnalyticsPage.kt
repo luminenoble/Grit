@@ -18,6 +18,7 @@ package com.shub39.grit.shared.ui.habit.ui.sections
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -64,11 +65,11 @@ import com.kizitonwose.calendar.compose.heatmapcalendar.rememberHeatMapCalendarS
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.minusMonths
 import com.kizitonwose.calendar.core.now
+import com.shub39.grit.core.tasks.Section
 import com.shub39.grit.shared.ui.LocalWindowSizeClass
 import com.shub39.grit.shared.ui.components.GritDialog
 import com.shub39.grit.shared.ui.habit.HabitState
 import com.shub39.grit.shared.ui.habit.HabitsAction
-import com.shub39.grit.shared.ui.habit.ui.component.HabitUpsertSheet
 import com.shub39.grit.shared.ui.habit.ui.component.stats.CalendarMap
 import com.shub39.grit.shared.ui.habit.ui.component.stats.StartStats
 import com.shub39.grit.shared.ui.habit.ui.component.stats.WeekDayBreakdown
@@ -187,15 +188,15 @@ fun AnalyticsPage(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalItemSpacing = 16.dp,
         ) {
-            // Description + steps live here on the detail page, not on the list card.
+            // Description + sections live here on the detail page, not on the list card.
             if (
                 currentHabit.habit.description.isNotBlank() ||
-                    currentHabit.habit.steps.isNotEmpty()
+                    currentHabit.habit.sections.isNotEmpty()
             ) {
                 item {
                     HabitDetailsCard(
                         description = currentHabit.habit.description,
-                        steps = currentHabit.habit.steps,
+                        sections = currentHabit.habit.sections,
                         modifier = Modifier.widthIn(max = maxWidth),
                     )
                 }
@@ -318,7 +319,7 @@ fun AnalyticsPage(
 @Composable
 private fun HabitDetailsCard(
     description: String,
-    steps: List<String>,
+    sections: List<Section>,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -348,17 +349,17 @@ private fun HabitDetailsCard(
             }
         }
 
-        if (steps.isNotEmpty()) {
+        if (sections.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    text = stringResource(Res.string.steps),
+                    text = stringResource(Res.string.sections),
                     style =
                         MaterialTheme.typography.labelMedium.copy(
                             fontFamily = flexFontRounded(),
                             color = MaterialTheme.colorScheme.primary,
                         ),
                 )
-                steps.forEachIndexed { index, step ->
+                sections.forEachIndexed { index, step ->
                     Row(
                         verticalAlignment = Alignment.Top,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -370,11 +371,20 @@ private fun HabitDetailsCard(
                                     color = MaterialTheme.colorScheme.primary
                                 ),
                         )
-                        Text(
-                            text = step,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
+                        Column {
+                            var expanded by remember(step) { mutableStateOf(false) }
+                            Text(
+                                text = step.name,
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier =
+                                    Modifier.fillMaxWidth().clickable { expanded = !expanded },
+                            )
+                            if (expanded)
+                                Text(
+                                    text = step.content,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                        }
                     }
                 }
             }

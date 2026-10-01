@@ -16,10 +16,12 @@
  */
 package com.shub39.grit.core.data.backup
 
-import com.shub39.grit.core.tasks.TaskStep
+import com.shub39.grit.core.tasks.Section
+import com.shub39.grit.core.tasks.SectionsSerializer
 import com.shub39.grit.habits.data.database.HabitDatabase
 import com.shub39.grit.tasks.data.database.TaskDatabase
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class ExportSchema(
@@ -39,8 +41,11 @@ data class HabitSchema(
     val index: Int,
     val time: Long,
     val days: String,
-    val reminder: Boolean,
-    val steps: List<String> = emptyList(),
+    val reminder: Boolean = false,
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @JsonNames("steps")
+    @Serializable(with = SectionsSerializer::class)
+    val sections: List<Section> = emptyList(),
     val color: String = "",
     val startDate: Long? = null,
     val deadline: Long? = null,
@@ -64,7 +69,10 @@ data class TaskSchema(
     val reminder: Long? = null,
     val description: String = "",
     val isToday: Boolean = false,
-    val steps: List<TaskStep> = emptyList(),
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @JsonNames("steps")
+    @Serializable(with = SectionsSerializer::class)
+    val sections: List<Section> = emptyList(),
 )
 
 @Serializable

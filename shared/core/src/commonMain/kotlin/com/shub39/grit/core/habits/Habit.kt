@@ -16,6 +16,7 @@
  */
 package com.shub39.grit.core.habits
 
+import com.shub39.grit.core.tasks.Section
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -30,8 +31,8 @@ data class Habit(
     val days: Set<DayOfWeek>,
     val index: Int,
     val reminder: Boolean,
-    /** Ordered sub-steps of the habit routine. */
-    val steps: List<String> = emptyList(),
+    /** Ordered sub-sections of the habit routine. */
+    val sections: List<Section> = emptyList(),
     /** Accent color as a hex string ("#AARRGGBB"); empty means theme default. */
     val color: String = "",
     /** Optional date the habit should start on; null falls back to [time]'s date. */

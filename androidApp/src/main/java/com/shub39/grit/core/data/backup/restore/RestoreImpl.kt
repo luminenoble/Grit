@@ -64,8 +64,8 @@ class RestoreImpl(
             val jsonDeserialized = json.decodeFromString<ExportSchema>(file.readString())
 
             if (
-                jsonDeserialized.tasksSchemaVersion != TaskDatabase.SCHEMA_VERSION ||
-                    jsonDeserialized.habitsSchemaVersion != HabitDatabase.SCHEMA_VERSION
+                jsonDeserialized.tasksSchemaVersion !in 4..TaskDatabase.SCHEMA_VERSION ||
+                    jsonDeserialized.habitsSchemaVersion !in 4..HabitDatabase.SCHEMA_VERSION
             ) {
                 throw SchemaMismatchException()
             }

@@ -17,7 +17,6 @@
 package com.shub39.grit.tasks.data.repository
 
 import android.content.Context
-import androidx.glance.appwidget.updateAll
 import com.shub39.grit.core.data.notification.GritNotificationManager
 import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.core.tasks.Task
@@ -28,7 +27,7 @@ import com.shub39.grit.tasks.data.toCategory
 import com.shub39.grit.tasks.data.toCategoryEntity
 import com.shub39.grit.tasks.data.toTask
 import com.shub39.grit.tasks.data.toTaskEntity
-import com.shub39.grit.widgets.all_tasks_widget.AllTasksWidget
+import com.shub39.grit.widgets.WidgetUpdates
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -47,7 +46,7 @@ class TasksRepository(
     // Push the current DB state to the home-screen widget so it never shows stale
     // (e.g. already-deleted) tasks after the app process has been torn down.
     private suspend fun refreshWidgets() {
-        runCatching { AllTasksWidget().updateAll(context) }
+        WidgetUpdates.tasks(context)
     }
 
     private val tasksFlow =
@@ -90,6 +89,7 @@ class TasksRepository(
 
     override suspend fun updateTaskIndexById(id: Long, index: Int) {
         tasksDao.updateTaskIndexById(id, index)
+        refreshWidgets()
     }
 
     override suspend fun upsertTask(task: Task) {

@@ -31,7 +31,7 @@ fun Task.toTaskEntity(): TaskEntity {
         reminder = reminder,
         description = description,
         isToday = isToday,
-        steps = steps,
+        sections = sections,
     )
 }
 
@@ -45,7 +45,7 @@ fun TaskEntity.toTask(): Task {
         reminder = reminder,
         description = description,
         isToday = isToday,
-        steps = steps,
+        sections = sections,
     )
 }
 

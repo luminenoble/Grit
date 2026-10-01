@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.0.6
+
+- Fixed task updates replacing habit widgets by refreshing widgets through their registered providers
+- Refresh habit widgets after edits, completions, undo, date changes and app upgrades
+- Replaced task and habit steps with sections featuring editable names and multiline content
+- Added sequential default section names and preserved completion state, ordering and reordering
+- Import legacy steps as section content named section 1, section 2, and so on
+
 ## 6.0.4
 - Updated Translations
 - Increased habit title and description length limits

@@ -34,14 +34,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonShapes
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialShapes
@@ -52,6 +50,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.material3.toShape
@@ -74,8 +73,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.now
 import com.shub39.grit.core.tasks.Category
+import com.shub39.grit.core.tasks.Section
 import com.shub39.grit.core.tasks.Task
-import com.shub39.grit.core.tasks.TaskStep
+import com.shub39.grit.core.tasks.nextSectionName
 import com.shub39.grit.core.toFormattedString
 import com.shub39.grit.shared.ui.components.ExpressiveSwitch
 import com.shub39.grit.shared.ui.components.GritBottomSheet
@@ -96,8 +96,8 @@ import org.jetbrains.compose.resources.vectorResource
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
-/** A step being edited, with a stable [uid] independent of its list position. */
-private data class StepItem(val uid: Int, val text: String, val done: Boolean = false)
+/** A section being edited, with a stable [uid] independent of its list position. */
+private data class SectionItem(val uid: Int, val section: Section)
 
 @Composable
 expect fun TaskUpsertSheet(
@@ -140,17 +140,14 @@ fun TaskUpsertSheetContent(
             initialSelection = TextRange(newTask.title.length),
         )
 
-    // Steps get a stable local uid so drag reorder and deletion animate correctly.
-    var stepUidCounter by remember { mutableStateOf(task.steps.size) }
-    var stepItems by remember {
-        mutableStateOf(
-            task.steps.mapIndexed { index, step -> StepItem(index, step.text, step.done) }
-        )
+    // Sections get a stable local uid so drag reorder and deletion animate correctly.
+    var sectionUidCounter by remember { mutableStateOf(task.sections.size) }
+    var sectionItems by remember {
+        mutableStateOf(task.sections.mapIndexed { index, step -> SectionItem(index, step) })
     }
-    var newStepText by remember { mutableStateOf("") }
-    // Steps are edited in a dedicated dialog (large enough for the full text) instead of
-    // inline, so the row only needs to show the text and offer edit/reorder actions.
-    var editingStep by remember { mutableStateOf<StepItem?>(null) }
+    // Sections are edited in a dedicated dialog (large enough for the full text) instead of
+    // inline, so the row only needs to show the name and offer edit/reorder actions.
+    var editingSection by remember { mutableStateOf<SectionItem?>(null) }
 
     val timePickerState = rememberTimePickerState(is24Hour = is24Hr)
     val datePickerState = rememberDatePickerState()
@@ -176,7 +173,9 @@ fun TaskUpsertSheetContent(
                 ) {
                     Icon(
                         imageVector =
-                            vectorResource(if (isEditSheet) Res.drawable.edit else Res.drawable.add),
+                            vectorResource(
+                                if (isEditSheet) Res.drawable.edit else Res.drawable.add
+                            ),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
@@ -188,20 +187,18 @@ fun TaskUpsertSheetContent(
                             if (isEditSheet) Res.string.edit_task else Res.string.add_task
                         ),
                     style =
-                        MaterialTheme.typography.headlineSmall.copy(
-                            fontFamily = flexFontEmphasis()
-                        ),
+                        MaterialTheme.typography.headlineSmall.copy(fontFamily = flexFontEmphasis()),
                 )
             }
         }
 
         val sheetListState = rememberLazyListState()
-        val stepsReorderState =
+        val sectionsReorderState =
             rememberReorderableLazyListState(sheetListState) { from, to ->
-                stepItems =
-                    stepItems.toMutableList().apply {
-                        val fromIndex = indexOfFirst { "step_${it.uid}" == from.key }
-                        val toIndex = indexOfFirst { "step_${it.uid}" == to.key }
+                sectionItems =
+                    sectionItems.toMutableList().apply {
+                        val fromIndex = indexOfFirst { "section_${it.uid}" == from.key }
+                        val toIndex = indexOfFirst { "section_${it.uid}" == to.key }
                         if (fromIndex >= 0 && toIndex >= 0) {
                             add(toIndex, removeAt(fromIndex))
                         }
@@ -276,41 +273,46 @@ fun TaskUpsertSheetContent(
                 )
             }
 
-            // steps: add, remove and drag to reorder
+            // sections: add, remove and drag to reorder
             item {
                 Text(
-                    text = stringResource(Res.string.steps),
+                    text = stringResource(Res.string.sections),
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(top = 4.dp),
                 )
             }
 
-            items(stepItems, key = { "step_${it.uid}" }) { step ->
-                ReorderableItem(stepsReorderState, key = "step_${step.uid}") {
+            items(sectionItems, key = { "section_${it.uid}" }) { step ->
+                ReorderableItem(sectionsReorderState, key = "section_${step.uid}") {
                     ListItem(
                         modifier = Modifier.clip(MaterialTheme.shapes.medium),
                         colors = listItemColors(),
                         headlineContent = {
                             Text(
-                                text = step.text,
+                                text = step.section.name,
                                 textDecoration =
-                                    if (step.done) TextDecoration.LineThrough
+                                    if (step.section.done) TextDecoration.LineThrough
                                     else TextDecoration.None,
                             )
                         },
                         leadingContent = {
                             IconButton(
                                 onClick = {
-                                    stepItems =
-                                        stepItems.map {
-                                            if (it.uid == step.uid) it.copy(done = !it.done) else it
+                                    sectionItems =
+                                        sectionItems.map {
+                                            if (it.uid == step.uid)
+                                                it.copy(
+                                                    section =
+                                                        it.section.copy(done = !it.section.done)
+                                                )
+                                            else it
                                         }
                                 }
                             ) {
                                 Icon(
                                     imageVector =
                                         vectorResource(
-                                            if (step.done) Res.drawable.check_circle
+                                            if (step.section.done) Res.drawable.check_circle
                                             else Res.drawable.circle_border
                                         ),
                                     contentDescription = "Toggle done",
@@ -325,7 +327,7 @@ fun TaskUpsertSheetContent(
                                     modifier = Modifier.draggableHandle(),
                                 )
 
-                                IconButton(onClick = { editingStep = step }) {
+                                IconButton(onClick = { editingSection = step }) {
                                     Icon(
                                         imageVector = vectorResource(Res.drawable.edit),
                                         contentDescription = "Edit",
@@ -338,31 +340,19 @@ fun TaskUpsertSheetContent(
             }
 
             item {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    OutlinedTextField(
-                        value = newStepText,
-                        onValueChange = { newStepText = it },
-                        shape = MaterialTheme.shapes.medium,
-                        placeholder = { Text(text = stringResource(Res.string.add_step)) },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                    )
-
-                    FilledTonalIconButton(
-                        onClick = {
-                            stepItems = stepItems + StepItem(stepUidCounter++, newStepText.trim())
-                            newStepText = ""
-                        },
-                        enabled = newStepText.isNotBlank(),
-                    ) {
-                        Icon(
-                            imageVector = vectorResource(Res.drawable.add),
-                            contentDescription = stringResource(Res.string.add_step),
-                        )
+                TextButton(
+                    onClick = {
+                        val item =
+                            SectionItem(
+                                sectionUidCounter++,
+                                Section(nextSectionName(sectionItems.map { it.section })),
+                            )
+                        sectionItems = sectionItems + item
+                        editingSection = item
                     }
+                ) {
+                    Icon(imageVector = vectorResource(Res.drawable.add), contentDescription = null)
+                    Text(stringResource(Res.string.add_section))
                 }
             }
 
@@ -457,10 +447,7 @@ fun TaskUpsertSheetContent(
                                 onUpsert(
                                     newTask.copy(
                                         title = textFieldState.text.toString(),
-                                        steps =
-                                            stepItems
-                                                .filter { it.text.isNotBlank() }
-                                                .map { TaskStep(it.text, it.done) },
+                                        sections = sectionItems.map { it.section },
                                     )
                                 )
                                 onDismissRequest()
@@ -480,7 +467,7 @@ fun TaskUpsertSheetContent(
                                         newTask.categoryId != task.categoryId ||
                                         newTask.description != task.description ||
                                         newTask.isToday != task.isToday ||
-                                        stepItems.map { TaskStep(it.text, it.done) } != task.steps),
+                                        sectionItems.map { it.section } != task.sections),
                         ) {
                             Text(
                                 stringResource(
@@ -497,10 +484,7 @@ fun TaskUpsertSheetContent(
     if (fullScreen) {
         Column(
             modifier =
-                modifier
-                    .fillMaxSize()
-                    .imePadding()
-                    .background(MaterialTheme.colorScheme.background)
+                modifier.fillMaxSize().imePadding().background(MaterialTheme.colorScheme.background)
         ) {
             TopAppBar(
                 title = {
@@ -530,54 +514,19 @@ fun TaskUpsertSheetContent(
         }
     }
 
-    editingStep?.let { step ->
-        var editingText by remember(step.uid) { mutableStateOf(step.text) }
-
-        AlertDialog(
-            onDismissRequest = { editingStep = null },
-            title = { Text(text = stringResource(Res.string.edit_step)) },
-            text = {
-                OutlinedTextField(
-                    value = editingText,
-                    onValueChange = { editingText = it },
-                    shape = MaterialTheme.shapes.medium,
-                    minLines = 3,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+    editingSection?.let { item ->
+        SectionEditor(
+            section = item.section,
+            onSave = { section ->
+                sectionItems =
+                    sectionItems.map { if (it.uid == item.uid) it.copy(section = section) else it }
+                editingSection = null
             },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        stepItems =
-                            stepItems.map {
-                                if (it.uid == step.uid) it.copy(text = editingText) else it
-                            }
-                        editingStep = null
-                    },
-                    enabled = editingText.isNotBlank(),
-                ) {
-                    Text(stringResource(Res.string.save))
-                }
+            onDelete = {
+                sectionItems = sectionItems.filter { it.uid != item.uid }
+                editingSection = null
             },
-            dismissButton = {
-                Row {
-                    TextButton(
-                        onClick = {
-                            stepItems = stepItems.filter { it.uid != step.uid }
-                            editingStep = null
-                        }
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.delete),
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
-
-                    TextButton(onClick = { editingStep = null }) {
-                        Text(stringResource(Res.string.cancel))
-                    }
-                }
-            },
+            onDismiss = { editingSection = null },
         )
     }
 

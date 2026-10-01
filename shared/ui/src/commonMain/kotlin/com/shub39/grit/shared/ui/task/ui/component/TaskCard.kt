@@ -51,8 +51,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shub39.grit.core.now
+import com.shub39.grit.core.tasks.Section
 import com.shub39.grit.core.tasks.Task
-import com.shub39.grit.core.tasks.TaskStep
 import com.shub39.grit.core.toFormattedString
 import com.shub39.grit.shared.ui.theme.GritRadius
 import com.shub39.grit.shared.ui.theme.GritSpacing
@@ -74,7 +74,7 @@ fun TaskCard(
     shape: Shape = RoundedCornerShape(GritRadius.md),
     onDetailsClick: (() -> Unit)? = null,
     accent: Color? = null,
-    onStepsChange: ((List<TaskStep>) -> Unit)? = null,
+    onSectionsChange: ((List<Section>) -> Unit)? = null,
 ) {
     val semantic = gritSemanticColors()
 
@@ -173,11 +173,11 @@ fun TaskCard(
                     )
                 }
 
-                if (task.steps.isNotEmpty()) {
-                    // Tapping the progress row unfolds the steps so they can be checked off
+                if (task.sections.isNotEmpty()) {
+                    // Tapping the progress row unfolds the sections so they can be checked off
                     // without opening the details sheet.
                     var stepsExpanded by remember(task.id) { mutableStateOf(false) }
-                    val doneSteps = task.steps.count { it.done }
+                    val doneSteps = task.sections.count { it.done }
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -197,9 +197,9 @@ fun TaskCard(
                         Text(
                             text =
                                 stringResource(
-                                    Res.string.steps_progress,
+                                    Res.string.sections_progress,
                                     doneSteps,
-                                    task.steps.size,
+                                    task.sections.size,
                                 ),
                             color = cardContent.copy(alpha = 0.75f),
                             style = MaterialTheme.typography.labelSmall,
@@ -219,7 +219,7 @@ fun TaskCard(
 
                     AnimatedVisibility(visible = stepsExpanded) {
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            task.steps.forEachIndexed { stepIndex, step ->
+                            task.sections.forEachIndexed { stepIndex, step ->
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(GritSpacing.xs),
@@ -227,10 +227,10 @@ fun TaskCard(
                                         Modifier.fillMaxWidth()
                                             .clip(RoundedCornerShape(GritRadius.sm))
                                             .then(
-                                                if (onStepsChange != null) {
+                                                if (onSectionsChange != null) {
                                                     Modifier.clickable {
-                                                        onStepsChange(
-                                                            task.steps.mapIndexed { i, s ->
+                                                        onSectionsChange(
+                                                            task.sections.mapIndexed { i, s ->
                                                                 if (i == stepIndex)
                                                                     s.copy(done = !s.done)
                                                                 else s
@@ -254,7 +254,7 @@ fun TaskCard(
                                     )
 
                                     Text(
-                                        text = step.text,
+                                        text = step.name,
                                         color =
                                             cardContent.copy(alpha = if (step.done) 0.6f else 0.9f),
                                         style = MaterialTheme.typography.bodySmall,

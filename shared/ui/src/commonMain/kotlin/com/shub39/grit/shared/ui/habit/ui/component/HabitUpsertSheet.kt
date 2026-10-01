@@ -57,8 +57,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.material3.toShape
@@ -82,12 +82,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.habits.Habit
 import com.shub39.grit.core.now
+import com.shub39.grit.core.tasks.Section
+import com.shub39.grit.core.tasks.nextSectionName
 import com.shub39.grit.core.toFormattedString
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import com.shub39.grit.shared.ui.ai.createTaskPlanner
 import com.shub39.grit.shared.ui.components.ColorPickerDialog
 import com.shub39.grit.shared.ui.components.ExpressiveSwitch
@@ -98,18 +95,25 @@ import com.shub39.grit.shared.ui.components.endItemShape
 import com.shub39.grit.shared.ui.components.leadingItemShape
 import com.shub39.grit.shared.ui.components.listItemColors
 import com.shub39.grit.shared.ui.components.middleItemShape
+import com.shub39.grit.shared.ui.task.ui.component.SectionEditor
 import com.shub39.grit.shared.ui.theme.GritTheme
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
 import com.shub39.grit.shared.ui.theme.flexFontRounded
 import com.shub39.grit.shared.ui.theme.parseAccentColor
 import com.shub39.grit.shared.ui.theme.toHexString
 import grit.shared.ui.generated.resources.*
+import grit.shared.ui.generated.resources.edit
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import sh.calvin.reorderable.ReorderableItem
@@ -118,8 +122,8 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 private const val TITLE_STRING_LIMIT = 50
 private const val DESCRIPTION_STRING_LIMIT = 200
 
-/** A step being edited, with a stable [uid] independent of its list position. */
-private data class StepItem(val uid: Int, val text: String)
+/** A section being edited, with a stable [uid] independent of its list position. */
+private data class SectionItem(val uid: Int, val section: Section)
 
 @Composable
 expect fun HabitUpsertSheet(
@@ -155,14 +159,17 @@ fun HabitUpsertSheetContent(
     var startDatePickerDialog by remember { mutableStateOf(false) }
     var deadlinePickerDialog by remember { mutableStateOf(false) }
 
-    // Steps get a stable local uid so drag reorder and deletion animate correctly.
-    var stepUidCounter by remember { mutableStateOf(newHabit.steps.size) }
-    var stepItems by remember {
-        mutableStateOf(newHabit.steps.mapIndexed { index, text -> StepItem(index, text) })
+    // Sections get a stable local uid so drag reorder and deletion animate correctly.
+    var sectionUidCounter by remember { mutableStateOf(newHabit.sections.size) }
+    var sectionItems by remember {
+        mutableStateOf(
+            newHabit.sections.mapIndexed { index, section -> SectionItem(index, section) }
+        )
     }
-    var newStepText by remember { mutableStateOf("") }
 
-    // AI decomposition of the habit into steps
+    var editingSection by remember { mutableStateOf<SectionItem?>(null) }
+
+    // AI decomposition of the habit into sections
     val aiScope = rememberCoroutineScope()
     val planner = remember { createTaskPlanner() }
     var aiLoading by remember { mutableStateOf(false) }
@@ -205,7 +212,9 @@ fun HabitUpsertSheetContent(
                 ) {
                     Icon(
                         imageVector =
-                            vectorResource(if (isEditSheet) Res.drawable.edit else Res.drawable.add),
+                            vectorResource(
+                                if (isEditSheet) Res.drawable.edit else Res.drawable.add
+                            ),
                         contentDescription = "Edit Habit",
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
@@ -217,20 +226,18 @@ fun HabitUpsertSheetContent(
                             if (isEditSheet) Res.string.edit_habit else Res.string.add_habit
                         ),
                     style =
-                        MaterialTheme.typography.headlineSmall.copy(
-                            fontFamily = flexFontEmphasis()
-                        ),
+                        MaterialTheme.typography.headlineSmall.copy(fontFamily = flexFontEmphasis()),
                 )
             }
         }
 
         val sheetListState = rememberLazyListState()
-        val stepsReorderState =
+        val sectionsReorderState =
             rememberReorderableLazyListState(sheetListState) { from, to ->
-                stepItems =
-                    stepItems.toMutableList().apply {
-                        val fromIndex = indexOfFirst { "step_${it.uid}" == from.key }
-                        val toIndex = indexOfFirst { "step_${it.uid}" == to.key }
+                sectionItems =
+                    sectionItems.toMutableList().apply {
+                        val fromIndex = indexOfFirst { "section_${it.uid}" == from.key }
+                        val toIndex = indexOfFirst { "section_${it.uid}" == to.key }
                         if (fromIndex >= 0 && toIndex >= 0) {
                             add(toIndex, removeAt(fromIndex))
                         }
@@ -300,14 +307,14 @@ fun HabitUpsertSheetContent(
                 )
             }
 
-            // steps: add, remove, drag to reorder, or let AI decompose the habit
+            // sections: add, remove, drag to reorder, or let AI decompose the habit
             item {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                 ) {
                     Text(
-                        text = stringResource(Res.string.steps),
+                        text = stringResource(Res.string.sections),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.weight(1f),
                     )
@@ -326,11 +333,14 @@ fun HabitUpsertSheetContent(
                                         )
                                     }
                                     .onSuccess { plan ->
-                                        stepItems =
+                                        sectionItems =
                                             plan.steps.mapIndexed { index, text ->
-                                                StepItem(stepUidCounter + index, text)
+                                                SectionItem(
+                                                    sectionUidCounter + index,
+                                                    Section("section ${index + 1}", text),
+                                                )
                                             }
-                                        stepUidCounter += plan.steps.size
+                                        sectionUidCounter += plan.steps.size
                                     }
                                     .onFailure { aiError = it.message ?: "生成失败" }
                                 aiLoading = false
@@ -355,26 +365,12 @@ fun HabitUpsertSheetContent(
                 }
             }
 
-            items(stepItems, key = { "step_${it.uid}" }) { step ->
-                ReorderableItem(stepsReorderState, key = "step_${step.uid}") {
+            items(sectionItems, key = { "section_${it.uid}" }) { step ->
+                ReorderableItem(sectionsReorderState, key = "section_${step.uid}") {
                     ListItem(
                         modifier = Modifier.clip(MaterialTheme.shapes.medium),
                         colors = listItemColors(),
-                        // Editable inline so existing steps can be reworded after creation.
-                        headlineContent = {
-                            OutlinedTextField(
-                                value = step.text,
-                                onValueChange = { newText ->
-                                    stepItems =
-                                        stepItems.map {
-                                            if (it.uid == step.uid) it.copy(text = newText) else it
-                                        }
-                                },
-                                shape = MaterialTheme.shapes.small,
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                        },
+                        headlineContent = { Text(step.section.name) },
                         leadingContent = {
                             Icon(
                                 imageVector = vectorResource(Res.drawable.drag_indicator),
@@ -383,12 +379,10 @@ fun HabitUpsertSheetContent(
                             )
                         },
                         trailingContent = {
-                            IconButton(
-                                onClick = { stepItems = stepItems.filter { it.uid != step.uid } }
-                            ) {
+                            IconButton(onClick = { editingSection = step }) {
                                 Icon(
-                                    imageVector = vectorResource(Res.drawable.delete),
-                                    contentDescription = "Delete",
+                                    imageVector = vectorResource(Res.drawable.edit),
+                                    contentDescription = "Edit section",
                                 )
                             }
                         },
@@ -397,31 +391,19 @@ fun HabitUpsertSheetContent(
             }
 
             item {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    OutlinedTextField(
-                        value = newStepText,
-                        onValueChange = { newStepText = it },
-                        shape = MaterialTheme.shapes.medium,
-                        placeholder = { Text(text = stringResource(Res.string.add_step)) },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                    )
-
-                    FilledTonalIconButton(
-                        onClick = {
-                            stepItems = stepItems + StepItem(stepUidCounter++, newStepText.trim())
-                            newStepText = ""
-                        },
-                        enabled = newStepText.isNotBlank(),
-                    ) {
-                        Icon(
-                            imageVector = vectorResource(Res.drawable.add),
-                            contentDescription = stringResource(Res.string.add_step),
-                        )
+                TextButton(
+                    onClick = {
+                        val item =
+                            SectionItem(
+                                sectionUidCounter++,
+                                Section(nextSectionName(sectionItems.map { it.section })),
+                            )
+                        sectionItems = sectionItems + item
+                        editingSection = item
                     }
+                ) {
+                    Icon(imageVector = vectorResource(Res.drawable.add), contentDescription = null)
+                    Text(stringResource(Res.string.add_section))
                 }
             }
 
@@ -489,7 +471,9 @@ fun HabitUpsertSheetContent(
                 ListItem(
                     colors = listItemColors(),
                     modifier =
-                        Modifier.clip(detachedItemShape()).clickable { deadlinePickerDialog = true },
+                        Modifier.clip(detachedItemShape()).clickable {
+                            deadlinePickerDialog = true
+                        },
                     leadingContent = {
                         Icon(
                             imageVector = vectorResource(Res.drawable.calendar_month),
@@ -641,7 +625,7 @@ fun HabitUpsertSheetContent(
                             newHabit.copy(
                                 title = titleTextFieldState.text.toString(),
                                 description = descTextFieldState.text.toString(),
-                                steps = stepItems.map { it.text }.filter { it.isNotBlank() },
+                                sections = sectionItems.map { it.section },
                             )
                         )
                         onDismissRequest()
@@ -697,6 +681,24 @@ fun HabitUpsertSheetContent(
             )
         }
 
+        editingSection?.let { item ->
+            SectionEditor(
+                section = item.section,
+                onSave = { section ->
+                    sectionItems =
+                        sectionItems.map {
+                            if (it.uid == item.uid) it.copy(section = section) else it
+                        }
+                    editingSection = null
+                },
+                onDelete = {
+                    sectionItems = sectionItems.filter { it.uid != item.uid }
+                    editingSection = null
+                },
+                onDismiss = { editingSection = null },
+            )
+        }
+
         if (timePickerDialog) {
             val timePickerState =
                 rememberTimePickerState(
@@ -731,10 +733,7 @@ fun HabitUpsertSheetContent(
     if (fullScreen) {
         Column(
             modifier =
-                modifier
-                    .fillMaxSize()
-                    .imePadding()
-                    .background(MaterialTheme.colorScheme.background)
+                modifier.fillMaxSize().imePadding().background(MaterialTheme.colorScheme.background)
         ) {
             TopAppBar(
                 title = {
@@ -778,9 +777,7 @@ private fun DeadlinePickerDialog(
     val datePickerState =
         rememberDatePickerState(
             initialSelectedDateMillis =
-                initialDate?.let {
-                    it.toEpochDays() * 24L * 60L * 60L * 1000L
-                }
+                initialDate?.let { it.toEpochDays() * 24L * 60L * 60L * 1000L }
         )
 
     DatePickerDialog(
@@ -790,9 +787,7 @@ private fun DeadlinePickerDialog(
                 onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
                         val date =
-                            Instant.fromEpochMilliseconds(millis)
-                                .toLocalDateTime(TimeZone.UTC)
-                                .date
+                            Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.UTC).date
                         onConfirm(date)
                     }
                 },
@@ -801,7 +796,9 @@ private fun DeadlinePickerDialog(
                 Text(stringResource(Res.string.done))
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.cancel)) } },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.cancel)) }
+        },
     ) {
         DatePicker(state = datePickerState)
     }

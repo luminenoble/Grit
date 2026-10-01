@@ -73,6 +73,7 @@ import com.shub39.grit.widgets.bodyFontSize
 import com.shub39.grit.widgets.scaledBy
 import kotlin.math.roundToInt
 import kotlin.random.Random
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import org.koin.core.component.KoinComponent
@@ -89,13 +90,15 @@ class HabitWeekChartWidget : GlanceAppWidget(), KoinComponent {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val repo = get<HabitRepo>()
         val settings = get<SettingsDatastore>()
+        val data = repo.getHabitsWithAnalytics()
+        val initialData = data.first()
 
         provideContent {
             val scope = rememberCoroutineScope()
             val size = LocalSize.current
             val textSize by settings.getWidgetTextSizeFlow().collectAsState(WidgetTextSize.MEDIUM)
 
-            val habitsWithAnalytics by repo.getHabitsWithAnalytics().collectAsState(emptyList())
+            val habitsWithAnalytics by data.collectAsState(initialData)
             val sortedData = habitsWithAnalytics.sortedBy { it.habit.id }
 
             val state = currentState<Preferences>()

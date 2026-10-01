@@ -16,6 +16,7 @@
  */
 package com.shub39.grit.habits.data.repository
 
+import android.content.Context
 import com.shub39.grit.core.data.notification.GritNotificationManager
 import com.shub39.grit.core.habits.Habit
 import com.shub39.grit.core.habits.HabitRanking
@@ -31,12 +32,16 @@ import com.shub39.grit.habits.data.toHabit
 import com.shub39.grit.habits.data.toHabitEntity
 import com.shub39.grit.habits.data.toHabitStatus
 import com.shub39.grit.habits.data.toHabitStatusEntity
+import com.shub39.grit.widgets.WidgetUpdates
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -51,11 +56,21 @@ import org.koin.core.annotation.Single
 @Single(binds = [HabitRepo::class])
 @OptIn(ExperimentalTime::class)
 class HabitRepository(
+    private val context: Context,
     private val habitDao: HabitsDao,
     private val habitStatusDao: HabitStatusDao,
     private val datastore: SettingsDatastore,
     private val notificationManager: GritNotificationManager,
 ) : HabitRepo {
+
+    private val today =
+        flow {
+                while (true) {
+                    emit(LocalDate.now())
+                    delay(30_000)
+                }
+            }
+            .distinctUntilChanged()
 
     private val habits =
         habitDao
@@ -79,10 +94,12 @@ class HabitRepository(
 
     override suspend fun upsertHabit(habit: Habit) {
         habitDao.upsertHabit(habit.toHabitEntity())
+        WidgetUpdates.habits(context)
     }
 
     override suspend fun deleteHabit(habitId: Long) {
         habitDao.deleteHabit(habitId)
+        WidgetUpdates.habits(context)
     }
 
     override suspend fun getHabits(): List<Habit> {
@@ -100,12 +117,16 @@ class HabitRepository(
     override fun getHabitsWithAnalytics(): Flow<List<HabitWithAnalytics>> {
         return habits
             .combine(habitStatuses) { habitsFlow, habitStatusesFlow ->
+                habitsFlow to habitStatusesFlow
+            }
+            .combine(today) { (habitsFlow, habitStatusesFlow), _ ->
                 habitsFlow.map { habit ->
                     val habitStatusesForHabit = habitStatusesFlow.filter { it.habitId == habit.id }
                     // Completions drive analytics; skipped (holiday) marks are neutral.
                     val completions = habitStatusesForHabit.filter { !it.skipped }
                     val dates = completions.map { it.date }
-                    val skippedDays = habitStatusesForHabit.filter { it.skipped }.map { it.date }.toSet()
+                    val skippedDays =
+                        habitStatusesForHabit.filter { it.skipped }.map { it.date }.toSet()
 
                     HabitWithAnalytics(
                         habit = habit,
@@ -138,10 +159,8 @@ class HabitRepository(
 
     override fun getCompletedHabitIds(): Flow<List<Long>> {
         return habitStatuses
-            .map { habitStatuses ->
-                habitStatuses
-                    .filter { it.date == LocalDate.now() && !it.skipped }
-                    .map { it.habitId }
+            .combine(today) { habitStatuses, date ->
+                habitStatuses.filter { it.date == date && !it.skipped }.map { it.habitId }
             }
             .flowOn(Dispatchers.Default)
     }
@@ -149,6 +168,9 @@ class HabitRepository(
     override fun getOverallAnalytics(): Flow<OverallAnalytics> {
         return habits
             .combine(habitStatuses) { habitsFlow, habitStatusesFlow ->
+                habitsFlow to habitStatusesFlow
+            }
+            .combine(today) { (habitsFlow, habitStatusesFlow), _ ->
                 val habitConsistencies =
                     habitsFlow.map { habit ->
                         val statusesForHabit = habitStatusesFlow.filter { it.habitId == habit.id }
@@ -173,8 +195,7 @@ class HabitRepository(
 
                 OverallAnalytics(
                     heatMapData = prepareHeatMapData(completions),
-                    weekDayFrequencyData =
-                        prepareWeekDayFrequencyData(completions.map { it.date }),
+                    weekDayFrequencyData = prepareWeekDayFrequencyData(completions.map { it.date }),
                     consistency = overallConsistency,
                     topHabits = topHabits,
                 )
@@ -183,12 +204,12 @@ class HabitRepository(
     }
 
     override fun getHabitsWithStatus(): Flow<List<Pair<Habit, Boolean>>> {
-        return habits.combine(habitStatuses) { habitsFlow, statusFlow ->
+        return combine(habits, habitStatuses, today) { habitsFlow, statusFlow, date ->
             habitsFlow.map { habit ->
                 val dates =
                     statusFlow.filter { it.habitId == habit.id && !it.skipped }.map { it.date }
 
-                habit to dates.any { it == LocalDate.now() }
+                habit to dates.any { it == date }
             }
         }
     }
@@ -199,6 +220,7 @@ class HabitRepository(
 
     override suspend fun insertHabitStatus(habitStatus: HabitStatus) {
         habitStatusDao.insertHabitStatus(habitStatus.toHabitStatusEntity())
+        WidgetUpdates.habits(context)
 
         if (habitStatus.date == LocalDate.now()) {
             notificationManager.cancelNotification(habitId = habitStatus.habitId.toInt())
@@ -207,6 +229,7 @@ class HabitRepository(
 
     override suspend fun deleteHabitStatus(habitId: Long, date: LocalDate) {
         habitStatusDao.deleteStatus(habitId, date)
+        WidgetUpdates.habits(context)
     }
 
     override suspend fun getCompletedHabitsForDate(date: LocalDate): List<Habit> {

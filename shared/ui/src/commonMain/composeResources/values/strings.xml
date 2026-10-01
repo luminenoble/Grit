@@ -81,11 +81,11 @@
     <string name="ai_fill_steps">AI</string>
     <string name="add_to_today">Show in Today</string>
     <string name="task_description">Description</string>
-    <string name="steps">Steps</string>
-    <string name="add_step">Add step</string>
-    <string name="edit_step">Edit step</string>
-    <string name="steps_count">%1$d steps</string>
-    <string name="steps_progress">%1$d/%2$d steps</string>
+    <string name="sections">Sections</string>
+    <string name="add_section">Add section</string>
+    <string name="edit_section">Edit section</string>
+    <string name="sections_count">%1$d sections</string>
+    <string name="sections_progress">%1$d/%2$d sections</string>
     <string name="hide_completed">Hide completed tasks</string>
     <string name="widget_text_size">Widget text size</string>
     <string name="widget_text_size_desc">Smaller text fits more items in the task and habit widgets</string>
@@ -117,4 +117,6 @@
     <string name="completed_of_total">%1$d / %2$d completed</string>
     <string name="task_details">Task details</string>
     <string name="pending">Pending</string>
+    <string name="section_name">Section name</string>
+    <string name="section_content">Section content</string>
 </resources>

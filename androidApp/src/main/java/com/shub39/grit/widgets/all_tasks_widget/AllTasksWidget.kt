@@ -73,6 +73,7 @@ import com.shub39.grit.widgets.bodyFontSize
 import com.shub39.grit.widgets.captionFontSize
 import com.shub39.grit.widgets.itemPadding
 import com.shub39.grit.widgets.itemSpacing
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -91,11 +92,13 @@ class AllTasksWidget : GlanceAppWidget(), KoinComponent {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val repo = get<TaskRepo>()
         val settings = get<SettingsDatastore>()
+        val data = repo.getTasksFlow()
+        val initialData = data.first()
 
         provideContent {
             val scope = rememberCoroutineScope()
             val size = LocalSize.current
-            val tasks by repo.getTasksFlow().collectAsState(emptyMap())
+            val tasks by data.collectAsState(initialData)
             val textSize by settings.getWidgetTextSizeFlow().collectAsState(WidgetTextSize.MEDIUM)
 
             val widgetScope = currentState<Preferences>()[scopeKey] ?: SCOPE_ALL
@@ -282,10 +285,7 @@ private fun Content(
                                             horizontal = taskTextPadding,
                                             vertical = taskItemSpacing,
                                         )
-                                        .clickable {
-                                            onUpdateTaskStatus(task)
-                                            onUpdateWidget()
-                                        }
+                                        .clickable { onUpdateTaskStatus(task) }
                             ) {
                                 Text(
                                     text = task.title,
@@ -294,7 +294,7 @@ private fun Content(
                                             .padding(
                                                 horizontal = taskTextPadding,
                                                 vertical =
-                                                    if (task.steps.isEmpty()) taskTextPadding
+                                                    if (task.sections.isEmpty()) taskTextPadding
                                                     else taskTextPadding / 2,
                                             ),
                                     style =
@@ -312,11 +312,11 @@ private fun Content(
                                     maxLines = 2,
                                 )
 
-                                // Surface step progress (e.g. "2/5 steps") on the widget.
-                                if (task.steps.isNotEmpty()) {
-                                    val doneSteps = task.steps.count { it.done }
+                                // Surface step progress (e.g. "2/5 sections") on the widget.
+                                if (task.sections.isNotEmpty()) {
+                                    val doneSteps = task.sections.count { it.done }
                                     Text(
-                                        text = "$doneSteps/${task.steps.size} steps",
+                                        text = "$doneSteps/${task.sections.size} sections",
                                         modifier =
                                             GlanceModifier.padding(
                                                 start = taskTextPadding,

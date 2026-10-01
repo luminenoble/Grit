@@ -72,6 +72,7 @@ import com.shub39.grit.widgets.captionFontSize
 import com.shub39.grit.widgets.itemPadding
 import com.shub39.grit.widgets.itemSpacing
 import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -85,11 +86,13 @@ class HabitOverviewWidget : GlanceAppWidget(), KoinComponent {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val repo = get<HabitRepo>()
         val settings = get<SettingsDatastore>()
+        val data = repo.getHabitsWithStatus()
+        val initialData = data.first()
 
         provideContent {
             val size = LocalSize.current
             val scope = rememberCoroutineScope()
-            val habits by repo.getHabitsWithStatus().collectAsState(initial = emptyList())
+            val habits by data.collectAsState(initialData)
             val textSize by settings.getWidgetTextSizeFlow().collectAsState(WidgetTextSize.MEDIUM)
 
             key(size) {
@@ -235,10 +238,7 @@ private fun Content(
                                     else GlanceModifier
                                 )
                                 .padding(vertical = habitItemSpacing * 2)
-                                .clickable {
-                                    onUpdateHabit(habitWithStatus)
-                                    onUpdateWidget()
-                                },
+                                .clickable { onUpdateHabit(habitWithStatus) },
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         if (size.width >= WidgetSize.Width4) {

@@ -87,8 +87,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.core.tasks.CategoryColors
+import com.shub39.grit.core.tasks.Section
 import com.shub39.grit.core.tasks.Task
-import com.shub39.grit.core.tasks.TaskStep
 import com.shub39.grit.shared.ui.LocalWindowSizeClass
 import com.shub39.grit.shared.ui.components.Empty
 import com.shub39.grit.shared.ui.components.GritDialog
@@ -125,136 +125,130 @@ fun TaskList(
     onOpenTaskDetails: (Task) -> Unit,
     onAddTask: () -> Unit,
     onAddCategory: () -> Unit,
-) =
-    PageFill {
-        val windowSizeClass = LocalWindowSizeClass.current
+) = PageFill {
+    val windowSizeClass = LocalWindowSizeClass.current
 
-        var showDeleteDialog by remember { mutableStateOf(false) }
-        var showAiSheet by remember { mutableStateOf(false) }
-        var editState by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showAiSheet by remember { mutableStateOf(false) }
+    var editState by remember { mutableStateOf(false) }
 
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-        Column(
-            modifier =
-                Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-        ) {
-            TaskListTopBar(
-                state = state,
-                scrollBehavior = scrollBehavior,
-                isReorderMode = editState,
-                onReorderToggle = { editState = it },
-                onDeleteClick = { showDeleteDialog = true },
-                onAiClick = { showAiSheet = true },
-                isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded,
-            )
+    Column(
+        modifier =
+            Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+    ) {
+        TaskListTopBar(
+            state = state,
+            scrollBehavior = scrollBehavior,
+            isReorderMode = editState,
+            onReorderToggle = { editState = it },
+            onDeleteClick = { showDeleteDialog = true },
+            onAiClick = { showAiSheet = true },
+            isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded,
+        )
 
-            CategorySelector(
+        CategorySelector(
+            state = state,
+            isReorderMode = editState,
+            onAction = onAction,
+            onAddCategoryClick = onAddCategory,
+            onEditCategoriesClick = onEditCategories,
+            isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded,
+            onReorderModeChange = { editState = it },
+        )
+
+        if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Expanded) {
+            CompactTasksView(
                 state = state,
                 isReorderMode = editState,
                 onAction = onAction,
-                onAddCategoryClick = onAddCategory,
-                onEditCategoriesClick = onEditCategories,
-                isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded,
-                onReorderModeChange = { editState = it },
+                onEditTask = onOpenTaskDetails,
+                isCompact = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact,
             )
-
-            if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Expanded) {
-                CompactTasksView(
-                    state = state,
-                    isReorderMode = editState,
-                    onAction = onAction,
-                    onEditTask = onOpenTaskDetails,
-                    isCompact = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact,
-                )
-            } else {
-                ExpandedTasksView(
-                    state = state,
-                    onAction = onAction,
-                    onEditTask = onOpenTaskDetails,
-                )
-            }
-        }
-
-        MediumFloatingActionButton(
-            onClick = onAddTask,
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-            modifier =
-                Modifier.align(Alignment.BottomEnd)
-                    .padding(16.dp)
-                    .then(
-                        if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Expanded)
-                            Modifier
-                        else Modifier.navigationBarsPadding()
-                    )
-                    .animateFloatingActionButton(
-                        visible = state.currentCategory != null,
-                        alignment = Alignment.BottomEnd,
-                        scaleAnimationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-                        alphaAnimationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
-                    ),
-        ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    imageVector = vectorResource(Res.drawable.add),
-                    contentDescription = null,
-                    modifier = Modifier.size(FloatingActionButtonDefaults.MediumIconSize),
-                )
-                AnimatedVisibility(
-                    visible =
-                        state.tasks[state.currentCategory].isNullOrEmpty() ||
-                            windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded,
-                    enter = fadeIn(MaterialTheme.motionScheme.fastEffectsSpec()),
-                    exit = fadeOut(MaterialTheme.motionScheme.fastEffectsSpec()),
-                ) {
-                    Text(
-                        text = stringResource(Res.string.add_task),
-                        modifier = Modifier.padding(start = 8.dp),
-                    )
-                }
-            }
-        }
-
-        if (showDeleteDialog) {
-            DeleteTasksDialog(
-                onDismiss = { showDeleteDialog = false },
-                onConfirm = {
-                    onAction(TaskAction.DeleteTasks)
-                    showDeleteDialog = false
-                },
-            )
-        }
-
-        if (showAiSheet && state.currentCategory != null) {
-            val category = state.currentCategory
-
-            AiDecomposeSheet(
-                onDismiss = { showAiSheet = false },
-                onCreateTask = { title, description, steps ->
-                    onAction(
-                        TaskAction.UpsertTask(
-                            Task(
-                                categoryId = category.id,
-                                title = title,
-                                description = description,
-                                steps = steps.map { TaskStep(it) },
-                                index = state.tasks[category]?.size ?: 0,
-                                status = false,
-                                reminder = null,
-                                isToday = state.isTodayView,
-                            )
-                        )
-                    )
-                },
-            )
+        } else {
+            ExpandedTasksView(state = state, onAction = onAction, onEditTask = onOpenTaskDetails)
         }
     }
+
+    MediumFloatingActionButton(
+        onClick = onAddTask,
+        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        modifier =
+            Modifier.align(Alignment.BottomEnd)
+                .padding(16.dp)
+                .then(
+                    if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Expanded) Modifier
+                    else Modifier.navigationBarsPadding()
+                )
+                .animateFloatingActionButton(
+                    visible = state.currentCategory != null,
+                    alignment = Alignment.BottomEnd,
+                    scaleAnimationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+                    alphaAnimationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+                ),
+    ) {
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = vectorResource(Res.drawable.add),
+                contentDescription = null,
+                modifier = Modifier.size(FloatingActionButtonDefaults.MediumIconSize),
+            )
+            AnimatedVisibility(
+                visible =
+                    state.tasks[state.currentCategory].isNullOrEmpty() ||
+                        windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded,
+                enter = fadeIn(MaterialTheme.motionScheme.fastEffectsSpec()),
+                exit = fadeOut(MaterialTheme.motionScheme.fastEffectsSpec()),
+            ) {
+                Text(
+                    text = stringResource(Res.string.add_task),
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
+        }
+    }
+
+    if (showDeleteDialog) {
+        DeleteTasksDialog(
+            onDismiss = { showDeleteDialog = false },
+            onConfirm = {
+                onAction(TaskAction.DeleteTasks)
+                showDeleteDialog = false
+            },
+        )
+    }
+
+    if (showAiSheet && state.currentCategory != null) {
+        val category = state.currentCategory
+
+        AiDecomposeSheet(
+            onDismiss = { showAiSheet = false },
+            onCreateTask = { title, description, sections ->
+                onAction(
+                    TaskAction.UpsertTask(
+                        Task(
+                            categoryId = category.id,
+                            title = title,
+                            description = description,
+                            sections =
+                                sections.mapIndexed { index, content ->
+                                    Section("section ${index + 1}", content)
+                                },
+                            index = state.tasks[category]?.size ?: 0,
+                            status = false,
+                            reminder = null,
+                            isToday = state.isTodayView,
+                        )
+                    )
+                )
+            },
+        )
+    }
+}
 
 @Composable
 private fun TaskListTopBar(
@@ -536,8 +530,8 @@ private fun CompactTasksView(
                                 shape = cardShape,
                                 onDetailsClick = { onEditTask(task) },
                                 accent = accentByCategory[task.categoryId]?.accentVariant(index),
-                                onStepsChange = {
-                                    onAction(TaskAction.UpsertTask(task.copy(steps = it)))
+                                onSectionsChange = {
+                                    onAction(TaskAction.UpsertTask(task.copy(sections = it)))
                                 },
                                 modifier =
                                     Modifier.fillMaxWidth()
@@ -613,8 +607,8 @@ private fun CompactTasksView(
                                 shape = cardShape,
                                 onDetailsClick = { onEditTask(task) },
                                 accent = accentByCategory[task.categoryId]?.accentVariant(index),
-                                onStepsChange = {
-                                    onAction(TaskAction.UpsertTask(task.copy(steps = it)))
+                                onSectionsChange = {
+                                    onAction(TaskAction.UpsertTask(task.copy(sections = it)))
                                 },
                                 modifier =
                                     Modifier.fillMaxWidth().clip(cardShape).clickable {
@@ -750,8 +744,8 @@ private fun ExpandedTasksView(
                             shape = cardShape,
                             onDetailsClick = { onEditTask(task) },
                             accent = accentByCategory[task.categoryId]?.accentVariant(index),
-                            onStepsChange = {
-                                onAction(TaskAction.UpsertTask(task.copy(steps = it)))
+                            onSectionsChange = {
+                                onAction(TaskAction.UpsertTask(task.copy(sections = it)))
                             },
                             modifier =
                                 Modifier.animateItem().fillMaxWidth().clip(cardShape).clickable {
@@ -799,8 +793,8 @@ private fun ExpandedTasksView(
                                 shape = cardShape,
                                 onDetailsClick = { onEditTask(task) },
                                 accent = accentByCategory[task.categoryId]?.accentVariant(index),
-                                onStepsChange = {
-                                    onAction(TaskAction.UpsertTask(task.copy(steps = it)))
+                                onSectionsChange = {
+                                    onAction(TaskAction.UpsertTask(task.copy(sections = it)))
                                 },
                                 modifier =
                                     Modifier.fillMaxWidth().clip(cardShape).clickable {

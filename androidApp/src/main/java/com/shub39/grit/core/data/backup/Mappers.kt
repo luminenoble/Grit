@@ -37,7 +37,7 @@ fun Habit.toHabitSchema(): HabitSchema {
         time = time.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
         days = Converters.dayOfWeekToString(days),
         reminder = reminder,
-        steps = steps,
+        sections = sections,
         color = color,
         startDate = startDate?.let { Converters.dayToTimestamp(it) },
         deadline = deadline?.let { Converters.dayToTimestamp(it) },
@@ -54,7 +54,7 @@ fun HabitSchema.toHabit(): Habit {
         time = Instant.fromEpochMilliseconds(time).toLocalDateTime(TimeZone.currentSystemDefault()),
         days = Converters.dayOfWeekFromString(days),
         reminder = reminder,
-        steps = steps,
+        sections = sections,
         color = color,
         startDate = startDate?.let { Converters.dayFromTimestamp(it) },
         deadline = deadline?.let { Converters.dayFromTimestamp(it) },
@@ -89,7 +89,7 @@ fun TaskSchema.toTask(): Task {
         reminder = reminder?.let { Converters.dateFromTimestamp(it) },
         description = description,
         isToday = isToday,
-        steps = steps,
+        sections = sections,
     )
 }
 
@@ -103,7 +103,7 @@ fun Task.toTaskSchema(): TaskSchema {
         reminder = reminder?.let { Converters.dateToTimestamp(it) },
         description = description,
         isToday = isToday,
-        steps = steps,
+        sections = sections,
     )
 }
 

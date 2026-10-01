@@ -17,7 +17,8 @@
 package com.shub39.grit.core.data
 
 import androidx.room3.ColumnTypeConverter
-import com.shub39.grit.core.tasks.TaskStep
+import com.shub39.grit.core.tasks.Section
+import com.shub39.grit.core.tasks.SectionsSerializer
 import kotlin.time.Instant
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -91,19 +92,10 @@ object Converters {
     }
 
     @ColumnTypeConverter
-    fun taskStepsToJson(value: List<TaskStep>): String {
-        return Json.encodeToString(value)
-    }
+    fun sectionsToJson(value: List<Section>): String =
+        Json.encodeToString(SectionsSerializer, value)
 
-    // TaskStepSerializer also reads the legacy plain-string form, so old rows survive.
     @ColumnTypeConverter
-    fun taskStepsFromJson(value: String): List<TaskStep> {
-        return if (value.isBlank()) emptyList()
-        else
-            try {
-                Json.decodeFromString(value)
-            } catch (_: Exception) {
-                emptyList()
-            }
-    }
+    fun sectionsFromJson(value: String): List<Section> =
+        if (value.isBlank()) emptyList() else Json.decodeFromString(SectionsSerializer, value)
 }

@@ -71,7 +71,6 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
-import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
 /** Habit Card for list */
@@ -217,7 +216,7 @@ fun HabitCard(
                         )
                     }
 
-                    if (habitWithAnalytics.habit.steps.isNotEmpty()) {
+                    if (habitWithAnalytics.habit.sections.isNotEmpty()) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -231,10 +230,10 @@ fun HabitCard(
 
                             Text(
                                 text =
-                                    stringResource(
-                                        Res.string.steps_count,
-                                        habitWithAnalytics.habit.steps.size,
-                                    ),
+                                    habitWithAnalytics.habit.sections.joinToString(" · ") {
+                                        it.name
+                                    },
+                                maxLines = 2,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = cardContent.copy(alpha = 0.75f),
                             )
@@ -344,8 +343,7 @@ fun HabitCard(
                 contentPadding = PaddingValues(8.dp),
                 state = weekState,
                 dayContent = { weekDay ->
-                    val status =
-                        habitWithAnalytics.statuses.firstOrNull { it.date == weekDay.date }
+                    val status = habitWithAnalytics.statuses.firstOrNull { it.date == weekDay.date }
                     val done = status != null && !status.skipped
                     val skipped = status?.skipped == true
                     val validDay =

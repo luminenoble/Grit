@@ -22,14 +22,10 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.glance.appwidget.updateAll
 import com.shub39.grit.core.interfaces.SettingsDatastore
 import com.shub39.grit.core.settings.Sections
 import com.shub39.grit.core.settings.WidgetTextSize
-import com.shub39.grit.widgets.all_tasks_widget.AllTasksWidget
-import com.shub39.grit.widgets.habit_overview_widget.HabitOverviewWidget
-import com.shub39.grit.widgets.habit_streak_widget.HabitStreakWidget
-import com.shub39.grit.widgets.habit_week_chart_widget.HabitWeekChartWidget
+import com.shub39.grit.widgets.WidgetUpdates
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.DayOfWeek
@@ -130,10 +126,8 @@ class SettingsDatastoreImpl(
         // Push the new size to every widget: a placed widget with no live Glance session
         // would otherwise keep the old text until its next data change.
         runCatching {
-            AllTasksWidget().updateAll(context)
-            HabitOverviewWidget().updateAll(context)
-            HabitStreakWidget().updateAll(context)
-            HabitWeekChartWidget().updateAll(context)
+            WidgetUpdates.tasks(context)
+            WidgetUpdates.habits(context)
         }
     }
 }
