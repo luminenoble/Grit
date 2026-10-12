@@ -1,0 +1,8 @@
+15-section-deleted-zero-v1.png
+16-longest-before-v1.png
+17-category-cascade-confirm-v1.png
+18-delete-failed-context-v1.png
+19-longest-removed-v1.png
+20-shrunk-tail-v1.png
+21-deleted-all-empty-v1.png
+All screenshot assertions passed

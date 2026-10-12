@@ -28,7 +28,6 @@ import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.widgets.WidgetUpdates
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.DayOfWeek
 import org.koin.core.annotation.Single
 
 @Single(binds = [SettingsDatastore::class])
@@ -38,31 +37,19 @@ class SettingsDatastoreImpl(
 ) : SettingsDatastore {
 
     companion object {
-        private val startOfWeekKey = stringPreferencesKey("start_of_week")
         private val startingSectionKey = stringPreferencesKey("starting_page")
         private val is24HrKey = booleanPreferencesKey("is_24Hr")
         private val notificationsKey = booleanPreferencesKey("notifications")
         private val biometricLockKey = booleanPreferencesKey("biometric")
         private val taskReorderKey = booleanPreferencesKey("task_reorder")
-        private val compactHabitView = booleanPreferencesKey("compact_habit_view")
         private val lastChangelogShownKey = stringPreferencesKey("last_changelog_shown")
         private val widgetTextSizeKey = stringPreferencesKey("widget_text_size")
-    }
-
-    override fun getStartOfTheWeekPref(): Flow<DayOfWeek> =
-        datastore.data.map { prefs ->
-            val dayOfWeek = prefs[startOfWeekKey] ?: DayOfWeek.MONDAY.name
-            return@map DayOfWeek.valueOf(dayOfWeek)
-        }
-
-    override suspend fun setStartOfWeek(day: DayOfWeek) {
-        datastore.edit { prefs -> prefs[startOfWeekKey] = day.name }
     }
 
     override fun getStartingSectionPref(): Flow<Sections> =
         datastore.data.map { pref ->
             val page = pref[startingSectionKey] ?: Sections.Tasks.name
-            return@map Sections.valueOf(page)
+            return@map Sections.entries.firstOrNull { it.name == page } ?: Sections.Tasks
         }
 
     override suspend fun setStartingPage(page: Sections) {
@@ -97,13 +84,6 @@ class SettingsDatastoreImpl(
         datastore.edit { prefs -> prefs[taskReorderKey] = pref }
     }
 
-    override fun getCompactViewPref(): Flow<Boolean> =
-        datastore.data.map { pref -> pref[compactHabitView] ?: false }
-
-    override suspend fun setCompactView(pref: Boolean) {
-        datastore.edit { prefs -> prefs[compactHabitView] = pref }
-    }
-
     override fun getLastChangelogShown(): Flow<String> =
         datastore.data.map { prefs -> prefs[lastChangelogShownKey] ?: "" }
 
@@ -125,9 +105,6 @@ class SettingsDatastoreImpl(
 
         // Push the new size to every widget: a placed widget with no live Glance session
         // would otherwise keep the old text until its next data change.
-        runCatching {
-            WidgetUpdates.tasks(context)
-            WidgetUpdates.habits(context)
-        }
+        runCatching { WidgetUpdates.tasks(context) }
     }
 }

@@ -16,96 +16,32 @@
  */
 package com.shub39.grit.core.data.backup.restore
 
-import android.util.Log
-import com.shub39.grit.core.data.backup.ExportSchema
-import com.shub39.grit.core.data.backup.toCategory
-import com.shub39.grit.core.data.backup.toHabit
-import com.shub39.grit.core.data.backup.toHabitStatus
-import com.shub39.grit.core.data.backup.toTask
-import com.shub39.grit.core.habits.HabitRepo
-import com.shub39.grit.core.interfaces.AlarmScheduler
-import com.shub39.grit.core.settings.backup.RestoreFailedException
-import com.shub39.grit.core.settings.backup.RestoreRepo
-import com.shub39.grit.core.settings.backup.RestoreResult
-import com.shub39.grit.core.settings.backup.SchemaMismatchException
+import com.shub39.grit.core.settings.backup.*
 import com.shub39.grit.core.tasks.TaskRepo
-import com.shub39.grit.habits.data.database.HabitDatabase
-import com.shub39.grit.tasks.data.database.TaskDatabase
 import io.github.vinceglb.filekit.FileKit
-import io.github.vinceglb.filekit.dialogs.FileKitMode
-import io.github.vinceglb.filekit.dialogs.FileKitType
-import io.github.vinceglb.filekit.dialogs.openFilePicker
+import io.github.vinceglb.filekit.dialogs.*
 import io.github.vinceglb.filekit.readString
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Single
 
 @Single(binds = [RestoreRepo::class])
-class RestoreImpl(
-    private val taskRepo: TaskRepo,
-    private val habitRepo: HabitRepo,
-    private val alarmScheduler: AlarmScheduler,
-) : RestoreRepo {
-    override suspend fun restoreData(): RestoreResult {
-        return try {
-            val file =
-                FileKit.openFilePicker(mode = FileKitMode.Single, type = FileKitType.File("json"))
-
-            if (file == null) {
-                return RestoreResult.Failure(exceptionType = RestoreFailedException.InvalidFile)
-            }
-
-            val json = Json { ignoreUnknownKeys = true }
-
-            val jsonDeserialized = json.decodeFromString<ExportSchema>(file.readString())
-
-            if (
-                jsonDeserialized.tasksSchemaVersion !in 4..TaskDatabase.SCHEMA_VERSION ||
-                    jsonDeserialized.habitsSchemaVersion !in 4..HabitDatabase.SCHEMA_VERSION
-            ) {
-                throw SchemaMismatchException()
-            }
-
-            withContext(Dispatchers.IO) {
-                awaitAll(
-                    async {
-                        habitRepo.getHabits().forEach { alarmScheduler.cancel(it) }
-                        alarmScheduler.cancelAll()
-
-                        jsonDeserialized.habits
-                            .map { it.toHabit() }
-                            .forEach {
-                                habitRepo.upsertHabit(it)
-                                alarmScheduler.schedule(it)
-                            }
-
-                        jsonDeserialized.habitStatus
-                            .map { it.toHabitStatus() }
-                            .forEach { habitRepo.insertHabitStatus(it) }
-                    },
-                    async {
-                        jsonDeserialized.categories
-                            .map { it.toCategory() }
-                            .forEach { taskRepo.upsertCategory(it) }
-
-                        jsonDeserialized.tasks
-                            .map { it.toTask() }
-                            .forEach { taskRepo.upsertTask(it) }
-                    },
-                )
-            }
-
-            RestoreResult.Success
-        } catch (e: SchemaMismatchException) {
-            Log.e("RestoreRepo", "Failed to restore data, old schema: ", e)
-            RestoreResult.Failure(RestoreFailedException.OldSchema)
-        } catch (e: SerializationException) {
-            Log.e("RestoreRepo", "Failed to deserialize, invalid file: ", e)
-            RestoreResult.Failure(RestoreFailedException.InvalidFile)
-        }
+class RestoreImpl(private val taskRepo: TaskRepo) : RestoreRepo {
+    override suspend fun prepareRestore(): RestorePreview? {
+        val file =
+            FileKit.openFilePicker(mode = FileKitMode.Single, type = FileKitType.File("json"))
+                ?: return null
+        return withContext(Dispatchers.IO) { RestorePreview(RhineBackup.decode(file.readString())) }
     }
+
+    override suspend fun restoreData(backup: RhineBackup): RestoreResult =
+        try {
+            withContext(Dispatchers.IO) { taskRepo.replaceData(backup) }
+            RestoreResult.Success
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            RestoreResult.Failure(e.message ?: "导入失败，原数据未改变")
+        }
 }

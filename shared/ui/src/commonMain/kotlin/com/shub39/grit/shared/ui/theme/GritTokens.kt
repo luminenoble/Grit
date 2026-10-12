@@ -16,7 +16,6 @@
  */
 package com.shub39.grit.shared.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
@@ -85,5 +84,5 @@ private val DarkSemantic =
 
 /** Semantic status colors adapted to the current light/dark theme. */
 @Composable
-fun gritSemanticColors(dark: Boolean = isSystemInDarkTheme()): GritSemanticColors =
+fun gritSemanticColors(dark: Boolean = false): GritSemanticColors =
     if (dark) DarkSemantic else LightSemantic

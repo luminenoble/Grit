@@ -1,0 +1,249 @@
+Type-safe project accessors is an incubating feature.
+> Task :shared:core:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:core:compileKotlinJvm UP-TO-DATE
+> Task :shared:core:compileJvmMainJava NO-SOURCE
+> Task :shared:core:jvmProcessResources NO-SOURCE
+> Task :shared:core:processJvmMainResources SKIPPED
+> Task :shared:core:jvmMainClasses UP-TO-DATE
+> Task :shared:core:jvmJar UP-TO-DATE
+> Task :shared:ui:checkJvmMainComposeLibrariesCompatibility
+> Task :shared:ui:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:ui:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:ui:convertXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :shared:ui:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :shared:ui:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :shared:ui:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :shared:ui:convertXmlValueResourcesForJvmMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForJvmMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForJvmMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForJvmMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForJvmMain UP-TO-DATE
+> Task :shared:ui:generateComposeResClass UP-TO-DATE
+> Task :shared:ui:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :shared:ui:kspKotlinJvm SKIPPED
+> Task :shared:core:compileKotlinWasmJs UP-TO-DATE
+> Task :shared:ui:checkWasmJsMainComposeLibrariesCompatibility
+> Task :shared:ui:convertXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForWasmJsMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForWasmJsMain NO-SOURCE
+> Task :shared:ui:convertXmlValueResourcesForWebMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForWebMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForWebMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForWebMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForWasmJsMain UP-TO-DATE
+> Task :shared:ui:kspKotlinWasmJs SKIPPED
+> Task :shared:ui:compileKotlinJvm
+> Task :shared:ui:compileKotlinWasmJs
+w: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/components/GritBottomSheet.kt:79:62 'val windowInsets: WindowInsets' is deprecated. Renamed as modalWindowInsets.
+w: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineEditor.kt:112:21 'when' is exhaustive so 'else' is redundant here.
+
+> Task :webDemo:checkJvmMainComposeLibrariesCompatibility
+> Task :webDemo:kmpPartiallyResolvedDependenciesChecker
+> Task :webDemo:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webDemo:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :webDemo:copyNonXmlValueResourcesForCommonMain NO-SOURCE
+> Task :webDemo:prepareComposeResourcesTaskForCommonMain NO-SOURCE
+> Task :webDemo:generateResourceAccessorsForCommonMain NO-SOURCE
+> Task :webDemo:convertXmlValueResourcesForJvmMain NO-SOURCE
+> Task :webDemo:copyNonXmlValueResourcesForJvmMain NO-SOURCE
+> Task :webDemo:prepareComposeResourcesTaskForJvmMain NO-SOURCE
+> Task :webDemo:generateResourceAccessorsForJvmMain NO-SOURCE
+> Task :webDemo:generateActualResourceCollectorsForJvmMain UP-TO-DATE
+> Task :webDemo:generateComposeResClass UP-TO-DATE
+> Task :webDemo:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :shared:ui:assembleJvmMainResources UP-TO-DATE
+> Task :shared:ui:jvmProcessResources UP-TO-DATE
+> Task :shared:ui:processJvmMainResources SKIPPED
+> Task :webDemo:checkWasmJsMainComposeLibrariesCompatibility
+> Task :webDemo:convertXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :webDemo:copyNonXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :webDemo:prepareComposeResourcesTaskForWasmJsMain NO-SOURCE
+> Task :webDemo:generateResourceAccessorsForWasmJsMain NO-SOURCE
+> Task :webDemo:convertXmlValueResourcesForWebMain NO-SOURCE
+> Task :webDemo:copyNonXmlValueResourcesForWebMain NO-SOURCE
+> Task :webDemo:prepareComposeResourcesTaskForWebMain NO-SOURCE
+> Task :webDemo:generateResourceAccessorsForWebMain NO-SOURCE
+> Task :webDemo:generateActualResourceCollectorsForWasmJsMain UP-TO-DATE
+
+> Task :webDemo:compileKotlinWasmJs
+[Koin] Auto-enabling strictSafety on :webDemo (detected startKoin / @KoinApplication / koinApplication). Set `strictSafety = false` in koinCompiler { } to override.
+
+> Task :androidApp:generateChangelog UP-TO-DATE
+> Task :androidApp:preBuild UP-TO-DATE
+> Task :androidApp:preFossDebugBuild UP-TO-DATE
+> Task :androidApp:generateFossDebugBuildConfig UP-TO-DATE
+> Task :androidApp:generateFossDebugResValues UP-TO-DATE
+> Task :androidApp:extractFossDebugSupportedLocales UP-TO-DATE
+> Task :androidApp:mapFossDebugSourceSetPaths UP-TO-DATE
+> Task :androidApp:generateFossDebugLocaleConfig UP-TO-DATE
+> Task :androidApp:generateFossDebugResources UP-TO-DATE
+> Task :androidApp:packageFossDebugResources UP-TO-DATE
+> Task :shared:core:androidPreBuild UP-TO-DATE
+> Task :shared:core:preAndroidMainBuild UP-TO-DATE
+> Task :shared:core:generateAndroidMainEmptyResourceFiles UP-TO-DATE
+> Task :shared:ui:androidPreBuild UP-TO-DATE
+> Task :shared:ui:preAndroidMainBuild UP-TO-DATE
+> Task :shared:ui:generateAndroidMainEmptyResourceFiles UP-TO-DATE
+> Task :androidApp:processFossDebugNavigationResources UP-TO-DATE
+> Task :androidApp:parseFossDebugLocalResources UP-TO-DATE
+> Task :androidApp:generateFossDebugRFile UP-TO-DATE
+> Task :shared:core:packageAndroidMainResources UP-TO-DATE
+> Task :shared:core:parseAndroidMainLocalResources UP-TO-DATE
+> Task :shared:core:generateAndroidMainRFile UP-TO-DATE
+> Task :shared:core:compileAndroidMain UP-TO-DATE
+> Task :shared:core:bundleAndroidMainClassesToCompileJar UP-TO-DATE
+> Task :shared:ui:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForAndroidMain UP-TO-DATE
+> Task :shared:ui:copyAndroidMainComposeResourcesToAndroidAssets UP-TO-DATE
+> Task :shared:ui:packageAndroidMainResources UP-TO-DATE
+> Task :shared:ui:parseAndroidMainLocalResources UP-TO-DATE
+> Task :shared:ui:generateAndroidMainRFile UP-TO-DATE
+> Task :shared:ui:kspAndroidMain SKIPPED
+
+> Task :shared:ui:compileKotlinJvm
+w: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/components/GritBottomSheet.kt:79:62 'val windowInsets: WindowInsets' is deprecated. Renamed as modalWindowInsets.
+w: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineEditor.kt:112:21 'when' is exhaustive so 'else' is redundant here.
+
+> Task :shared:ui:compileJvmMainJava NO-SOURCE
+> Task :shared:ui:jvmMainClasses
+> Task :shared:ui:jvmJar
+
+> Task :webDemo:compileKotlinJvm
+[Koin] Auto-enabling strictSafety on :webDemo (detected startKoin / @KoinApplication / koinApplication). Set `strictSafety = false` in koinCompiler { } to override.
+
+> Task :androidApp:javaPreCompileFossDebug UP-TO-DATE
+> Task :shared:core:writeAndroidMainAarMetadata UP-TO-DATE
+> Task :shared:ui:writeAndroidMainAarMetadata UP-TO-DATE
+> Task :androidApp:checkFossDebugAarMetadata UP-TO-DATE
+> Task :androidApp:compileFossDebugNavigationResources UP-TO-DATE
+> Task :androidApp:mergeFossDebugResources UP-TO-DATE
+> Task :androidApp:createFossDebugCompatibleScreenManifests UP-TO-DATE
+> Task :androidApp:extractDeepLinksFossDebug UP-TO-DATE
+> Task :shared:core:processAndroidMainManifest UP-TO-DATE
+> Task :shared:ui:processAndroidMainManifest UP-TO-DATE
+> Task :androidApp:processFossDebugMainManifest UP-TO-DATE
+> Task :androidApp:processFossDebugManifest UP-TO-DATE
+> Task :androidApp:processFossDebugManifestForPackage UP-TO-DATE
+> Task :shared:core:mapAndroidMainSourceSetPaths UP-TO-DATE
+> Task :shared:core:compileAndroidMainLibraryResources UP-TO-DATE
+> Task :shared:ui:mapAndroidMainSourceSetPaths UP-TO-DATE
+> Task :shared:ui:compileAndroidMainLibraryResources UP-TO-DATE
+> Task :androidApp:processFossDebugResources UP-TO-DATE
+> Task :androidApp:preFossDebugAndroidTestBuild SKIPPED
+> Task :androidApp:processFossDebugAndroidTestManifest UP-TO-DATE
+> Task :androidApp:generateFossDebugAndroidTestBuildConfig UP-TO-DATE
+> Task :androidApp:generateFossDebugAndroidTestResValues UP-TO-DATE
+> Task :androidApp:generateFossDebugAndroidTestResources UP-TO-DATE
+> Task :androidApp:packageFossDebugAndroidTestResources UP-TO-DATE
+> Task :androidApp:processFossDebugAndroidTestNavigationResources UP-TO-DATE
+> Task :androidApp:parseFossDebugAndroidTestLocalResources UP-TO-DATE
+> Task :androidApp:generateFossDebugAndroidTestRFile UP-TO-DATE
+> Task :androidApp:javaPreCompileFossDebugAndroidTest UP-TO-DATE
+> Task :androidApp:preFossDebugUnitTestBuild UP-TO-DATE
+> Task :androidApp:javaPreCompileFossDebugUnitTest UP-TO-DATE
+> Task :shared:core:bundleAndroidMainClassesToRuntimeJar UP-TO-DATE
+> Task :shared:core:processAndroidMainJavaRes UP-TO-DATE
+> Task :androidApp:mergeFossDebugNativeDebugMetadata NO-SOURCE
+> Task :androidApp:generateFossDebugAssets UP-TO-DATE
+> Task :shared:core:generateAndroidMainAssets UP-TO-DATE
+> Task :shared:core:mergeAndroidMainAssets UP-TO-DATE
+> Task :shared:ui:generateAndroidMainAssets UP-TO-DATE
+> Task :shared:ui:mergeAndroidMainAssets UP-TO-DATE
+> Task :androidApp:mergeFossDebugAssets UP-TO-DATE
+> Task :androidApp:compressFossDebugAssets UP-TO-DATE
+> Task :androidApp:generateFossDebugGlobalSynthetics UP-TO-DATE
+> Task :androidApp:checkFossDebugDuplicateClasses UP-TO-DATE
+> Task :androidApp:desugarFossDebugFileDependencies UP-TO-DATE
+> Task :androidApp:mergeExtDexFossDebug UP-TO-DATE
+> Task :shared:core:bundleLibRuntimeToDirAndroidMain UP-TO-DATE
+> Task :androidApp:mergeFossDebugJniLibFolders UP-TO-DATE
+> Task :shared:core:mergeAndroidMainJniLibFolders UP-TO-DATE
+> Task :shared:core:mergeAndroidMainNativeLibs NO-SOURCE
+> Task :shared:core:copyAndroidMainJniLibsProjectOnly UP-TO-DATE
+> Task :shared:ui:mergeAndroidMainJniLibFolders UP-TO-DATE
+> Task :shared:ui:mergeAndroidMainNativeLibs NO-SOURCE
+> Task :shared:ui:copyAndroidMainJniLibsProjectOnly UP-TO-DATE
+> Task :androidApp:mergeFossDebugNativeLibs UP-TO-DATE
+> Task :androidApp:stripFossDebugDebugSymbols UP-TO-DATE
+> Task :androidApp:validateSigningFossDebug UP-TO-DATE
+> Task :androidApp:writeFossDebugAppMetadata UP-TO-DATE
+> Task :androidApp:writeFossDebugSigningConfigVersions UP-TO-DATE
+> Task :androidApp:copyRoomSchemasToAndroidTestAssetsFossDebugAndroidTest UP-TO-DATE
+> Task :androidApp:generateFossDebugAndroidTestAssets UP-TO-DATE
+> Task :androidApp:mergeFossDebugAndroidTestAssets UP-TO-DATE
+> Task :androidApp:compressFossDebugAndroidTestAssets UP-TO-DATE
+> Task :androidApp:generateFossDebugAndroidTestGlobalSynthetics UP-TO-DATE
+> Task :androidApp:checkFossDebugAndroidTestDuplicateClasses UP-TO-DATE
+> Task :androidApp:desugarFossDebugAndroidTestFileDependencies UP-TO-DATE
+> Task :androidApp:mergeExtDexFossDebugAndroidTest UP-TO-DATE
+> Task :androidApp:checkFossDebugAndroidTestAarMetadata UP-TO-DATE
+> Task :androidApp:mapFossDebugAndroidTestSourceSetPaths UP-TO-DATE
+> Task :androidApp:compileFossDebugAndroidTestNavigationResources UP-TO-DATE
+> Task :androidApp:mergeFossDebugAndroidTestResources UP-TO-DATE
+> Task :androidApp:processFossDebugAndroidTestResources UP-TO-DATE
+> Task :androidApp:mergeFossDebugAndroidTestJniLibFolders UP-TO-DATE
+> Task :androidApp:mergeFossDebugAndroidTestNativeLibs NO-SOURCE
+> Task :androidApp:stripFossDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :androidApp:validateSigningFossDebugAndroidTest UP-TO-DATE
+> Task :androidApp:writeFossDebugAndroidTestSigningConfigVersions UP-TO-DATE
+> Task :shared:ui:compileAndroidMain
+w: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/components/GritBottomSheet.kt:79:62 'val windowInsets: WindowInsets' is deprecated. Renamed as modalWindowInsets.
+w: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineEditor.kt:112:21 'when' is exhaustive so 'else' is redundant here.
+
+> Task :shared:ui:bundleAndroidMainClassesToRuntimeJar
+> Task :shared:ui:bundleAndroidMainClassesToCompileJar
+> Task :shared:ui:processAndroidMainJavaRes UP-TO-DATE
+> Task :shared:ui:bundleLibRuntimeToDirAndroidMain
+> Task :androidApp:kspFossDebugKotlin
+> Task :androidApp:mergeLibDexFossDebug
+> Task :androidApp:mergeLibDexFossDebugAndroidTest UP-TO-DATE
+
+> Task :androidApp:compileFossDebugKotlin
+w: file:///mnt/d/wsl-share/Grit/androidApp/src/debug/java/com/shub39/grit/rhine/RhinePreviewActivity.kt:222:30 The corresponding parameter in the supertype 'ComponentActivity' is named 'intent'. This may cause problems when calling this function with named arguments.
+w: file:///mnt/d/wsl-share/Grit/androidApp/src/main/java/com/shub39/grit/tasks/data/repository/TasksRepository.kt:147:72 Unnecessary non-null assertion (!!) on a non-null receiver of type 'Section'.
+w: file:///mnt/d/wsl-share/Grit/androidApp/src/main/java/com/shub39/grit/tasks/data/repository/TasksRepository.kt:153:33 Unnecessary non-null assertion (!!) on a non-null receiver of type 'Task'.
+
+> Task :androidApp:compileFossDebugJavaWithJavac UP-TO-DATE
+> Task :androidApp:bundleFossDebugClassesToCompileJar
+> Task :androidApp:bundleFossDebugClassesToRuntimeJar
+> Task :androidApp:kspFossDebugAndroidTestKotlin
+> Task :androidApp:kspFossDebugUnitTestKotlin
+> Task :androidApp:compileFossDebugAndroidTestKotlin
+> Task :androidApp:compileFossDebugAndroidTestJavaWithJavac UP-TO-DATE
+> Task :androidApp:processFossDebugJavaRes UP-TO-DATE
+> Task :androidApp:mergeFossDebugJavaResource UP-TO-DATE
+> Task :androidApp:compileFossDebugUnitTestKotlin
+> Task :androidApp:dexBuilderFossDebug
+> Task :androidApp:compileFossDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :androidApp:copyRoomSchemas NO-SOURCE
+> Task :androidApp:processFossDebugUnitTestJavaRes UP-TO-DATE
+> Task :androidApp:testFossDebugUnitTest
+> Task :androidApp:processFossDebugAndroidTestJavaRes UP-TO-DATE
+> Task :androidApp:mergeFossDebugAndroidTestJavaResource UP-TO-DATE
+> Task :androidApp:dexBuilderFossDebugAndroidTest UP-TO-DATE
+> Task :androidApp:mergeProjectDexFossDebugAndroidTest UP-TO-DATE
+> Task :androidApp:packageFossDebugAndroidTest UP-TO-DATE
+> Task :androidApp:createFossDebugAndroidTestApkListingFileRedirect UP-TO-DATE
+> Task :androidApp:assembleFossDebugAndroidTest UP-TO-DATE
+> Task :androidApp:mergeProjectDexFossDebug
+> Task :androidApp:packageFossDebug
+> Task :androidApp:createFossDebugApkListingFileRedirect UP-TO-DATE
+> Task :androidApp:assembleFossDebug
+> Task :androidApp:copyRhineDebugApk
+
+[Incubating] Problems report is available at: file:///mnt/d/wsl-share/Grit/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 2m 39s
+148 actionable tasks: 30 executed, 118 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.6.0/userguide/configuration_cache_enabling.html

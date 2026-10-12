@@ -86,8 +86,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.tasks.Category
-import com.shub39.grit.core.tasks.CategoryColors
-import com.shub39.grit.core.tasks.Section
 import com.shub39.grit.core.tasks.Task
 import com.shub39.grit.shared.ui.LocalWindowSizeClass
 import com.shub39.grit.shared.ui.components.Empty
@@ -99,13 +97,12 @@ import com.shub39.grit.shared.ui.components.leadingItemShape
 import com.shub39.grit.shared.ui.components.middleItemShape
 import com.shub39.grit.shared.ui.task.TaskAction
 import com.shub39.grit.shared.ui.task.TaskState
-import com.shub39.grit.shared.ui.task.ui.component.AiDecomposeSheet
 import com.shub39.grit.shared.ui.task.ui.component.TaskCard
 import com.shub39.grit.shared.ui.theme.GritRadius
-import com.shub39.grit.shared.ui.theme.accentVariant
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
 import com.shub39.grit.shared.ui.theme.flexFontRounded
 import com.shub39.grit.shared.ui.theme.parseAccentColor
+import com.shub39.grit.shared.ui.theme.readableTitleColor
 import grit.shared.ui.generated.resources.*
 import grit.shared.ui.generated.resources.add
 import kotlin.invoke
@@ -129,7 +126,6 @@ fun TaskList(
     val windowSizeClass = LocalWindowSizeClass.current
 
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var showAiSheet by remember { mutableStateOf(false) }
     var editState by remember { mutableStateOf(false) }
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -146,9 +142,12 @@ fun TaskList(
             isReorderMode = editState,
             onReorderToggle = { editState = it },
             onDeleteClick = { showDeleteDialog = true },
-            onAiClick = { showAiSheet = true },
             isExpanded = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded,
         )
+
+        if (state.tasks.isEmpty()) {
+            Text("请新增类别，或从设置导入 Grit_Rhine 新格式备份。旧版数据需先在应用外转换。", Modifier.padding(16.dp))
+        }
 
         CategorySelector(
             state = state,
@@ -221,33 +220,6 @@ fun TaskList(
             },
         )
     }
-
-    if (showAiSheet && state.currentCategory != null) {
-        val category = state.currentCategory
-
-        AiDecomposeSheet(
-            onDismiss = { showAiSheet = false },
-            onCreateTask = { title, description, sections ->
-                onAction(
-                    TaskAction.UpsertTask(
-                        Task(
-                            categoryId = category.id,
-                            title = title,
-                            description = description,
-                            sections =
-                                sections.mapIndexed { index, content ->
-                                    Section("section ${index + 1}", content)
-                                },
-                            index = state.tasks[category]?.size ?: 0,
-                            status = false,
-                            reminder = null,
-                            isToday = state.isTodayView,
-                        )
-                    )
-                )
-            },
-        )
-    }
 }
 
 @Composable
@@ -257,7 +229,6 @@ private fun TaskListTopBar(
     isReorderMode: Boolean,
     onReorderToggle: (Boolean) -> Unit,
     onDeleteClick: () -> Unit,
-    onAiClick: () -> Unit,
     isExpanded: Boolean,
 ) {
     LargeFlexibleTopAppBar(
@@ -275,13 +246,6 @@ private fun TaskListTopBar(
         },
         actions = {
             val motionScheme = MaterialTheme.motionScheme
-
-            FilledTonalIconButton(onClick = onAiClick, enabled = state.currentCategory != null) {
-                Icon(
-                    imageVector = vectorResource(Res.drawable.check_list),
-                    contentDescription = "AI 分解任务",
-                )
-            }
 
             AnimatedVisibility(
                 visible = state.completedTasks.isNotEmpty(),
@@ -372,12 +336,12 @@ private fun CategorySelector(
                         onReorderModeChange(false)
                     },
                 ) {
-                    parseAccentColor(category.color)?.let { accent ->
+                    parseAccentColor(category.titleColor)?.let { accent ->
                         Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(accent))
                         Spacer(modifier = Modifier.width(6.dp))
                     }
 
-                    Text(text = category.name)
+                    Text(text = category.name, color = readableTitleColor(category.titleColor))
                 }
             }
             item {
@@ -450,11 +414,7 @@ private fun CompactTasksView(
                     }
                 val sourceTasks =
                     (if (isTodayView) state.todayTasks else state.tasks[category] ?: emptyList())
-                        .filter { !(it.status && it.categoryId in hiddenDoneCategoryIds) }
-                val accentByCategory =
-                    remember(state.tasks.keys) {
-                        state.tasks.keys.associate { it.id to parseAccentColor(it.color) }
-                    }
+                        .filter { !(it.isCompleted && it.categoryId in hiddenDoneCategoryIds) }
 
                 val lazyListState = rememberLazyListState()
                 var reorderableTasks by
@@ -462,7 +422,7 @@ private fun CompactTasksView(
                         mutableStateOf(
                             sourceTasks.run {
                                 if (state.reorderTasks) {
-                                    filter { !it.status }
+                                    filter { !it.isCompleted }
                                 } else this
                             }
                         )
@@ -529,7 +489,6 @@ private fun CompactTasksView(
                                 is24Hr = state.is24Hour,
                                 shape = cardShape,
                                 onDetailsClick = { onEditTask(task) },
-                                accent = accentByCategory[task.categoryId]?.accentVariant(index),
                                 onSectionsChange = {
                                     onAction(TaskAction.UpsertTask(task.copy(sections = it)))
                                 },
@@ -538,7 +497,8 @@ private fun CompactTasksView(
                                         .clip(cardShape)
                                         .clickable {
                                             if (!isReorderMode) {
-                                                val updatedTask = task.copy(status = !task.status)
+                                                val updatedTask =
+                                                    task.copy(isCompleted = !task.isCompleted)
 
                                                 onAction(TaskAction.UpsertTask(updatedTask))
                                             }
@@ -568,7 +528,7 @@ private fun CompactTasksView(
                     }
 
                     if (state.reorderTasks) {
-                        val completedTasks = sourceTasks.filter { it.status }
+                        val completedTasks = sourceTasks.filter { it.isCompleted }
 
                         if (reorderableTasks.isNotEmpty()) {
                             item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -606,14 +566,14 @@ private fun CompactTasksView(
                                 is24Hr = state.is24Hour,
                                 shape = cardShape,
                                 onDetailsClick = { onEditTask(task) },
-                                accent = accentByCategory[task.categoryId]?.accentVariant(index),
                                 onSectionsChange = {
                                     onAction(TaskAction.UpsertTask(task.copy(sections = it)))
                                 },
                                 modifier =
                                     Modifier.fillMaxWidth().clip(cardShape).clickable {
                                         if (!isReorderMode) {
-                                            val updatedTask = task.copy(status = !task.status)
+                                            val updatedTask =
+                                                task.copy(isCompleted = !task.isCompleted)
 
                                             onAction(TaskAction.UpsertTask(updatedTask))
                                         }
@@ -641,8 +601,8 @@ private fun ExpandedTasksView(
         Category(
             id = TODAY_VIEW_ID,
             name = stringResource(Res.string.today),
-            index = -1,
-            color = CategoryColors.GRAY.color,
+            orderIndex = -1,
+            titleColor = null,
         )
     // Categories flagged hideCompleted keep their done tasks out of every view.
     val hiddenDoneCategoryIds =
@@ -652,15 +612,13 @@ private fun ExpandedTasksView(
     val tasksAndCategories =
         listOf(
             todayCategory to
-                state.todayTasks.filter { !(it.status && it.categoryId in hiddenDoneCategoryIds) }
+                state.todayTasks.filter {
+                    !(it.isCompleted && it.categoryId in hiddenDoneCategoryIds)
+                }
         ) +
             state.tasks.map { (cat, tasks) ->
-                cat to if (cat.hideCompleted) tasks.filter { !it.status } else tasks
+                cat to if (cat.hideCompleted) tasks.filter { !it.isCompleted } else tasks
             }
-    val accentByCategory =
-        remember(state.tasks.keys) {
-            state.tasks.keys.associate { it.id to parseAccentColor(it.color) }
-        }
 
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Adaptive(minSize = 350.dp),
@@ -671,7 +629,7 @@ private fun ExpandedTasksView(
     ) {
         items(tasksAndCategories, key = { it.first.id }) { (category, tasks) ->
             val isTodayPanel = category.id == TODAY_VIEW_ID
-            val displayTasks = if (state.reorderTasks) tasks.filter { !it.status } else tasks
+            val displayTasks = if (state.reorderTasks) tasks.filter { !it.isCompleted } else tasks
             var showReorderDialog by remember { mutableStateOf(false) }
 
             Surface(
@@ -743,20 +701,19 @@ private fun ExpandedTasksView(
                             is24Hr = state.is24Hour,
                             shape = cardShape,
                             onDetailsClick = { onEditTask(task) },
-                            accent = accentByCategory[task.categoryId]?.accentVariant(index),
                             onSectionsChange = {
                                 onAction(TaskAction.UpsertTask(task.copy(sections = it)))
                             },
                             modifier =
                                 Modifier.animateItem().fillMaxWidth().clip(cardShape).clickable {
-                                    val updatedTask = task.copy(status = !task.status)
+                                    val updatedTask = task.copy(isCompleted = !task.isCompleted)
                                     onAction(TaskAction.UpsertTask(updatedTask))
                                 },
                         )
                     }
 
                     if (state.reorderTasks) {
-                        val completedTasks = tasks.filter { it.status }
+                        val completedTasks = tasks.filter { it.isCompleted }
 
                         if (completedTasks.isNotEmpty()) {
                             item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -792,13 +749,12 @@ private fun ExpandedTasksView(
                                 is24Hr = state.is24Hour,
                                 shape = cardShape,
                                 onDetailsClick = { onEditTask(task) },
-                                accent = accentByCategory[task.categoryId]?.accentVariant(index),
                                 onSectionsChange = {
                                     onAction(TaskAction.UpsertTask(task.copy(sections = it)))
                                 },
                                 modifier =
                                     Modifier.fillMaxWidth().clip(cardShape).clickable {
-                                        val updatedTask = task.copy(status = !task.status)
+                                        val updatedTask = task.copy(isCompleted = !task.isCompleted)
                                         onAction(TaskAction.UpsertTask(updatedTask))
                                     },
                             )

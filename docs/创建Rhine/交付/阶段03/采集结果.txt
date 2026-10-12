@@ -1,0 +1,15 @@
+01-category-selected-task-v1.png
+03-section-zero-v1.png
+02-section-layer-v1.png
+04-section-editor-v1.png
+05-section-date-v1.png
+07-task-description-color-v1.png
+08-task-options-v1.png
+19-task-today-reminder-v1.png
+06-category-description-color-v1.png
+09-category-keyboard-v1.png
+10-failure-draft-v1.png
+11-section-saved-v1.png
+12-enter-sibling-edit-return-v1.mp4
+13-return-restored-v1.png
+All capture assertions passed

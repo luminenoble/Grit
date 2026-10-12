@@ -24,7 +24,7 @@ import com.shub39.grit.core.settings.WidgetTextSize
 
 /**
  * Widget text metrics derived from the user's text size preference. Shared by every widget so the
- * setting applies to tasks and habits alike.
+ * setting applies to task widgets.
  */
 
 /** Multiplier for text sizes a widget picks itself, e.g. stat numbers and chart labels. */

@@ -17,6 +17,7 @@
 package com.shub39.grit.shared.ui.task.ui.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -69,20 +70,22 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.now
 import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.core.tasks.Section
 import com.shub39.grit.core.tasks.Task
-import com.shub39.grit.core.tasks.nextSectionName
 import com.shub39.grit.core.toFormattedString
+import com.shub39.grit.shared.ui.components.ColorPickerDialog
 import com.shub39.grit.shared.ui.components.ExpressiveSwitch
 import com.shub39.grit.shared.ui.components.GritBottomSheet
 import com.shub39.grit.shared.ui.components.GritTimePicker
 import com.shub39.grit.shared.ui.components.detachedItemShape
 import com.shub39.grit.shared.ui.components.listItemColors
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
+import com.shub39.grit.shared.ui.theme.parseAccentColor
+import com.shub39.grit.shared.ui.theme.readableTitleColor
+import com.shub39.grit.shared.ui.theme.toHexString
 import grit.shared.ui.generated.resources.*
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Instant
@@ -113,6 +116,9 @@ expect fun TaskUpsertSheet(
     fullScreen: Boolean = false,
     /** Auto-focus the title field (and raise the keyboard) when shown. */
     autoFocusTitle: Boolean = true,
+    saving: Boolean = false,
+    restrictStructure: Boolean = false,
+    allowDraftChanges: Boolean = true,
 )
 
 @Composable
@@ -131,8 +137,12 @@ fun TaskUpsertSheetContent(
     modifier: Modifier = Modifier,
     fullScreen: Boolean = false,
     autoFocusTitle: Boolean = true,
+    saving: Boolean = false,
+    restrictStructure: Boolean = false,
+    allowDraftChanges: Boolean = true,
 ) {
-    var newTask by remember { mutableStateOf(task) }
+    val originalTask = remember(task.id) { task }
+    var newTask by remember(task.id) { mutableStateOf(task) }
 
     val textFieldState =
         rememberTextFieldState(
@@ -149,11 +159,41 @@ fun TaskUpsertSheetContent(
     // inline, so the row only needs to show the name and offer edit/reorder actions.
     var editingSection by remember { mutableStateOf<SectionItem?>(null) }
 
+    var reorderSections by remember { mutableStateOf(false) }
+    var showColorPicker by remember { mutableStateOf(false) }
+    var showUnsaved by remember { mutableStateOf(false) }
+    var showTaskDelete by remember { mutableStateOf(false) }
+    var movingSection by remember { mutableStateOf<SectionItem?>(null) }
+    var targetPosition by remember { mutableStateOf("") }
+    val draft =
+        newTask.copy(
+            title = textFieldState.text.toString(),
+            sections =
+                sectionItems.mapIndexed { index, item -> item.section.copy(orderIndex = index) },
+        )
+    val dirty = draft != originalTask
+    val requestClose: () -> Unit = {
+        if (!saving) {
+            if (dirty) showUnsaved = true else onDismissRequest()
+        }
+    }
+    DraftBackHandler(enabled = fullScreen, onBack = requestClose)
+    val saveDraft: () -> Unit = {
+        if (
+            !saving &&
+                draft.title.isNotBlank() &&
+                (draft.reminder == task.reminder ||
+                    draft.reminder == null ||
+                    draft.reminder!! > LocalDateTime.now())
+        )
+            onUpsert(draft)
+    }
+
     val timePickerState = rememberTimePickerState(is24Hour = is24Hr)
     val datePickerState = rememberDatePickerState()
     val isValidDateTime =
         if (newTask.reminder != null) {
-            newTask.reminder!! > LocalDateTime.now()
+            newTask.reminder == task.reminder || newTask.reminder!! > LocalDateTime.now()
         } else true
 
     val sheetContent: @Composable ColumnScope.() -> Unit = {
@@ -220,6 +260,7 @@ fun TaskUpsertSheetContent(
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     categories.forEach { category ->
                         ToggleButton(
+                            enabled = !saving,
                             checked = category.id == newTask.categoryId,
                             onCheckedChange = { newTask = newTask.copy(categoryId = category.id) },
                             colors = ToggleButtonDefaults.tonalToggleButtonColors(),
@@ -242,6 +283,7 @@ fun TaskUpsertSheetContent(
                 }
 
                 OutlinedTextField(
+                    enabled = !saving,
                     state = textFieldState,
                     shape = MaterialTheme.shapes.medium,
                     placeholder = { Text(text = stringResource(Res.string.add_task)) },
@@ -260,11 +302,13 @@ fun TaskUpsertSheetContent(
 
             item {
                 OutlinedTextField(
+                    enabled = !saving,
                     value = newTask.description,
                     onValueChange = { newTask = newTask.copy(description = it) },
                     shape = MaterialTheme.shapes.medium,
                     placeholder = { Text(text = stringResource(Res.string.task_description)) },
                     minLines = 2,
+                    maxLines = 4,
                     keyboardOptions =
                         KeyboardOptions.Default.copy(
                             capitalization = KeyboardCapitalization.Sentences
@@ -273,13 +317,57 @@ fun TaskUpsertSheetContent(
                 )
             }
 
+            item {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(
+                        "标题文字颜色",
+                        color = readableTitleColor(newTask.titleColor),
+                        modifier = Modifier.padding(top = 12.dp),
+                    )
+                    TextButton(onClick = { showColorPicker = true }, enabled = !saving) {
+                        Text("选择")
+                    }
+                    TextButton(
+                        onClick = { newTask = newTask.copy(titleColor = null) },
+                        enabled = !saving,
+                    ) {
+                        Text("默认")
+                    }
+                }
+            }
+            item {
+                ListItem(
+                    headlineContent = { Text("任务已完成") },
+                    trailingContent = {
+                        ExpressiveSwitch(
+                            enabled = !saving,
+                            checked = newTask.isCompleted,
+                            onCheckedChange = { newTask = newTask.copy(isCompleted = it) },
+                        )
+                    },
+                    colors = listItemColors(),
+                )
+            }
             // sections: add, remove and drag to reorder
             item {
-                Text(
-                    text = stringResource(Res.string.sections),
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(
+                        if (restrictStructure) "Section · 排序待接入"
+                        else stringResource(Res.string.sections),
+                        Modifier.padding(top = 12.dp),
+                    )
+                    TextButton(
+                        enabled = !saving && !restrictStructure,
+                        onClick = { reorderSections = !reorderSections },
+                    ) {
+                        Text(
+                            stringResource(
+                                if (reorderSections) Res.string.section_reorder_done
+                                else Res.string.section_reorder
+                            )
+                        )
+                    }
+                }
             }
 
             items(sectionItems, key = { "section_${it.uid}" }) { step ->
@@ -288,31 +376,37 @@ fun TaskUpsertSheetContent(
                         modifier = Modifier.clip(MaterialTheme.shapes.medium),
                         colors = listItemColors(),
                         headlineContent = {
-                            Text(
-                                text = step.section.name,
-                                textDecoration =
-                                    if (step.section.done) TextDecoration.LineThrough
-                                    else TextDecoration.None,
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    "${sectionItems.indexOfFirst { it.uid == step.uid } + 1}.",
+                                    Modifier.padding(end = 8.dp),
+                                )
+                                Text(
+                                    step.section.title,
+                                    maxLines = 1,
+                                    modifier = Modifier.weight(1f).basicMarquee(),
+                                )
+                            }
+                        },
+                        supportingContent = {
+                            step.section.completedOn?.let { Text(it.toString()) }
                         },
                         leadingContent = {
                             IconButton(
+                                enabled = !reorderSections && !saving,
                                 onClick = {
                                     sectionItems =
                                         sectionItems.map {
                                             if (it.uid == step.uid)
-                                                it.copy(
-                                                    section =
-                                                        it.section.copy(done = !it.section.done)
-                                                )
+                                                it.copy(section = it.section.toggleCompleted())
                                             else it
                                         }
-                                }
+                                },
                             ) {
                                 Icon(
                                     imageVector =
                                         vectorResource(
-                                            if (step.section.done) Res.drawable.check_circle
+                                            if (step.section.isCompleted) Res.drawable.check_circle
                                             else Res.drawable.circle_border
                                         ),
                                     contentDescription = "Toggle done",
@@ -320,17 +414,30 @@ fun TaskUpsertSheetContent(
                             }
                         },
                         trailingContent = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = vectorResource(Res.drawable.drag_indicator),
-                                    contentDescription = "Reorder",
-                                    modifier = Modifier.draggableHandle(),
-                                )
-
-                                IconButton(onClick = { editingSection = step }) {
+                            if (reorderSections) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = vectorResource(Res.drawable.drag_indicator),
+                                        contentDescription = "拖动排序",
+                                        modifier =
+                                            if (saving) Modifier else Modifier.draggableHandle(),
+                                    )
+                                    TextButton(
+                                        enabled = !saving,
+                                        onClick = {
+                                            movingSection = step
+                                            targetPosition =
+                                                (sectionItems.indexOf(step) + 1).toString()
+                                        },
+                                    ) {
+                                        Text("位置")
+                                    }
+                                }
+                            } else {
+                                IconButton(enabled = !saving, onClick = { editingSection = step }) {
                                     Icon(
                                         imageVector = vectorResource(Res.drawable.edit),
-                                        contentDescription = "Edit",
+                                        contentDescription = "编辑 Section",
                                     )
                                 }
                             }
@@ -341,15 +448,16 @@ fun TaskUpsertSheetContent(
 
             item {
                 TextButton(
+                    enabled = !saving && !reorderSections && allowDraftChanges,
                     onClick = {
                         val item =
                             SectionItem(
                                 sectionUidCounter++,
-                                Section(nextSectionName(sectionItems.map { it.section })),
+                                Section(orderIndex = sectionItems.size),
                             )
                         sectionItems = sectionItems + item
                         editingSection = item
-                    }
+                    },
                 ) {
                     Icon(imageVector = vectorResource(Res.drawable.add), contentDescription = null)
                     Text(stringResource(Res.string.add_section))
@@ -369,6 +477,7 @@ fun TaskUpsertSheetContent(
                     headlineContent = { Text(text = stringResource(Res.string.add_to_today)) },
                     trailingContent = {
                         ExpressiveSwitch(
+                            enabled = !saving,
                             checked = newTask.isToday,
                             onCheckedChange = { newTask = newTask.copy(isToday = it) },
                         )
@@ -402,6 +511,7 @@ fun TaskUpsertSheetContent(
                     },
                     trailingContent = {
                         ExpressiveSwitch(
+                            enabled = !saving,
                             checked = newTask.reminder != null,
                             onCheckedChange = { checked ->
                                 if (checked) {
@@ -428,9 +538,10 @@ fun TaskUpsertSheetContent(
                         modifier = Modifier.padding(bottom = 32.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        if (isEditSheet) {
+                        if (isEditSheet && !restrictStructure) {
                             OutlinedButton(
-                                onClick = onDelete,
+                                onClick = { showTaskDelete = true },
+                                enabled = !saving,
                                 shapes =
                                     ButtonShapes(
                                         shape = MaterialTheme.shapes.extraLarge,
@@ -443,15 +554,7 @@ fun TaskUpsertSheetContent(
                         }
 
                         Button(
-                            onClick = {
-                                onUpsert(
-                                    newTask.copy(
-                                        title = textFieldState.text.toString(),
-                                        sections = sectionItems.map { it.section },
-                                    )
-                                )
-                                onDismissRequest()
-                            },
+                            onClick = saveDraft,
                             shapes =
                                 ButtonShapes(
                                     shape = MaterialTheme.shapes.extraLarge,
@@ -459,15 +562,10 @@ fun TaskUpsertSheetContent(
                                 ),
                             modifier = Modifier.weight(1f),
                             enabled =
-                                textFieldState.text.isNotBlank() &&
-                                    textFieldState.text.length <= 100 &&
+                                !saving &&
+                                    draft.title.isNotBlank() &&
                                     isValidDateTime &&
-                                    (newTask.reminder != task.reminder ||
-                                        textFieldState.text.toString() != task.title ||
-                                        newTask.categoryId != task.categoryId ||
-                                        newTask.description != task.description ||
-                                        newTask.isToday != task.isToday ||
-                                        sectionItems.map { it.section } != task.sections),
+                                    (dirty || !isEditSheet),
                         ) {
                             Text(
                                 stringResource(
@@ -493,8 +591,20 @@ fun TaskUpsertSheetContent(
                         fontFamily = flexFontEmphasis(),
                     )
                 },
+                actions = {
+                    if (restrictStructure) {
+                        TextButton(onClick = requestClose, enabled = !saving) { Text("取消") }
+                        TextButton(
+                            onClick = saveDraft,
+                            enabled =
+                                !saving && draft.title.isNotBlank() && isValidDateTime && dirty,
+                        ) {
+                            Text(if (saving) "保存中…" else "保存")
+                        }
+                    }
+                },
                 navigationIcon = {
-                    FilledTonalIconButton(onClick = onDismissRequest) {
+                    FilledTonalIconButton(onClick = requestClose, enabled = !saving) {
                         Icon(
                             imageVector = vectorResource(Res.drawable.nav_arrow_back),
                             contentDescription = "Navigate Back",
@@ -508,15 +618,105 @@ fun TaskUpsertSheetContent(
         GritBottomSheet(
             modifier = modifier.imePadding(),
             padding = 0.dp,
-            onDismissRequest = onDismissRequest,
+            onDismissRequest = requestClose,
         ) {
             sheetContent()
         }
     }
 
+    if (showColorPicker)
+        ColorPickerDialog(
+            initialColor =
+                parseAccentColor(newTask.titleColor) ?: MaterialTheme.colorScheme.onSurface,
+            onSelect = { newTask = newTask.copy(titleColor = it.toHexString()) },
+            onDismiss = { showColorPicker = false },
+        )
+    if (showUnsaved)
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showUnsaved = false },
+            title = { Text("未保存的修改") },
+            text = { Text("保存修改，或放弃后返回？") },
+            confirmButton = {
+                TextButton(
+                    enabled = !saving && draft.title.isNotBlank() && isValidDateTime,
+                    onClick = {
+                        showUnsaved = false
+                        saveDraft()
+                    },
+                ) {
+                    Text("保存")
+                }
+            },
+            dismissButton = {
+                Row {
+                    TextButton(
+                        onClick = {
+                            showUnsaved = false
+                            onDismissRequest()
+                        }
+                    ) {
+                        Text("放弃")
+                    }
+                    TextButton(onClick = { showUnsaved = false }) { Text("继续编辑") }
+                }
+            },
+        )
+    if (showTaskDelete)
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showTaskDelete = false },
+            title = { Text("删除任务") },
+            text = { Text("删除「${task.title}」及其 ${task.sections.size} 条 Section？") },
+            confirmButton = {
+                TextButton(
+                    enabled = !saving,
+                    onClick = {
+                        showTaskDelete = false
+                        onDelete()
+                    },
+                ) {
+                    Text("删除")
+                }
+            },
+            dismissButton = { TextButton(onClick = { showTaskDelete = false }) { Text("取消") } },
+        )
+    movingSection?.let { item ->
+        val target = targetPosition.toIntOrNull()
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { movingSection = null },
+            title = { Text("移动到第几项") },
+            text = {
+                OutlinedTextField(
+                    enabled = !saving,
+                    value = targetPosition,
+                    onValueChange = { targetPosition = it },
+                    label = { Text("1–${sectionItems.size}") },
+                    singleLine = true,
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = target != null && target in 1..sectionItems.size,
+                    onClick = {
+                        sectionItems =
+                            sectionItems.toMutableList().apply {
+                                val from = indexOfFirst { it.uid == item.uid }
+                                if (from >= 0) add(target!! - 1, removeAt(from))
+                            }
+                        movingSection = null
+                    },
+                ) {
+                    Text("移动")
+                }
+            },
+            dismissButton = { TextButton(onClick = { movingSection = null }) { Text("取消") } },
+        )
+    }
     editingSection?.let { item ->
         SectionEditor(
             section = item.section,
+            allowDelete = allowDraftChanges,
+            wide = restrictStructure,
+            saving = saving,
             onSave = { section ->
                 sectionItems =
                     sectionItems.map { if (it.uid == item.uid) it.copy(section = section) else it }

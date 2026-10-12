@@ -25,13 +25,14 @@ import com.shub39.grit.core.settings.backup.ExportState
 import com.shub39.grit.core.settings.backup.RestoreState
 import com.shub39.grit.core.theme.Theme
 import com.shub39.grit.shared.ui.update.UpdateCheckState
-import kotlinx.datetime.DayOfWeek
 
 @Stable
 @Immutable
 data class SettingsState(
     val changelog: Changelog = emptyList(),
     val currentVersion: String? = null,
+    val restorePreview: com.shub39.grit.core.settings.backup.RestorePreview? = null,
+    val backupMessage: String? = null,
     val backupState: BackupState = BackupState(),
     val updateCheck: UpdateCheckState = UpdateCheckState.Idle,
 
@@ -39,7 +40,6 @@ data class SettingsState(
     val theme: Theme = Theme(),
     val is24Hr: Boolean = false,
     val reorderTasks: Boolean = false,
-    val startOfTheWeek: DayOfWeek = DayOfWeek.MONDAY,
     val pauseNotifications: Boolean = false,
     val startingPage: Sections = Sections.Tasks,
     val isBiometricLockOn: Boolean? = null,

@@ -42,7 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.app.VersionEntry
-import com.shub39.grit.core.theme.AppTheme
 import com.shub39.grit.core.theme.Theme
 import com.shub39.grit.shared.ui.theme.GritTheme
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
@@ -124,7 +123,7 @@ fun ChangelogSheet(
 @Preview
 @Composable
 private fun Preview() {
-    GritTheme(theme = Theme(appTheme = AppTheme.DARK)) {
+    GritTheme(theme = Theme()) {
         ChangelogSheet(
             currentLog =
                 VersionEntry(

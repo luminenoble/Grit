@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -26,22 +25,11 @@ plugins {
     alias(libs.plugins.koin.compiler)
 }
 
-val appName = "Grit"
+val appName = "Grit_Rhine"
 val appVersionCode = 6060
 val appVersionName = "6.0.6"
 
 val gitHash = execute("git", "rev-parse", "HEAD").take(7)
-
-// Read the DeepSeek API key from local.properties (gitignored) so it is baked into the build
-// without being committed. Falls back to empty when absent.
-val deepseekApiKey: String =
-    Properties()
-        .apply {
-            val f = rootProject.file("local.properties")
-            if (f.exists()) f.inputStream().use { load(it) }
-        }
-        .getProperty("deepseek.api.key")
-        .orEmpty()
 
 android {
     namespace = "com.shub39.grit"
@@ -53,8 +41,6 @@ android {
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = appVersionCode
         versionName = appVersionName
-
-        buildConfigField("String", "DEEPSEEK_API_KEY", "\"$deepseekApiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -181,16 +167,20 @@ dependencies {
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    androidTestImplementation(libs.androidx.room.testing)
-    androidTestImplementation(libs.truth)
+    androidTestImplementation(libs.androidx.runner)
 
     implementation(libs.koin.core)
     implementation(libs.koin.compose)
     implementation(libs.koin.compose.viewmodel)
     implementation(libs.koin.compose.viewmodel.navigation)
     implementation(libs.koin.annotations)
+}
+
+tasks.register<Copy>("copyRhineDebugApk") {
+    dependsOn("assembleFossDebug")
+    from(layout.buildDirectory.file("outputs/apk/foss/debug/androidApp-foss-debug.apk"))
+    into(layout.buildDirectory.dir("outputs/grit_rhine"))
+    rename { "Grit_Rhine-debug.apk" }
 }
 
 room3 { schemaDirectory("$projectDir/schemas") }

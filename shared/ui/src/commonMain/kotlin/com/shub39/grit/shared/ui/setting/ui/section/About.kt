@@ -61,9 +61,11 @@ import com.shub39.grit.shared.ui.components.detachedItemShape
 import com.shub39.grit.shared.ui.components.endItemShape
 import com.shub39.grit.shared.ui.components.leadingItemShape
 import com.shub39.grit.shared.ui.components.listItemColors
+import com.shub39.grit.shared.ui.components.middleItemShape
 import com.shub39.grit.shared.ui.setting.ui.component.LicenseBottomSheet
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
 import com.shub39.grit.shared.ui.theme.flexFontRounded
+import com.shub39.grit.shared.ui.update.UPDATE_REPO
 import grit.shared.ui.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -140,6 +142,50 @@ private fun LazyListScope.engagementLinks(uriHandler: UriHandler) {
                 colors = listItemColors(),
                 leadingContent = {
                     Icon(
+                        imageVector = vectorResource(Res.drawable.github),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                    )
+                },
+                trailingContent = {
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.open_link),
+                        contentDescription = null,
+                    )
+                },
+                headlineContent = { Text(text = "定制版 GitHub 仓库") },
+                supportingContent = { Text(text = UPDATE_REPO) },
+                modifier =
+                    Modifier.clip(leadingItemShape()).clickable {
+                        uriHandler.openUri("https://github.com/$UPDATE_REPO")
+                    },
+            )
+            ListItem(
+                colors = listItemColors(),
+                leadingContent = {
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.github),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                    )
+                },
+                trailingContent = {
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.open_link),
+                        contentDescription = null,
+                    )
+                },
+                headlineContent = { Text(text = "原版 GitHub 仓库") },
+                supportingContent = { Text(text = "shub39/Grit") },
+                modifier =
+                    Modifier.clip(middleItemShape()).clickable {
+                        uriHandler.openUri("https://github.com/shub39/Grit")
+                    },
+            )
+            ListItem(
+                colors = listItemColors(),
+                leadingContent = {
+                    Icon(
                         imageVector = vectorResource(Res.drawable.buymeacoffee),
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
@@ -154,7 +200,7 @@ private fun LazyListScope.engagementLinks(uriHandler: UriHandler) {
                 headlineContent = { Text(text = stringResource(Res.string.bmc)) },
                 supportingContent = { Text(text = stringResource(Res.string.bmc_desc)) },
                 modifier =
-                    Modifier.clip(leadingItemShape()).clickable {
+                    Modifier.clip(middleItemShape()).clickable {
                         uriHandler.openUri("https://buymeacoffee.com/shub39")
                     },
             )
@@ -214,7 +260,7 @@ private fun LazyListScope.aboutApp(versionName: String, uriHandler: UriHandler) 
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Grit",
+                            text = "Grit_Rhine",
                             style =
                                 MaterialTheme.typography.headlineMedium.copy(
                                     fontFamily = flexFontRounded()
@@ -235,16 +281,7 @@ private fun LazyListScope.aboutApp(versionName: String, uriHandler: UriHandler) 
                         ) {
                             Icon(
                                 imageVector = vectorResource(Res.drawable.discord),
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp),
-                            )
-                        }
-                        FilledTonalIconButton(
-                            onClick = { uriHandler.openUri("https://github.com/shub39/Grit") }
-                        ) {
-                            Icon(
-                                imageVector = vectorResource(Res.drawable.github),
-                                contentDescription = null,
+                                contentDescription = "Discord",
                                 modifier = Modifier.size(24.dp),
                             )
                         }

@@ -1,0 +1,22 @@
+01-empty-start-v1.png
+02-category-form-v1.png
+03-category-keyboard-v1.png
+04-category-zero-v1.png
+05-first-task-v1.png
+06-u99-short-before-v1.png
+07-create-failed-draft-v1.png
+08-short-second-after-v1.png
+09-section-u99-short-before-v1.png
+10-section-create-v1.png
+11-section-second-after-v1.png
+12-sibling-form-v1.png
+13-sibling-zero-v1.png
+14-section-delete-confirm-v1.png
+15-section-deleted-zero-v1.png
+16-longest-before-v1.png
+17-category-cascade-confirm-v1.png
+18-delete-failed-context-v1.png
+19-longest-removed-v1.png
+20-shrunk-tail-v1.png
+21-deleted-all-empty-v1.png
+All screenshot assertions passed

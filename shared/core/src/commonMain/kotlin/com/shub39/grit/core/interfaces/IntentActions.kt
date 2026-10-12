@@ -15,11 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.shub39.grit.core.interfaces
-
-// all the different intent actions passed
 enum class IntentActions(val action: String) {
-    ADD_HABIT_STATUS("add_habit_status"),
-    HABIT_NOTIFICATION("habit"),
-    TASK_NOTIFICATION("task_notification"),
-    MARK_TASK_DONE("mark_task_done"),
+    TASK_NOTIFICATION("rhine_task_notification"),
+    MARK_TASK_DONE("rhine_mark_task_done"),
 }

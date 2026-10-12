@@ -16,16 +16,12 @@
  */
 package com.shub39.grit.tasks.data.database
 
-import androidx.room3.ColumnInfo
-import androidx.room3.Entity
-import androidx.room3.ForeignKey
-import androidx.room3.Index
-import androidx.room3.PrimaryKey
-import com.shub39.grit.core.tasks.Section
+import androidx.room3.*
+import kotlin.time.Instant
 import kotlinx.datetime.LocalDateTime
 
 @Entity(
-    tableName = "task",
+    tableName = "tasks",
     foreignKeys =
         [
             ForeignKey(
@@ -35,16 +31,23 @@ import kotlinx.datetime.LocalDateTime
                 onDelete = ForeignKey.CASCADE,
             )
         ],
-    indices = [Index(value = ["categoryId"])],
+    indices = [Index(value = ["categoryId", "orderIndex"])],
 )
 data class TaskEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val categoryId: Long,
     val title: String,
-    val status: Boolean = false,
-    val index: Int = 0,
-    @ColumnInfo(name = "reminder", defaultValue = "NULL") val reminder: LocalDateTime? = null,
-    @ColumnInfo(defaultValue = "") val description: String = "",
-    @ColumnInfo(defaultValue = "0") val isToday: Boolean = false,
-    @ColumnInfo(name = "steps", defaultValue = "[]") val sections: List<Section> = emptyList(),
+    val description: String,
+    val orderIndex: Int,
+    val titleColor: String?,
+    val isCompleted: Boolean,
+    val isToday: Boolean,
+    val reminder: LocalDateTime?,
+    val createdAt: Instant,
+    val updatedAt: Instant,
+)
+
+data class TaskWithSections(
+    @Embedded val task: TaskEntity,
+    @Relation(parentColumns = ["id"], entityColumns = ["taskId"]) val sections: List<SectionEntity>,
 )

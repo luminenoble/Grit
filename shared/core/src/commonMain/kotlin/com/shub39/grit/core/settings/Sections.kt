@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.shub39.grit.core.settings
-
 enum class Sections {
     Tasks,
-    Habits,
+    Settings,
+    Rhine,
 }

@@ -16,129 +16,44 @@
  */
 package com.shub39.grit.core.data
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.util.Log
 import com.shub39.grit.core.data.notification.GritNotificationManager
-import com.shub39.grit.core.habits.HabitRepo
-import com.shub39.grit.core.habits.HabitStatus
-import com.shub39.grit.core.interfaces.AlarmScheduler
 import com.shub39.grit.core.interfaces.IntentActions
 import com.shub39.grit.core.interfaces.SettingsDatastore
-import com.shub39.grit.core.now
 import com.shub39.grit.core.tasks.TaskRepo
-import kotlin.time.ExperimentalTime
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
+import org.koin.core.component.*
 
 class GritIntentReceiver : BroadcastReceiver(), KoinComponent {
-
-    companion object {
-        private const val TAG = "GritIntentReceiver"
-    }
-
-    private val receiverScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    @OptIn(ExperimentalTime::class)
     override fun onReceive(context: Context, intent: Intent?) {
-        Log.d(TAG, "Received intent")
-        val pendingResult = goAsync()
-
-        receiverScope.launch {
+        if (
+            intent?.action !in
+                setOf(IntentActions.TASK_NOTIFICATION.action, IntentActions.MARK_TASK_DONE.action)
+        )
+            return
+        val pending = goAsync()
+        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
             try {
-                val datastore = get<SettingsDatastore>()
-                val pauseNotifications = datastore.getNotificationsFlow().first()
-
-                if (intent != null && !pauseNotifications) {
-                    when (intent.action) {
-                        IntentActions.HABIT_NOTIFICATION.action -> habitNotification(intent)
-
-                        IntentActions.ADD_HABIT_STATUS.action -> addHabitStatus(intent)
-
-                        IntentActions.MARK_TASK_DONE.action -> markTaskDone(intent)
-
-                        IntentActions.TASK_NOTIFICATION.action -> taskNotification(intent)
-
-                        else -> return@launch
-                    }
+                val repo = get<TaskRepo>()
+                val task = repo.getTaskById(intent!!.getLongExtra("task_id", -1)) ?: return@launch
+                when (intent.action) {
+                    IntentActions.MARK_TASK_DONE.action ->
+                        repo.upsertTask(task.copy(isCompleted = true))
+                    IntentActions.TASK_NOTIFICATION.action ->
+                        if (
+                            !task.isCompleted &&
+                                task.reminder != null &&
+                                !get<SettingsDatastore>().getNotificationsFlow().first()
+                        )
+                            get<GritNotificationManager>().taskNotification(task)
                 }
-            } catch (t: Throwable) {
-                Log.e(TAG, "Error: ", t)
+            } catch (e: Exception) {
+                Log.e("GritIntentReceiver", "处理任务通知失败", e)
             } finally {
-                pendingResult.finish()
+                pending.finish()
             }
         }
-    }
-
-    private suspend fun markTaskDone(intent: Intent) {
-        Log.d(TAG, "Mark task done intent received")
-        val taskId = intent.getLongExtra("task_id", -1)
-        if (taskId < 0) return
-
-        val taskRepo = get<TaskRepo>()
-        val task = taskRepo.getTaskById(taskId) ?: return
-
-        taskRepo.upsertTask(task.copy(status = true, reminder = null))
-
-        Log.d(TAG, "Task marked as complete successfully")
-
-        get<GritNotificationManager>().cancelNotification(taskId.toInt())
-    }
-
-    private suspend fun addHabitStatus(intent: Intent) {
-        Log.d(TAG, "Add habit status intent received")
-        val habitId = intent.getLongExtra("habit_id", -1)
-        if (habitId < 0) return
-
-        val habitRepo = get<HabitRepo>()
-
-        habitRepo.insertHabitStatus(HabitStatus(habitId = habitId, date = LocalDate.now()))
-
-        Log.d(TAG, "Habit status added successfully")
-
-        get<GritNotificationManager>().cancelNotification(habitId.toInt())
-    }
-
-    private suspend fun taskNotification(intent: Intent) {
-        Log.d(TAG, "Task notification intent received")
-        val taskId = intent.getLongExtra("task_id", -1)
-        if (taskId < 0) return
-
-        val taskRepo = get<TaskRepo>()
-
-        val task = taskRepo.getTaskById(taskId) ?: return
-        if (!task.status && task.reminder != null) {
-            Log.d(TAG, "sending Task notification")
-            get<GritNotificationManager>().taskNotification(task)
-        }
-    }
-
-    private suspend fun habitNotification(intent: Intent) {
-        Log.d(TAG, "Habit notification intent received")
-
-        val habitId = intent.getLongExtra("habit_id", -1)
-        if (habitId < 0L) return
-
-        val habitRepo = get<HabitRepo>()
-
-        val habit = habitRepo.getHabitById(habitId) ?: return
-        if (!habit.reminder) return
-
-        // check if habit is completed today, if not then show notification
-        val habitStatus = habitRepo.getStatusForHabit(habitId)
-        if (habitStatus.any { it.date == LocalDate.now() }) {
-            Log.d(TAG, "Habit already completed today")
-        } else {
-            get<GritNotificationManager>().habitNotification(habit)
-        }
-
-        get<AlarmScheduler>().schedule(habit)
     }
 }

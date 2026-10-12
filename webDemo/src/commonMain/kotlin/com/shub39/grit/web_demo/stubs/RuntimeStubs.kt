@@ -16,531 +16,439 @@
  */
 package com.shub39.grit.web_demo.stubs
 
-import com.shub39.grit.core.habits.Habit
-import com.shub39.grit.core.habits.HabitRanking
-import com.shub39.grit.core.habits.HabitRepo
-import com.shub39.grit.core.habits.HabitStatus
-import com.shub39.grit.core.habits.HabitWithAnalytics
-import com.shub39.grit.core.habits.OverallAnalytics
-import com.shub39.grit.core.interfaces.SettingsDatastore
-import com.shub39.grit.core.interfaces.ThemeDatastore
-import com.shub39.grit.core.now
-import com.shub39.grit.core.settings.Sections
-import com.shub39.grit.core.settings.WidgetTextSize
-import com.shub39.grit.core.tasks.Category
-import com.shub39.grit.core.tasks.Task
-import com.shub39.grit.core.tasks.TaskRepo
-import com.shub39.grit.core.theme.AppTheme
+import com.shub39.grit.core.interfaces.*
+import com.shub39.grit.core.settings.*
+import com.shub39.grit.core.settings.backup.RhineBackup
+import com.shub39.grit.core.tasks.*
 import com.shub39.grit.core.theme.Fonts
-import com.shub39.grit.core.theme.PaletteStyle
-import kotlin.random.Random
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
-import kotlinx.datetime.DatePeriod
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.DayOfWeek
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.daysUntil
-import kotlinx.datetime.format.DayOfWeekNames
-import kotlinx.datetime.isoDayNumber
-import kotlinx.datetime.minus
-import kotlinx.datetime.plus
+import kotlin.time.Clock
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Single
 
 @Single(binds = [ThemeDatastore::class])
 class ThemeDatastoreStub : ThemeDatastore {
-    private val _appTheme = MutableStateFlow(AppTheme.SYSTEM)
-    private val _seedColor = MutableStateFlow(0)
-    private val _amoled = MutableStateFlow(false)
-    private val _paletteStyle = MutableStateFlow(PaletteStyle.TONALSPOT)
-    private val _materialYou = MutableStateFlow(false)
-    private val _fontPref = MutableStateFlow(Fonts.SYSTEM_DEFAULT)
+    private val font = MutableStateFlow(Fonts.FIGTREE)
 
-    override suspend fun resetAppTheme() {
-        _appTheme.update { AppTheme.SYSTEM }
-    }
-
-    override fun getAppThemeFlow(): Flow<AppTheme> = _appTheme.asStateFlow()
-
-    override suspend fun setAppTheme(theme: AppTheme) {
-        _appTheme.update { theme }
-    }
-
-    override fun getSeedColorFlow(): Flow<Int> = _seedColor.asStateFlow()
-
-    override suspend fun setSeedColor(color: Int) {
-        _seedColor.update { color }
-    }
-
-    override fun getAmoledPref(): Flow<Boolean> = _amoled.asStateFlow()
-
-    override suspend fun setAmoledPref(pref: Boolean) {
-        _amoled.update { pref }
-    }
-
-    override fun getPaletteStyle(): Flow<PaletteStyle> = _paletteStyle.asStateFlow()
-
-    override suspend fun setPaletteStyle(style: PaletteStyle) {
-        _paletteStyle.update { style }
-    }
-
-    override fun getMaterialYouFlow(): Flow<Boolean> = _materialYou.asStateFlow()
-
-    override suspend fun setMaterialYou(pref: Boolean) {
-        _materialYou.update { pref }
-    }
-
-    override fun getFontPrefFlow(): Flow<Fonts> = _fontPref.asStateFlow()
+    override fun getFontPrefFlow() = font.asStateFlow()
 
     override suspend fun setFontPref(font: Fonts) {
-        _fontPref.update { font }
+        this.font.value = font
     }
 }
 
 @Single(binds = [SettingsDatastore::class])
 class SettingsDatastoreStub : SettingsDatastore {
-    private val _startOfWeek = MutableStateFlow(DayOfWeek.MONDAY)
-    private val _startingSection = MutableStateFlow(Sections.Tasks)
-    private val _is24Hr = MutableStateFlow(false)
-    private val _notifications = MutableStateFlow(false)
-    private val _biometricLock = MutableStateFlow(false)
-    private val _taskReorder = MutableStateFlow(false)
-    private val _compactView = MutableStateFlow(false)
-    private val _lastChangelog = MutableStateFlow("")
-    private val _widgetTextSize = MutableStateFlow(WidgetTextSize.MEDIUM)
+    private val page = MutableStateFlow(Sections.Tasks)
+    private val hours = MutableStateFlow(false)
+    private val notifications = MutableStateFlow(false)
+    private val biometric = MutableStateFlow(false)
+    private val reorder = MutableStateFlow(true)
+    private val changelog = MutableStateFlow("")
+    private val widget = MutableStateFlow(WidgetTextSize.MEDIUM)
 
-    override fun getStartOfTheWeekPref(): Flow<DayOfWeek> = _startOfWeek.asStateFlow()
-
-    override suspend fun setStartOfWeek(day: DayOfWeek) {
-        _startOfWeek.update { day }
-    }
-
-    override fun getStartingSectionPref(): Flow<Sections> = _startingSection.asStateFlow()
+    override fun getStartingSectionPref() = page.asStateFlow()
 
     override suspend fun setStartingPage(page: Sections) {
-        _startingSection.update { page }
+        this.page.value = page
     }
 
-    override fun getIs24Hr(): Flow<Boolean> = _is24Hr.asStateFlow()
+    override fun getIs24Hr() = hours.asStateFlow()
 
     override suspend fun setIs24Hr(pref: Boolean) {
-        _is24Hr.update { pref }
+        hours.value = pref
     }
 
-    override fun getNotificationsFlow(): Flow<Boolean> = _notifications.asStateFlow()
+    override fun getNotificationsFlow() = notifications.asStateFlow()
 
     override suspend fun setNotifications(pref: Boolean) {
-        _notifications.update { pref }
+        notifications.value = pref
     }
 
-    override fun getBiometricLockPref(): Flow<Boolean> = _biometricLock.asStateFlow()
+    override fun getBiometricLockPref() = biometric.asStateFlow()
 
     override suspend fun setBiometricPref(pref: Boolean) {
-        _biometricLock.update { pref }
+        biometric.value = pref
     }
 
-    override fun getTaskReorderPref(): Flow<Boolean> = _taskReorder.asStateFlow()
+    override fun getTaskReorderPref() = reorder.asStateFlow()
 
     override suspend fun setTaskReorderPref(pref: Boolean) {
-        _taskReorder.update { pref }
+        reorder.value = pref
     }
 
-    override fun getCompactViewPref(): Flow<Boolean> = _compactView.asStateFlow()
-
-    override suspend fun setCompactView(pref: Boolean) {
-        _compactView.update { pref }
-    }
-
-    override fun getLastChangelogShown(): Flow<String> = _lastChangelog.asStateFlow()
+    override fun getLastChangelogShown() = changelog.asStateFlow()
 
     override suspend fun updateLastChangelogShown(version: String) {
-        _lastChangelog.update { version }
+        changelog.value = version
     }
 
-    override fun getWidgetTextSizeFlow(): Flow<WidgetTextSize> = _widgetTextSize.asStateFlow()
+    override fun getWidgetTextSizeFlow() = widget.asStateFlow()
 
     override suspend fun setWidgetTextSize(size: WidgetTextSize) {
-        _widgetTextSize.update { size }
+        widget.value = size
     }
 }
+
+private data class DemoData(val categories: List<Category>, val tasks: List<Task>)
 
 @Single(binds = [TaskRepo::class])
 class TaskRepoStub : TaskRepo {
-    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
-    private val _categories =
-        MutableStateFlow(listOf(Category(id = 1, name = "General", index = 0, color = "#FFFFFF")))
+    private val generation = MutableStateFlow(0L)
 
-    init {
-        val work = Category(id = 2, name = "Work", index = 1, color = "#4285F4")
-        val personal = Category(id = 3, name = "Personal", index = 2, color = "#34A853")
-        _categories.update { it + listOf(work, personal) }
+    override fun dataGeneration() = generation.map { it.toString() }
 
-        _tasks.update {
-            listOf(
-                Task(id = 1, categoryId = 1, title = "Welcome to Grit!"),
-                Task(id = 2, categoryId = 2, title = "Complete project documentation"),
-                Task(id = 3, categoryId = 2, title = "Team meeting", status = true),
-                Task(id = 4, categoryId = 3, title = "Buy groceries"),
+    private val data =
+        MutableStateFlow(
+            DemoData(
+                listOf(Category(id = 1, name = "工作")),
+                listOf(Task(id = 1, categoryId = 1, title = "Welcome to Grit_Rhine")),
             )
+        )
+    private val mutex = Mutex()
+    private var nextCategory = 2L
+    private var nextTask = 2L
+    private var nextSection = 1L
+
+    private suspend fun <T> write(block: (DemoData) -> Pair<DemoData, T>): T =
+        mutex.withLock {
+            val (next, result) = block(data.value)
+            data.value = next
+            result
         }
+
+    private fun normalize(ts: List<Task>) =
+        ts.groupBy { it.categoryId }
+            .values
+            .flatMap { group ->
+                group.sortedBy { it.orderIndex }.mapIndexed { i, t -> t.copy(orderIndex = i) }
+            }
+
+    override fun getCategoriesFlow() = data.map { it.categories.sortedBy { c -> c.orderIndex } }
+
+    override fun getTasksFlow() =
+        data.map { d ->
+            d.categories
+                .sortedBy { it.orderIndex }
+                .associateWith { c ->
+                    d.tasks.filter { it.categoryId == c.id }.sortedBy { it.orderIndex }
+                }
+        }
+
+    override fun getCompletedTasksFlow() = data.map { it.tasks.filter { t -> t.isCompleted } }
+
+    override suspend fun getTasks() = data.value.tasks
+
+    override suspend fun getCategories() = data.value.categories.sortedBy { it.orderIndex }
+
+    override suspend fun getTaskById(id: Long) = data.value.tasks.firstOrNull { it.id == id }
+
+    override suspend fun upsertCategory(category: Category): Long = write { d ->
+        require(category.name.isNotBlank())
+        validateTitleColor(category.titleColor)
+        val old = d.categories.firstOrNull { it.id == category.id }
+        require(category.id == 0L || old != null)
+        val saved =
+            category.copy(
+                id = old?.id ?: nextCategory++,
+                orderIndex = old?.orderIndex ?: d.categories.size,
+                name = category.name.trim(),
+                createdAt = old?.createdAt ?: Clock.System.now(),
+                updatedAt = Clock.System.now(),
+            )
+        d.copy(categories = d.categories.filterNot { it.id == saved.id } + saved) to saved.id
     }
 
-    override fun getTasksFlow(): Flow<Map<Category, List<Task>>> =
-        _tasks.asStateFlow().map { taskList ->
-            val categories = _categories.value
-            categories.associateWith { category ->
-                taskList.filter { it.categoryId == category.id }.sortedBy { it.index }
-            }
-        }
-
-    override fun getCompletedTasksFlow(): Flow<List<Task>> =
-        _tasks.asStateFlow().map { it.filter { task -> task.status } }
-
-    override suspend fun getTasks(): List<Task> = _tasks.value
-
-    override suspend fun getTaskById(id: Long): Task? = _tasks.value.find { it.id == id }
-
-    override suspend fun getCategories(): List<Category> = _categories.value
-
-    override suspend fun updateTaskIndexById(id: Long, index: Int) {
-        _tasks.update { list -> list.map { if (it.id == id) it.copy(index = index) else it } }
-    }
-
-    override suspend fun upsertTask(task: Task) {
-        _tasks.update { list ->
-            val existing = list.find { it.id == task.id && it.id != 0L }
-            if (existing != null) {
-                list.map { if (it.id == task.id) task else it }
-            } else {
-                val newId = (list.maxOfOrNull { it.id } ?: 0L) + 1
-                list + task.copy(id = newId)
-            }
-        }
+    override suspend fun upsertTask(task: Task): Long = write { d ->
+        require(d.categories.any { it.id == task.categoryId } && task.title.isNotBlank())
+        validateTitleColor(task.titleColor)
+        val old = d.tasks.firstOrNull { it.id == task.id }
+        require(task.id == 0L || old != null)
+        val id = old?.id ?: nextTask++
+        val known = old?.sections?.associateBy { it.id } ?: emptyMap()
+        val ids = task.sections.filter { it.id > 0 }.map { it.id }
+        require(ids.distinct().size == ids.size && ids.all { it in known })
+        val saved =
+            task.copy(
+                id = id,
+                title = task.title.trim(),
+                orderIndex =
+                    if (old == null || old.categoryId != task.categoryId)
+                        d.tasks.count { it.categoryId == task.categoryId }
+                    else old.orderIndex,
+                createdAt = old?.createdAt ?: Clock.System.now(),
+                updatedAt = Clock.System.now(),
+                sections =
+                    task.sections.mapIndexed { i, s ->
+                        s.normalized()
+                            .copy(
+                                id = if (s.id == 0L) nextSection++ else s.id,
+                                taskId = id,
+                                orderIndex = i,
+                                updatedAt = Clock.System.now(),
+                            )
+                    },
+            )
+        d.copy(tasks = normalize(d.tasks.filterNot { it.id == id } + saved)) to id
     }
 
     override suspend fun deleteTask(task: Task) {
-        _tasks.update { it.filter { t -> t.id != task.id } }
+        write { d -> d.copy(tasks = normalize(d.tasks.filterNot { it.id == task.id })) to Unit }
+    }
+
+    override suspend fun deleteTasks(ids: List<Long>) {
+        write { d -> d.copy(tasks = normalize(d.tasks.filterNot { it.id in ids })) to Unit }
     }
 
     override suspend fun deleteAllTasks() {
-        _tasks.update { emptyList() }
-    }
-
-    override suspend fun upsertCategory(category: Category) {
-        _categories.update { list ->
-            val existing = list.find { it.id == category.id && it.id != 0L }
-            if (existing != null) {
-                list.map { if (it.id == category.id) category else it }
-            } else {
-                val newId = (list.maxOfOrNull { it.id } ?: 0L) + 1
-                list + category.copy(id = newId)
-            }
-        }
+        write { d -> d.copy(tasks = emptyList()) to Unit }
     }
 
     override suspend fun deleteCategory(category: Category) {
-        _categories.update { it.filter { c -> c.id != category.id } }
-        _tasks.update { it.filter { t -> t.categoryId != category.id } }
+        write { d ->
+            d.copy(
+                categories =
+                    d.categories
+                        .filterNot { it.id == category.id }
+                        .sortedBy { it.orderIndex }
+                        .mapIndexed { i, c -> c.copy(orderIndex = i) },
+                tasks = d.tasks.filterNot { it.categoryId == category.id },
+            ) to Unit
+        }
     }
 
     override suspend fun deleteAllCategories() {
-        _categories.update { emptyList() }
-        _tasks.update { emptyList() }
+        write { DemoData(emptyList(), emptyList()) to Unit }
     }
-}
 
-@Single(binds = [HabitRepo::class])
-class HabitRepoStub(private val datastore: SettingsDatastore) : HabitRepo {
-    private val _habits = MutableStateFlow<List<Habit>>(emptyList())
-    private val _statuses = MutableStateFlow<List<HabitStatus>>(emptyList())
-
-    private val _firstDayOfWeek = MutableStateFlow(DayOfWeek.MONDAY)
-
-    init {
-        datastore
-            .getStartOfTheWeekPref()
-            .onEach { day -> _firstDayOfWeek.update { day } }
-            .launchIn(CoroutineScope(Dispatchers.Default))
-
-        val today = LocalDate.now()
-        val exercise =
-            Habit(
-                id = 1,
-                title = "Exercise",
-                description = "30 mins of physical activity",
-                time = LocalDateTime(today, LocalTime(8, 0)),
-                days = DayOfWeek.entries.toSet(),
-                index = 0,
-                reminder = true,
-            )
-        val read =
-            Habit(
-                id = 2,
-                title = "Read",
-                description = "Read 10 pages of a book",
-                time = LocalDateTime(today, LocalTime(21, 0)),
-                days = DayOfWeek.entries.toSet(),
-                index = 1,
-                reminder = true,
-            )
-        _habits.update { listOf(exercise, read) }
-
-        _statuses.update {
-            val generatedStatuses = mutableListOf<HabitStatus>()
-            var statusId = 1L
-            listOf(exercise, read).forEach { habit ->
-                for (i in 0..180) {
-                    val date = today.minus(i, DateTimeUnit.DAY)
-                    if (Random.nextFloat() < 0.7f) {
-                        generatedStatuses.add(
-                            HabitStatus(id = statusId++, habitId = habit.id, date = date)
-                        )
+    override suspend fun reorderTasks(categoryId: Long, ids: List<Long>) {
+        write { d ->
+            validateReorder(d.tasks.filter { it.categoryId == categoryId }.map { it.id }, ids)
+            d.copy(
+                tasks =
+                    d.tasks.map {
+                        if (it.categoryId == categoryId)
+                            it.copy(orderIndex = ids.indexOf(it.id), updatedAt = Clock.System.now())
+                        else it
                     }
-                }
-            }
-            generatedStatuses
+            ) to Unit
         }
     }
 
-    override suspend fun upsertHabit(habit: Habit) {
-        _habits.update { list ->
-            val existing = list.find { it.id == habit.id && it.id != 0L }
-            if (existing != null) {
-                list.map { if (it.id == habit.id) habit else it }
-            } else {
-                val newId = (list.maxOfOrNull { it.id } ?: 0L) + 1
-                list + habit.copy(id = newId)
-            }
+    override suspend fun reorderCategories(ids: List<Long>) {
+        write { d ->
+            validateReorder(d.categories.map { it.id }, ids)
+            d.copy(
+                categories =
+                    d.categories.map {
+                        it.copy(orderIndex = ids.indexOf(it.id), updatedAt = Clock.System.now())
+                    }
+            ) to Unit
         }
     }
 
-    override suspend fun deleteHabit(habitId: Long) {
-        _habits.update { habits -> habits.filter { it.id != habitId } }
-        _statuses.update { statuses -> statuses.filter { it.habitId != habitId } }
+    override suspend fun moveTask(id: Long, target: Int) {
+        val task = requireNotNull(getTaskById(id))
+        reorderTasks(
+            task.categoryId,
+            movedIds(
+                getTasks()
+                    .filter { it.categoryId == task.categoryId }
+                    .sortedBy { it.orderIndex }
+                    .map { it.id },
+                id,
+                target,
+            ),
+        )
     }
 
-    override suspend fun getHabits(): List<Habit> = _habits.value
+    override suspend fun moveCategory(id: Long, target: Int) {
+        reorderCategories(movedIds(getCategories().map { it.id }, id, target))
+    }
 
-    override suspend fun getHabitById(id: Long): Habit? = _habits.value.find { it.id == id }
+    override suspend fun upsertSection(section: Section): Long = write { d ->
+        val task = requireNotNull(d.tasks.firstOrNull { it.id == section.taskId })
+        val old = task.sections.firstOrNull { it.id == section.id }
+        require(section.id == 0L || old != null)
+        val saved =
+            section
+                .normalized()
+                .copy(
+                    id = old?.id ?: nextSection++,
+                    orderIndex = old?.orderIndex ?: task.sections.size,
+                    updatedAt = Clock.System.now(),
+                )
+        val updated =
+            task.copy(
+                sections =
+                    (task.sections.filterNot { it.id == saved.id } + saved).sortedBy {
+                        it.orderIndex
+                    },
+                updatedAt = Clock.System.now(),
+            )
+        d.copy(tasks = d.tasks.map { if (it.id == task.id) updated else it }) to saved.id
+    }
 
-    override suspend fun getHabitStatuses(): List<HabitStatus> = _statuses.value
+    override suspend fun deleteSection(id: Long) {
+        write { d ->
+            d.copy(
+                tasks =
+                    d.tasks.map { t ->
+                        if (t.sections.none { it.id == id }) t
+                        else
+                            t.copy(
+                                sections =
+                                    t.sections
+                                        .filterNot { it.id == id }
+                                        .mapIndexed { i, s -> s.copy(orderIndex = i) },
+                                updatedAt = Clock.System.now(),
+                            )
+                    }
+            ) to Unit
+        }
+    }
 
-    override fun getHabitsWithAnalytics(): Flow<List<HabitWithAnalytics>> =
-        combine(_habits, _statuses, _firstDayOfWeek) { habits, statuses, firstDay ->
-            habits.map { habit ->
-                val habitStatuses = statuses.filter { it.habitId == habit.id }
-                val dates = habitStatuses.map { it.date }
-                HabitWithAnalytics(
-                    habit = habit,
-                    consistency = calculateConsistency(dates, habit.days),
-                    statuses = habitStatuses,
-                    weeklyComparisonData = prepareLineChartData(firstDay, habitStatuses),
-                    weekDayFrequencyData = prepareWeekDayFrequencyData(dates),
-                    currentStreak = countCurrentStreak(dates, habit.days),
-                    bestStreak = countBestStreak(dates, habit.days),
-                    startedDaysAgo = habit.time.date.daysUntil(LocalDate.now()).toLong(),
+    override suspend fun moveSection(id: Long, target: Int) {
+        write { d ->
+            val task = requireNotNull(d.tasks.firstOrNull { t -> t.sections.any { it.id == id } })
+            val ids = movedIds(task.sections.map { it.id }, id, target)
+            val updated =
+                task.copy(
+                    sections =
+                        task.sections
+                            .map { it.copy(orderIndex = ids.indexOf(it.id)) }
+                            .sortedBy { it.orderIndex },
+                    updatedAt = Clock.System.now(),
+                )
+            d.copy(tasks = d.tasks.map { if (it.id == task.id) updated else it }) to Unit
+        }
+    }
+
+    private fun window(offset: Int, limit: Int) {
+        require(offset >= 0 && limit in 1..500)
+    }
+
+    override fun getTaskSummariesFlow(
+        categoryId: Long,
+        offset: Int,
+        limit: Int,
+    ): Flow<List<TaskSummary>> {
+        window(offset, limit)
+        return data.map {
+            it.tasks
+                .filter { t -> t.categoryId == categoryId }
+                .sortedBy { t -> t.orderIndex }
+                .drop(offset)
+                .take(limit)
+                .map { t -> t.summary() }
+        }
+    }
+
+    override fun getSectionSummariesFlow(
+        taskId: Long,
+        offset: Int,
+        limit: Int,
+    ): Flow<List<SectionSummary>> {
+        window(offset, limit)
+        return data.map {
+            it.tasks
+                .firstOrNull { t -> t.id == taskId }
+                ?.sections
+                .orEmpty()
+                .drop(offset)
+                .take(limit)
+                .map { s -> s.summary() }
+        }
+    }
+
+    override fun getTaskSummaryFlow(id: Long) =
+        getTasksFlow().map { groups ->
+            groups.values.flatten().firstOrNull { it.id == id }?.summary()
+        }
+
+    override fun getSectionSummaryFlow(id: Long) =
+        data.map { d -> d.tasks.flatMap { it.sections }.firstOrNull { it.id == id }?.summary() }
+
+    override suspend fun getSectionById(id: Long) =
+        data.value.tasks.flatMap { it.sections }.firstOrNull { it.id == id }
+
+    override fun getCategoryCountsFlow() =
+        data.map { d ->
+            d.categories.map { c ->
+                CategoryTaskCount(
+                    c.id,
+                    d.tasks.count { it.categoryId == c.id },
+                    d.tasks.count { it.categoryId == c.id && it.isCompleted },
                 )
             }
         }
 
-    override fun getCompletedHabitIds(): Flow<List<Long>> =
-        _statuses.asStateFlow().map {
-            it.filter { s -> s.date == LocalDate.now() }.map { s -> s.habitId }.distinct()
+    override fun getTaskCountsFlow(categoryId: Long) =
+        data.map { d ->
+            d.tasks
+                .filter { it.categoryId == categoryId }
+                .map {
+                    TaskSectionCount(
+                        it.id,
+                        it.sections.size,
+                        it.sections.count { s -> s.isCompleted },
+                    )
+                }
         }
 
-    override fun getOverallAnalytics(): Flow<OverallAnalytics> =
-        combine(_habits, _statuses) { habits, statuses ->
-            val habitConsistencies =
-                habits.map { habit ->
-                    val dates = statuses.filter { it.habitId == habit.id }.map { it.date }
-                    habit.title to calculateConsistency(dates, habit.days)
-                }
+    override suspend fun searchTasks(
+        query: String,
+        offset: Int,
+        limit: Int,
+    ): List<TaskSearchResult> {
+        window(offset, limit)
+        if (query.isBlank()) return emptyList()
+        val d = data.value
+        val cats = d.categories.associateBy { it.id }
+        return d.tasks
+            .filter { it.title.contains(query.trim(), ignoreCase = true) }
+            .sortedWith(
+                compareBy<Task> { cats.getValue(it.categoryId).orderIndex }.thenBy { it.orderIndex }
+            )
+            .drop(offset)
+            .take(limit)
+            .map {
+                TaskSearchResult(
+                    it.id,
+                    it.categoryId,
+                    it.title,
+                    it.orderIndex,
+                    cats.getValue(it.categoryId).name,
+                    it.isCompleted,
+                )
+            }
+    }
 
-            val consistencies = habitConsistencies.map { it.second }
-            val overallConsistency =
-                if (consistencies.isNotEmpty()) consistencies.average().toFloat() else 0f
-
-            val topHabits =
-                habitConsistencies
-                    .filter { it.second > 0f }
-                    .sortedByDescending { it.second }
-                    .take(3)
-                    .map { HabitRanking(it.first, it.second) }
-
-            OverallAnalytics(
-                heatMapData = prepareHeatMapData(statuses),
-                weekDayFrequencyData = prepareWeekDayFrequencyData(statuses.map { it.date }),
-                consistency = overallConsistency,
-                topHabits = topHabits,
+    override suspend fun exportSnapshot(): RhineBackup =
+        mutex.withLock {
+            val d = data.value
+            RhineBackup(
+                RhineBackup.FORMAT,
+                RhineBackup.VERSION,
+                Clock.System.now(),
+                d.categories.sortedBy { it.orderIndex },
+                d.tasks,
             )
         }
 
-    override fun getHabitsWithStatus(): Flow<List<Pair<Habit, Boolean>>> =
-        combine(_habits, _statuses) { habits, statuses ->
-            habits.map { habit ->
-                habit to statuses.any { it.habitId == habit.id && it.date == LocalDate.now() }
-            }
-        }
-
-    override suspend fun getStatusForHabit(id: Long): List<HabitStatus> =
-        _statuses.value.filter { it.habitId == id }
-
-    override suspend fun insertHabitStatus(habitStatus: HabitStatus) {
-        _statuses.update { list ->
-            val newId = (list.maxOfOrNull { it.id } ?: 0L) + 1
-            list + habitStatus.copy(id = newId)
+    override suspend fun replaceData(backup: RhineBackup) {
+        val valid = backup.validated()
+        write {
+            nextCategory = maxOf(nextCategory, (valid.categories.maxOfOrNull { it.id } ?: 0) + 1)
+            nextTask = maxOf(nextTask, (valid.tasks.maxOfOrNull { it.id } ?: 0) + 1)
+            nextSection =
+                maxOf(
+                    nextSection,
+                    (valid.tasks.flatMap { it.sections }.maxOfOrNull { it.id } ?: 0) + 1,
+                )
+            generation.value += 1
+            DemoData(valid.categories, valid.tasks) to Unit
         }
     }
-
-    override suspend fun deleteHabitStatus(habitId: Long, date: LocalDate) {
-        _statuses.update { list -> list.filterNot { it.habitId == habitId && it.date == date } }
-    }
-
-    override suspend fun getCompletedHabitsForDate(date: LocalDate): List<Habit> {
-        val completedIds = _statuses.value.filter { it.date == date }.map { it.habitId }
-        return _habits.value.filter { it.id in completedIds }
-    }
-}
-
-private fun countCurrentStreak(dates: List<LocalDate>, eligibleWeekdays: Set<DayOfWeek>): Int {
-    if (dates.isEmpty()) return 0
-
-    val today = LocalDate.now()
-    val filteredDates = dates.filter { eligibleWeekdays.contains(it.dayOfWeek) }.sorted()
-
-    if (filteredDates.isEmpty()) return 0
-
-    val lastDate = filteredDates.last()
-
-    val daysBetween = lastDate.daysUntil(today)
-    if (daysBetween > 0) {
-        var hasEligibleDayMissed = false
-        for (i in 1..daysBetween) {
-            val checkDate = lastDate.plus(DatePeriod(days = i))
-            if (eligibleWeekdays.contains(checkDate.dayOfWeek) && checkDate < today) {
-                hasEligibleDayMissed = true
-                break
-            }
-        }
-        if (hasEligibleDayMissed) return 0
-    }
-
-    var streak = 1
-    for (i in filteredDates.size - 2 downTo 0) {
-        val currentDate = filteredDates[i]
-        val nextDate = filteredDates[i + 1]
-
-        if (areConsecutiveEligibleDays(currentDate, nextDate, eligibleWeekdays)) {
-            streak++
-        } else {
-            break
-        }
-    }
-    return streak
-}
-
-private fun countBestStreak(dates: List<LocalDate>, eligibleWeekdays: Set<DayOfWeek>): Int {
-    if (dates.isEmpty()) return 0
-
-    val filteredDates = dates.filter { eligibleWeekdays.contains(it.dayOfWeek) }.sorted()
-    if (filteredDates.isEmpty()) return 0
-
-    var maxConsecutive = 1
-    var currentConsecutive = 1
-
-    for (i in 1 until filteredDates.size) {
-        val previousDate = filteredDates[i - 1]
-        val currentDate = filteredDates[i]
-
-        if (areConsecutiveEligibleDays(previousDate, currentDate, eligibleWeekdays)) {
-            currentConsecutive++
-        } else {
-            maxConsecutive = maxOf(maxConsecutive, currentConsecutive)
-            currentConsecutive = 1
-        }
-    }
-
-    return maxOf(maxConsecutive, currentConsecutive)
-}
-
-private fun prepareLineChartData(
-    firstDay: DayOfWeek,
-    habitStatuses: List<HabitStatus>,
-): List<Double> {
-    val today = LocalDate.now()
-    val totalWeeks = 52
-
-    val startDateOfTodayWeek =
-        today.minus(today.dayOfWeek.isoDayNumber - firstDay.isoDayNumber, DateTimeUnit.DAY)
-    val startDateOfPeriod = startDateOfTodayWeek.minus(totalWeeks, DateTimeUnit.WEEK)
-
-    val habitCompletionByWeek =
-        habitStatuses
-            .filter { it.date in startDateOfPeriod..today }
-            .groupBy {
-                val daysFromFirstDay =
-                    (it.date.dayOfWeek.isoDayNumber - firstDay.isoDayNumber + 7) % 7
-                it.date.minus(daysFromFirstDay, DateTimeUnit.DAY)
-            }
-            .mapValues { (_, statuses) -> statuses.size }
-
-    return (0..totalWeeks).map { i ->
-        val currentWeekStart = startDateOfPeriod.plus(i, DateTimeUnit.WEEK)
-        (habitCompletionByWeek[currentWeekStart]?.toDouble() ?: 0.0).coerceIn(0.0, 7.0)
-    }
-}
-
-private fun prepareWeekDayFrequencyData(dates: List<LocalDate>): Map<String, Int> {
-    val dayFrequency = dates.groupingBy { it.dayOfWeek }.eachCount()
-
-    return DayOfWeek.entries.associate { dayOfWeek ->
-        val weekName = DayOfWeekNames.ENGLISH_ABBREVIATED.names[dayOfWeek.isoDayNumber - 1]
-        weekName to (dayFrequency[dayOfWeek] ?: 0)
-    }
-}
-
-private fun prepareHeatMapData(habitData: List<HabitStatus>): Map<LocalDate, Int> {
-    return habitData.map { it.date }.groupingBy { it }.eachCount()
-}
-
-private fun areConsecutiveEligibleDays(
-    date1: LocalDate,
-    date2: LocalDate,
-    eligibleWeekdays: Set<DayOfWeek>,
-): Boolean {
-    var checkDate = date1.plus(1, DateTimeUnit.DAY)
-    while (checkDate < date2) {
-        if (eligibleWeekdays.contains(checkDate.dayOfWeek)) {
-            return false
-        }
-        checkDate = checkDate.plus(1, DateTimeUnit.DAY)
-    }
-    return checkDate == date2
-}
-
-private fun calculateConsistency(dates: List<LocalDate>, eligibleWeekdays: Set<DayOfWeek>): Float {
-    val eligibleDates = dates.filter { it.dayOfWeek in eligibleWeekdays }
-    val firstCompletionDate = eligibleDates.minOrNull() ?: return 0f
-    val today = LocalDate.now()
-
-    var totalEligibleDays = 0
-    var current = firstCompletionDate
-    while (current <= today) {
-        if (current.dayOfWeek in eligibleWeekdays) {
-            totalEligibleDays++
-        }
-        current = current.plus(1, DateTimeUnit.DAY)
-    }
-
-    return if (totalEligibleDays > 0) eligibleDates.size.toFloat() / totalEligibleDays else 0f
 }

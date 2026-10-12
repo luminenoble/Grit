@@ -1,0 +1,11 @@
+
+com.shub39.grit.RhineDetailRepositoryTest:...
+com.shub39.grit.TaskRepositoryTest:....
+com.shub39.grit.RhineBrowseRepositoryTest:...
+com.shub39.grit.RhineTextLayoutTest:..
+
+Time: 1.091
+
+OK (12 tests)
+
+

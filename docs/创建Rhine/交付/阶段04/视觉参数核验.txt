@@ -1,0 +1,2 @@
+shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineGeometry.kt: OK
+shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineStyle.kt: OK

@@ -17,7 +17,7 @@
 package com.shub39.grit.core.settings.backup
 
 interface ExportRepo {
-    suspend fun exportToJson()
+    suspend fun exportToJson(): Boolean
 }
 
 enum class ExportState {

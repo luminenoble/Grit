@@ -17,51 +17,21 @@
 package com.shub39.grit.shared.ui.task.ui.component
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.shub39.grit.core.now
-import com.shub39.grit.core.tasks.Section
-import com.shub39.grit.core.tasks.Task
+import com.shub39.grit.core.tasks.*
 import com.shub39.grit.core.toFormattedString
-import com.shub39.grit.shared.ui.theme.GritRadius
-import com.shub39.grit.shared.ui.theme.GritSpacing
-import com.shub39.grit.shared.ui.theme.LiquidGlassDefaults
-import com.shub39.grit.shared.ui.theme.gritSemanticColors
-import com.shub39.grit.shared.ui.theme.liquidGlass
+import com.shub39.grit.shared.ui.theme.readableTitleColor
 import grit.shared.ui.generated.resources.*
 import kotlinx.datetime.LocalDateTime
-import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
 @Composable
@@ -71,234 +41,88 @@ fun TaskCard(
     reorderIcon: @Composable () -> Unit,
     is24Hr: Boolean,
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(GritRadius.md),
+    shape: Shape = RoundedCornerShape(12.dp),
     onDetailsClick: (() -> Unit)? = null,
-    accent: Color? = null,
     onSectionsChange: ((List<Section>) -> Unit)? = null,
 ) {
-    val semantic = gritSemanticColors()
-
-    // A task with a reminder in the past that is still not done is overdue.
-    val isOverdue = !task.status && task.reminder != null && task.reminder!! < LocalDateTime.now()
-
-    val cardContent by
-        animateColorAsState(
-            targetValue =
-                when {
-                    !task.status && accent != null -> MaterialTheme.colorScheme.onSurface
-                    task.status -> MaterialTheme.colorScheme.onSurface
-                    else -> MaterialTheme.colorScheme.onSecondaryContainer
-                },
-            animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
-            label = "cardContent",
-        )
-    // Translucent liquid glass pane tinted by the category accent when one is set;
-    // done tasks recede by getting fainter and neutral.
-    val cardContainer by
-        animateColorAsState(
-            targetValue =
-                when {
-                    task.status ->
-                        MaterialTheme.colorScheme.surfaceContainerHighest.copy(
-                            alpha = LiquidGlassDefaults.CARD_ALPHA * 0.7f
-                        )
-                    accent != null -> accent.copy(alpha = 0.40f)
-                    else ->
-                        MaterialTheme.colorScheme.secondaryContainer.copy(
-                            alpha = LiquidGlassDefaults.CARD_ALPHA
-                        )
-                },
-            animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
-            label = "cardContainer",
-        )
-    // Diagonal gradient end keeps accent cards from looking like flat color blocks.
-    val cardContainerEnd = if (!task.status) accent?.copy(alpha = 0.18f) else null
-    val cardColors =
-        CardDefaults.cardColors(containerColor = Color.Transparent, contentColor = cardContent)
-
+    var expanded by remember(task.id) { mutableStateOf(false) }
     Card(
-        modifier =
-            modifier
-                .animateContentSize(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
-                .liquidGlass(
-                    shape = shape,
-                    fill = cardContainer,
-                    border = if (isOverdue) semantic.error.copy(alpha = 0.9f) else null,
-                    fillEnd = cardContainerEnd,
-                ),
-        colors = cardColors,
+        modifier = modifier,
         shape = shape,
+        elevation = CardDefaults.cardElevation(2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
         Row(
+            Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier =
-                Modifier.fillMaxWidth()
-                    .padding(
-                        start = if (onDetailsClick != null) GritSpacing.xs else GritSpacing.lg,
-                        end = GritSpacing.lg,
-                        top = GritSpacing.sm,
-                        bottom = GritSpacing.sm,
-                    ),
-            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            if (onDetailsClick != null) {
+            if (onDetailsClick != null)
                 IconButton(onClick = onDetailsClick) {
-                    Icon(
-                        imageVector = vectorResource(Res.drawable.info),
-                        contentDescription = "Details",
-                        tint = cardContent.copy(alpha = 0.7f),
-                    )
+                    Icon(vectorResource(Res.drawable.info), "详情")
                 }
-            }
-
-            Column(modifier = Modifier.weight(1f).padding(vertical = GritSpacing.sm)) {
-                Text(
-                    text = task.title,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                    textDecoration =
-                        if (task.status) {
-                            TextDecoration.LineThrough
-                        } else {
-                            TextDecoration.None
-                        },
-                )
-
-                if (task.description.isNotBlank()) {
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = task.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = cardContent.copy(alpha = 0.75f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        task.title,
+                        color = readableTitleColor(task.titleColor),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.weight(1f),
                     )
+                    if (task.isCompleted)
+                        Icon(vectorResource(Res.drawable.check_circle), "已完成", Modifier.size(18.dp))
                 }
-
+                if (task.description.isNotBlank())
+                    Text(task.description, style = MaterialTheme.typography.bodySmall, maxLines = 1)
                 if (task.sections.isNotEmpty()) {
-                    // Tapping the progress row unfolds the sections so they can be checked off
-                    // without opening the details sheet.
-                    var stepsExpanded by remember(task.id) { mutableStateOf(false) }
-                    val doneSteps = task.sections.count { it.done }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(GritSpacing.xs),
-                        modifier =
-                            Modifier.clip(RoundedCornerShape(GritRadius.sm))
-                                .clickable { stepsExpanded = !stepsExpanded }
-                                .padding(vertical = 2.dp),
-                    ) {
-                        Icon(
-                            imageVector = vectorResource(Res.drawable.bulleted_list),
-                            contentDescription = null,
-                            modifier = Modifier.size(12.dp),
-                            tint = cardContent.copy(alpha = 0.75f),
-                        )
-
-                        Text(
-                            text =
-                                stringResource(
-                                    Res.string.sections_progress,
-                                    doneSteps,
-                                    task.sections.size,
-                                ),
-                            color = cardContent.copy(alpha = 0.75f),
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-
-                        Icon(
-                            imageVector =
-                                vectorResource(
-                                    if (stepsExpanded) Res.drawable.collapse
-                                    else Res.drawable.expand
-                                ),
-                            contentDescription = null,
-                            modifier = Modifier.size(12.dp),
-                            tint = cardContent.copy(alpha = 0.75f),
-                        )
-                    }
-
-                    AnimatedVisibility(visible = stepsExpanded) {
-                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            task.sections.forEachIndexed { stepIndex, step ->
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(GritSpacing.xs),
-                                    modifier =
-                                        Modifier.fillMaxWidth()
-                                            .clip(RoundedCornerShape(GritRadius.sm))
-                                            .then(
-                                                if (onSectionsChange != null) {
-                                                    Modifier.clickable {
-                                                        onSectionsChange(
-                                                            task.sections.mapIndexed { i, s ->
-                                                                if (i == stepIndex)
-                                                                    s.copy(done = !s.done)
-                                                                else s
-                                                            }
-                                                        )
-                                                    }
-                                                } else Modifier
+                    Text(
+                        "${task.sections.count { it.isCompleted }}/${task.sections.size} Section",
+                        Modifier.clickable { expanded = !expanded }.padding(vertical = 8.dp),
+                    )
+                    AnimatedVisibility(expanded) {
+                        Column {
+                            task.sections.forEachIndexed { index, section ->
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Checkbox(
+                                        checked = section.isCompleted,
+                                        enabled = onSectionsChange != null,
+                                        onCheckedChange = {
+                                            onSectionsChange?.invoke(
+                                                task.sections.map {
+                                                    if (it.id == section.id) it.toggleCompleted()
+                                                    else it
+                                                }
                                             )
-                                            .padding(vertical = 4.dp),
-                                ) {
-                                    Icon(
-                                        imageVector =
-                                            vectorResource(
-                                                if (step.done) Res.drawable.check_circle
-                                                else Res.drawable.circle_border
-                                            ),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp),
-                                        tint =
-                                            cardContent.copy(alpha = if (step.done) 0.9f else 0.6f),
+                                        },
                                     )
-
+                                    Text("${index + 1}.", Modifier.padding(end = 8.dp))
                                     Text(
-                                        text = step.name,
-                                        color =
-                                            cardContent.copy(alpha = if (step.done) 0.6f else 0.9f),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        textDecoration =
-                                            if (step.done) TextDecoration.LineThrough
-                                            else TextDecoration.None,
+                                        section.title,
+                                        Modifier.weight(1f).basicMarquee(),
+                                        maxLines = 1,
                                     )
+                                    section.completedOn?.let {
+                                        Text(
+                                            it.toString(),
+                                            style = MaterialTheme.typography.labelSmall,
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
-
-                if (task.reminder != null) {
-                    val reminderColor = if (isOverdue) semantic.error else cardContent
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(GritSpacing.xs),
-                    ) {
-                        Icon(
-                            imageVector = vectorResource(Res.drawable.alarm),
-                            contentDescription = "Reminder",
-                            modifier = Modifier.size(12.dp),
-                            tint = reminderColor,
-                        )
-
-                        Text(
-                            text = task.reminder!!.toFormattedString(is24Hr),
-                            color = reminderColor,
-                            style =
-                                MaterialTheme.typography.labelSmall.copy(
-                                    fontSize = 12.sp,
-                                    fontWeight =
-                                        if (isOverdue) FontWeight.Medium else FontWeight.Light,
-                                ),
-                        )
-                    }
+                task.reminder?.let { reminder ->
+                    Text(
+                        reminder.toFormattedString(is24Hr),
+                        style = MaterialTheme.typography.labelSmall,
+                        color =
+                            if (!task.isCompleted && reminder < LocalDateTime.now())
+                                MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
-
-            AnimatedVisibility(visible = dragState, enter = fadeIn(), exit = fadeOut()) {
-                reorderIcon()
-            }
+            AnimatedVisibility(dragState) { reorderIcon() }
         }
     }
 }

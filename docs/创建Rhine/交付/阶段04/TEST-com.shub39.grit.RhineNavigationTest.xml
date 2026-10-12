@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.shub39.grit.RhineNavigationTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-10-11T11:18:26.558Z" hostname="Lemonade" time="0.145">
+  <properties/>
+  <testcase name="resizePreservesStableFocusAndChangesWindowOnly" classname="com.shub39.grit.RhineNavigationTest" time="0.0"/>
+  <testcase name="firstMeasurementDoesNotLosePendingFocus" classname="com.shub39.grit.RhineNavigationTest" time="0.001"/>
+  <testcase name="shortColumnNeverRepeatsFirstTaskAt99" classname="com.shub39.grit.RhineNavigationTest" time="0.0"/>
+  <testcase name="stableIdFollowsNewPosition" classname="com.shub39.grit.RhineNavigationTest" time="0.0"/>
+  <testcase name="liftCrossfadesContinuouslyAndRestHasOnlyOneRaisedColumn" classname="com.shub39.grit.RhineNavigationTest" time="0.0"/>
+  <testcase name="emptyBoundsStayFinite" classname="com.shub39.grit.RhineNavigationTest" time="0.0"/>
+  <testcase name="windowSizeAndQueryLookaheadDoNotGrowWithTravel" classname="com.shub39.grit.RhineNavigationTest" time="0.0"/>
+  <testcase name="foremostVisibleFaceWinsIncludingDecorations" classname="com.shub39.grit.RhineNavigationTest" time="0.013"/>
+  <testcase name="flingAndRepeatedOutwardDragsStopAtTail" classname="com.shub39.grit.RhineNavigationTest" time="0.009"/>
+  <testcase name="longestColumnHasExactlyOneTailSlot" classname="com.shub39.grit.RhineNavigationTest" time="0.0"/>
+  <testcase name="windowQueriesAreReadOnlyAndUseActualIndices" classname="com.shub39.grit.RhineNavigationTest" time="0.108"/>
+  <testcase name="gestureUsesInverseProjectionAndLocksAxis" classname="com.shub39.grit.RhineNavigationTest" time="0.013"/>
+  <testcase name="sideFaceAndTopResolveToSameBlock" classname="com.shub39.grit.RhineNavigationTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

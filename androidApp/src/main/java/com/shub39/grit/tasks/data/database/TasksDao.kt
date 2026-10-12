@@ -16,26 +16,55 @@
  */
 package com.shub39.grit.tasks.data.database
 
-import androidx.room3.Dao
-import androidx.room3.Delete
-import androidx.room3.Query
-import androidx.room3.Upsert
+import androidx.room3.*
+import com.shub39.grit.core.tasks.*
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TasksDao {
-    @Query("SELECT * FROM task") fun getTasksFlow(): Flow<List<TaskEntity>>
+    @Transaction
+    @Query("SELECT * FROM tasks ORDER BY categoryId, orderIndex")
+    fun getTasksFlow(): Flow<List<TaskWithSections>>
 
-    @Query("SELECT * FROM task") suspend fun getTasks(): List<TaskEntity>
+    @Transaction
+    @Query("SELECT * FROM tasks ORDER BY categoryId, orderIndex")
+    suspend fun getTasks(): List<TaskWithSections>
 
-    @Query("UPDATE task SET `index` = :newIndex WHERE id = :id")
-    suspend fun updateTaskIndexById(id: Long, newIndex: Int)
+    @Transaction
+    @Query("SELECT * FROM tasks WHERE id = :id")
+    suspend fun getTaskById(id: Long): TaskWithSections?
 
-    @Query("SELECT * FROM task WHERE id = :id") suspend fun getTaskById(id: Long): TaskEntity?
+    @Query("SELECT * FROM tasks WHERE categoryId = :categoryId ORDER BY orderIndex")
+    suspend fun getInCategory(categoryId: Long): List<TaskEntity>
 
-    @Upsert suspend fun upsertTask(taskEntity: TaskEntity)
+    @Upsert suspend fun upsert(task: TaskEntity): Long
 
-    @Delete suspend fun deleteTask(taskEntity: TaskEntity)
+    @Query("UPDATE tasks SET orderIndex = :position, updatedAt = :time WHERE id = :id")
+    suspend fun setOrder(id: Long, position: Int, time: Instant)
 
-    @Query("DELETE FROM task") suspend fun deleteAllTasks()
+    @Query("UPDATE tasks SET updatedAt = :time WHERE id = :id")
+    suspend fun touch(id: Long, time: Instant)
+
+    @Query("DELETE FROM tasks WHERE id = :id") suspend fun delete(id: Long)
+
+    @Query("DELETE FROM tasks") suspend fun deleteAll()
+
+    @Query(
+        "SELECT id, categoryId, title, orderIndex, titleColor, isCompleted FROM tasks WHERE categoryId = :categoryId ORDER BY orderIndex LIMIT :limit OFFSET :offset"
+    )
+    fun summaries(categoryId: Long, offset: Int, limit: Int): Flow<List<TaskSummary>>
+
+    @Query("SELECT id, categoryId, title, orderIndex, titleColor, isCompleted FROM tasks WHERE id = :id")
+    fun summary(id: Long): Flow<TaskSummary?>
+
+    @Query(
+        "SELECT c.id AS categoryId, COUNT(t.id) AS count, COALESCE(SUM(CASE WHEN t.isCompleted THEN 1 ELSE 0 END), 0) AS completedCount FROM categories c LEFT JOIN tasks t ON c.id = t.categoryId GROUP BY c.id ORDER BY c.orderIndex"
+    )
+    fun counts(): Flow<List<CategoryTaskCount>>
+
+    @Query(
+        "SELECT t.id, t.categoryId, t.title, t.orderIndex, c.name AS categoryName, t.isCompleted FROM tasks t JOIN categories c ON c.id = t.categoryId WHERE t.title LIKE :pattern ESCAPE '\\' COLLATE NOCASE ORDER BY c.orderIndex, t.orderIndex LIMIT :limit OFFSET :offset"
+    )
+    suspend fun search(pattern: String, offset: Int, limit: Int): List<TaskSearchResult>
 }

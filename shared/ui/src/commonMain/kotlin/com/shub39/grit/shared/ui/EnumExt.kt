@@ -16,27 +16,11 @@
  */
 package com.shub39.grit.shared.ui
 
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.unit.dp
-import com.shub39.grit.core.habits.CalendarType
-import com.shub39.grit.core.habits.StreakPosition
 import com.shub39.grit.core.settings.WidgetTextSize
-import com.shub39.grit.core.theme.AppTheme
 import com.shub39.grit.core.theme.Fonts
-import com.shub39.grit.core.theme.PaletteStyle
 import grit.shared.ui.generated.resources.*
 import org.jetbrains.compose.resources.FontResource
 import org.jetbrains.compose.resources.StringResource
-
-fun AppTheme.toDisplayString(): StringResource {
-    return when (this) {
-        SYSTEM -> Res.string.system
-        DARK -> Res.string.dark
-        LIGHT -> Res.string.light
-    }
-}
 
 /** Used in UI Buttons */
 fun Fonts.toDisplayString(): String {
@@ -66,95 +50,10 @@ fun Fonts.toFontRes(): FontResource? {
     }
 }
 
-fun PaletteStyle.toMPaletteStyle(): com.materialkolor.PaletteStyle {
-    return when (this) {
-        TONALSPOT -> TonalSpot
-        NEUTRAL -> Neutral
-        VIBRANT -> Vibrant
-        EXPRESSIVE -> Expressive
-        RAINBOW -> Rainbow
-        FRUITSALAD -> FruitSalad
-        MONOCHROME -> Monochrome
-        FIDELITY -> Fidelity
-        CONTENT -> Content
-    }
-}
-
-fun CalendarType.toStringRes(): StringResource {
-    return when (this) {
-        MONTH -> Res.string.monthly
-        YEAR -> Res.string.yearly
-    }
-}
-
 fun WidgetTextSize.toStringRes(): StringResource {
     return when (this) {
         SMALL -> Res.string.text_size_small
         MEDIUM -> Res.string.text_size_medium
         LARGE -> Res.string.text_size_large
     }
-}
-
-fun calendarMapStreakShape(
-    streakPosition: StreakPosition,
-    isFirstDayOfWeek: Boolean,
-    isLastDayOfWeek: Boolean,
-    isFirstDayOfMonth: Boolean,
-    isLastDayOfMonth: Boolean,
-): Shape {
-    if (streakPosition == StreakPosition.ISOLATED) return CircleShape
-
-    // Calculate left-side corners (topStart, bottomStart)
-    val leftRadius =
-        when {
-            streakPosition == StreakPosition.START -> 20.dp
-            isFirstDayOfWeek || isFirstDayOfMonth -> 4.dp
-            else -> 0.dp
-        }
-
-    // Calculate right-side corners (topEnd, bottomEnd)
-    val rightRadius =
-        when {
-            streakPosition == StreakPosition.END -> 20.dp
-            isLastDayOfWeek || isLastDayOfMonth -> 4.dp
-            else -> 0.dp
-        }
-
-    return RoundedCornerShape(
-        topStart = leftRadius,
-        bottomStart = leftRadius,
-        topEnd = rightRadius,
-        bottomEnd = rightRadius,
-    )
-}
-
-fun heatMapStreakShape(
-    streakPosition: StreakPosition,
-    isFirstDayOfWeek: Boolean,
-    isLastDayOfWeek: Boolean,
-): Shape {
-    if (streakPosition == StreakPosition.ISOLATED) return CircleShape
-
-    // Calculate top-side corners (topStart, topEnd)
-    val topRadius =
-        when {
-            streakPosition == StreakPosition.START -> 20.dp
-            isFirstDayOfWeek -> 4.dp
-            else -> 0.dp
-        }
-
-    // Calculate bottom-side corners (bottomStart, bottomEnd)
-    val bottomRadius =
-        when {
-            streakPosition == StreakPosition.END -> 20.dp
-            isLastDayOfWeek -> 4.dp
-            else -> 0.dp
-        }
-
-    return RoundedCornerShape(
-        topStart = topRadius,
-        topEnd = topRadius,
-        bottomStart = bottomRadius,
-        bottomEnd = bottomRadius,
-    )
 }

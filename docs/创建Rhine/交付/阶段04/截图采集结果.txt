@@ -1,0 +1,22 @@
+01-empty-start-v1.png
+02-category-form-v1.png
+03-category-keyboard-v1.png
+04-category-zero-v1.png
+05-first-task-v1.png
+06-u99-short-before-v1.png
+07-create-failed-draft-v1.png
+08-short-second-after-v1.png
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段04/采集证据.py", line 50, in <module>
+    if __name__=='__main__': run()
+                             ^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段04/采集证据.py", line 30, in run
+    c.start(1,0,dataset='section-uneven');c.click(desc='进入 Section 层');to_section_tail()
+                                                                          ^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段04/采集证据.py", line 15, in to_section_tail
+    c.click(desc='沿列上一格');c.click(desc='沿列上一格');c.expect('99')
+                                                          ^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段04/采集工具.py", line 36, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 99

@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -54,7 +53,6 @@ import com.shub39.grit.shared.ui.components.detachedItemShape
 import com.shub39.grit.shared.ui.components.endItemShape
 import com.shub39.grit.shared.ui.components.leadingItemShape
 import com.shub39.grit.shared.ui.components.listItemColors
-import com.shub39.grit.shared.ui.components.middleItemShape
 import com.shub39.grit.shared.ui.setting.SettingsAction
 import com.shub39.grit.shared.ui.setting.SettingsState
 import com.shub39.grit.shared.ui.setting.ui.component.LocalePickerSheet
@@ -65,7 +63,6 @@ import com.shub39.grit.shared.ui.update.AppVersionHolder
 import com.shub39.grit.shared.ui.update.UPDATE_REPO
 import com.shub39.grit.shared.ui.update.UpdateCheckState
 import grit.shared.ui.generated.resources.*
-import kotlinx.datetime.DayOfWeek
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 
@@ -127,15 +124,58 @@ fun RootPage(
                 )
             }
 
+            item {
+                ListItem(
+                    colors = listItemColors(),
+                    leadingContent = {
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.github),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            text =
+                                when (val check = state.updateCheck) {
+                                    UpdateCheckState.Idle -> "从 $UPDATE_REPO 检查新版本"
+                                    UpdateCheckState.Checking -> "检查中…"
+                                    is UpdateCheckState.UpToDate ->
+                                        "已是最新版本 ${check.versionName}".trim()
+                                    UpdateCheckState.NoReleases -> "$UPDATE_REPO 暂无已发布版本"
+                                    is UpdateCheckState.Available ->
+                                        "发现新版本 ${check.release.versionName}"
+                                    is UpdateCheckState.Failed -> "检查失败：${check.message}"
+                                }
+                        )
+                    },
+                    trailingContent = {
+                        if (state.updateCheck is UpdateCheckState.Checking) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        } else {
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.arrow_forward),
+                                contentDescription = null,
+                            )
+                        }
+                    },
+                    headlineContent = { Text(text = "检查更新") },
+                    modifier =
+                        Modifier.clip(detachedItemShape()).clickable(
+                            enabled = state.updateCheck !is UpdateCheckState.Checking
+                        ) {
+                            onAction(SettingsAction.OnCheckForUpdates)
+                        },
+                )
+            }
+
             // General settings
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     ListItem(
-                        headlineContent = {
-                            Text(text = stringResource(Res.string.pause_notifications))
-                        },
+                        headlineContent = { Text(stringResource(Res.string.pause_notifications)) },
                         supportingContent = {
-                            Text(text = stringResource(Res.string.pause_notifications_desc))
+                            Text(stringResource(Res.string.pause_notifications_desc))
                         },
                         trailingContent = {
                             ExpressiveSwitch(
@@ -146,14 +186,10 @@ fun RootPage(
                             )
                         },
                         colors = listItemColors(),
-                        modifier = Modifier.clip(leadingItemShape()),
                     )
-
                     ListItem(
-                        headlineContent = { Text(text = stringResource(Res.string.reorder_tasks)) },
-                        supportingContent = {
-                            Text(text = stringResource(Res.string.reorder_tasks_desc))
-                        },
+                        headlineContent = { Text(stringResource(Res.string.reorder_tasks)) },
+                        supportingContent = { Text(stringResource(Res.string.reorder_tasks_desc)) },
                         trailingContent = {
                             ExpressiveSwitch(
                                 checked = state.reorderTasks,
@@ -163,21 +199,13 @@ fun RootPage(
                             )
                         },
                         colors = listItemColors(),
-                        modifier = Modifier.clip(middleItemShape()),
                     )
-
                     ListItem(
-                        headlineContent = {
-                            Text(text = stringResource(Res.string.widget_text_size))
-                        },
+                        headlineContent = { Text(stringResource(Res.string.widget_text_size)) },
                         supportingContent = {
                             Column {
-                                Text(text = stringResource(Res.string.widget_text_size_desc))
-
-                                Row(
-                                    modifier = Modifier.padding(top = 8.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                ) {
+                                Text(stringResource(Res.string.widget_text_size_desc))
+                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                     WidgetTextSize.entries.forEach { size ->
                                         ToggleButton(
                                             checked = state.widgetTextSize == size,
@@ -185,63 +213,41 @@ fun RootPage(
                                                 onAction(SettingsAction.ChangeWidgetTextSize(size))
                                             },
                                         ) {
-                                            Text(text = stringResource(size.toStringRes()))
+                                            Text(stringResource(size.toStringRes()))
                                         }
                                     }
                                 }
                             }
                         },
                         colors = listItemColors(),
-                        modifier = Modifier.clip(middleItemShape()),
                     )
-
                     ListItem(
-                        headlineContent = { Text(text = stringResource(Res.string.show_habits)) },
+                        headlineContent = { Text("启动页面") },
                         supportingContent = {
-                            Text(text = stringResource(Res.string.show_habits_desc))
-                        },
-                        trailingContent = {
-                            ExpressiveSwitch(
-                                checked = state.startingPage == Sections.Habits,
-                                onCheckedChange = {
-                                    onAction(
-                                        SettingsAction.ChangeStartingPage(
-                                            if (it) Sections.Habits else Sections.Tasks
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Sections.entries.forEach { page ->
+                                    ToggleButton(
+                                        checked = state.startingPage == page,
+                                        onCheckedChange = {
+                                            onAction(SettingsAction.ChangeStartingPage(page))
+                                        },
+                                    ) {
+                                        Text(
+                                            when (page) {
+                                                Sections.Tasks -> "Task"
+                                                Sections.Settings -> "Setting"
+                                                Sections.Rhine -> "Rhine"
+                                            }
                                         )
-                                    )
-                                },
-                            )
+                                    }
+                                }
+                            }
                         },
                         colors = listItemColors(),
-                        modifier = Modifier.clip(middleItemShape()),
                     )
-
-                    ListItem(
-                        headlineContent = { Text(text = stringResource(Res.string.staring_day)) },
-                        trailingContent = {
-                            ExpressiveSwitch(
-                                checked = state.startOfTheWeek == DayOfWeek.SUNDAY,
-                                onCheckedChange = {
-                                    onAction(
-                                        SettingsAction.ChangeStartOfTheWeek(
-                                            if (it) DayOfWeek.SUNDAY else DayOfWeek.MONDAY
-                                        )
-                                    )
-                                },
-                            )
-                        },
-                        colors = listItemColors(),
-                        modifier = Modifier.clip(middleItemShape()),
-                    )
-
-                    if (state.isBiometricLockAvailable) {
+                    if (state.isBiometricLockAvailable)
                         ListItem(
-                            headlineContent = {
-                                Text(text = stringResource(Res.string.biometric_lock))
-                            },
-                            supportingContent = {
-                                Text(text = stringResource(Res.string.biometric_lock_desc))
-                            },
+                            headlineContent = { Text(stringResource(Res.string.biometric_lock)) },
                             trailingContent = {
                                 ExpressiveSwitch(
                                     checked = state.isBiometricLockOn == true,
@@ -251,15 +257,10 @@ fun RootPage(
                                 )
                             },
                             colors = listItemColors(),
-                            modifier = Modifier.clip(middleItemShape()),
                         )
-                    }
-
                     ListItem(
-                        headlineContent = { Text(text = stringResource(Res.string.use_24Hr)) },
-                        supportingContent = {
-                            Text(text = stringResource(Res.string.use_24Hr_desc))
-                        },
+                        headlineContent = { Text(stringResource(Res.string.use_24Hr)) },
+                        supportingContent = { Text(stringResource(Res.string.use_24Hr_desc)) },
                         trailingContent = {
                             ExpressiveSwitch(
                                 checked = state.is24Hr,
@@ -267,7 +268,6 @@ fun RootPage(
                             )
                         },
                         colors = listItemColors(),
-                        modifier = Modifier.clip(endItemShape()),
                     )
                 }
             }
@@ -332,7 +332,7 @@ fun RootPage(
                             )
                         },
                         supportingContent = {
-                            Text(text = "Grit ${state.currentVersion ?: "x.x.x"}")
+                            Text(text = "Grit_Rhine ${appVersion.ifBlank { "x.x.x" }}")
                         },
                         trailingContent = {
                             Icon(
@@ -343,48 +343,6 @@ fun RootPage(
                         headlineContent = { Text(text = stringResource(Res.string.about)) },
                         modifier =
                             Modifier.clip(leadingItemShape()).clickable { onNavigateToAppInfo() },
-                    )
-
-                    // Update check against the GitHub releases of this fork
-                    ListItem(
-                        colors = listItemColors(),
-                        leadingContent = {
-                            Icon(
-                                imageVector = vectorResource(Res.drawable.github),
-                                contentDescription = null,
-                                modifier = Modifier.size(24.dp),
-                            )
-                        },
-                        supportingContent = {
-                            Text(
-                                text =
-                                    when (val check = state.updateCheck) {
-                                        UpdateCheckState.Idle -> "从 GitHub 获取最新版本"
-                                        UpdateCheckState.Checking -> "检查中…"
-                                        is UpdateCheckState.UpToDate ->
-                                            "已是最新版本 ${check.versionName}".trim()
-                                        UpdateCheckState.NoReleases -> "$UPDATE_REPO 还没有发布 release"
-                                        is UpdateCheckState.Available ->
-                                            "发现新版本 ${check.release.versionName}"
-                                        is UpdateCheckState.Failed -> "检查失败：${check.message}"
-                                    }
-                            )
-                        },
-                        trailingContent = {
-                            if (state.updateCheck is UpdateCheckState.Checking) {
-                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                            } else {
-                                Icon(
-                                    imageVector = vectorResource(Res.drawable.open_link),
-                                    contentDescription = "Check for updates",
-                                )
-                            }
-                        },
-                        headlineContent = { Text(text = "检查更新") },
-                        modifier =
-                            Modifier.clip(middleItemShape()).clickable {
-                                onAction(SettingsAction.OnCheckForUpdates)
-                            },
                     )
 
                     ListItem(

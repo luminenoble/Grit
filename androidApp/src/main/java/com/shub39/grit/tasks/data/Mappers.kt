@@ -16,55 +16,59 @@
  */
 package com.shub39.grit.tasks.data
 
-import com.shub39.grit.core.tasks.Category
-import com.shub39.grit.core.tasks.Task
-import com.shub39.grit.tasks.data.database.CategoryEntity
-import com.shub39.grit.tasks.data.database.TaskEntity
+import com.shub39.grit.core.tasks.*
+import com.shub39.grit.tasks.data.database.*
 
-fun Task.toTaskEntity(): TaskEntity {
-    return TaskEntity(
-        id = id,
-        categoryId = categoryId,
-        title = title,
-        index = index,
-        status = status,
-        reminder = reminder,
-        description = description,
-        isToday = isToday,
-        sections = sections,
+fun Category.toCategoryEntity() =
+    CategoryEntity(
+        id,
+        name,
+        description,
+        orderIndex,
+        titleColor,
+        hideCompleted,
+        createdAt,
+        updatedAt,
     )
-}
 
-fun TaskEntity.toTask(): Task {
-    return Task(
-        id = id,
-        categoryId = categoryId,
-        title = title,
-        index = index,
-        status = status,
-        reminder = reminder,
-        description = description,
-        isToday = isToday,
-        sections = sections,
-    )
-}
+fun CategoryEntity.toCategory() =
+    Category(id, name, description, orderIndex, titleColor, hideCompleted, createdAt, updatedAt)
 
-fun CategoryEntity.toCategory(): Category {
-    return Category(
-        id = id,
-        name = name,
-        index = index,
-        color = color,
-        hideCompleted = hideCompleted,
+fun Task.toTaskEntity() =
+    TaskEntity(
+        id,
+        categoryId,
+        title,
+        description,
+        orderIndex,
+        titleColor,
+        isCompleted,
+        isToday,
+        reminder,
+        createdAt,
+        updatedAt,
     )
-}
 
-fun Category.toCategoryEntity(): CategoryEntity {
-    return CategoryEntity(
-        id = id,
-        name = name,
-        color = color,
-        index = index,
-        hideCompleted = hideCompleted,
-    )
-}
+fun TaskWithSections.toTask() =
+    task.let {
+        Task(
+            it.id,
+            it.categoryId,
+            it.title,
+            it.orderIndex,
+            it.isCompleted,
+            it.reminder,
+            it.description,
+            it.isToday,
+            it.titleColor,
+            it.createdAt,
+            it.updatedAt,
+            sections.sortedBy { s -> s.orderIndex }.map { s -> s.toSection() },
+        )
+    }
+
+fun Section.toSectionEntity() =
+    SectionEntity(id, taskId, title, content, orderIndex, completedOn, createdAt, updatedAt)
+
+fun SectionEntity.toSection() =
+    Section(id, taskId, title, content, orderIndex, completedOn, createdAt, updatedAt)

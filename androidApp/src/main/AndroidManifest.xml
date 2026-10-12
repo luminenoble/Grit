@@ -44,16 +44,6 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".widgets.habit_overview_widget.HabitOverviewWidgetReceiver"
-            android:exported="true"
-            android:label="Habit Overview Widget">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/habit_overview_widget"/>
-        </receiver>
 
         <receiver android:name=".widgets.all_tasks_widget.AllTasksWidgetReceiver"
             android:exported="true"
@@ -66,27 +56,7 @@
                 android:resource="@xml/all_tasks_widget"/>
         </receiver>
 
-        <receiver android:name=".widgets.habit_streak_widget.HabitStreakWidgetReceiver"
-            android:exported="true"
-            android:label="Habit Streak Widget">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/habit_streak_widget"/>
-        </receiver>
 
-        <receiver android:name=".widgets.habit_week_chart_widget.HabitWeekChartWidgetReceiver"
-            android:exported="true"
-            android:label="Habit Week Chart Widget">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/habit_week_chart_widget"/>
-        </receiver>
 
         <receiver android:name=".widgets.WidgetDateReceiver" android:exported="false">
             <intent-filter>

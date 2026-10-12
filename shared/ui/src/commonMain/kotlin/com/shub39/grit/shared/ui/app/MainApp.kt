@@ -55,14 +55,11 @@ import androidx.navigation3.ui.NavDisplay
 import com.shub39.grit.shared.ui.LocalWindowSizeClass
 import com.shub39.grit.shared.ui.app.AppSections.Companion.toIconRes
 import com.shub39.grit.shared.ui.app.AppSections.Companion.toStringRes
-import com.shub39.grit.shared.ui.habit.ui.HabitsGraph
 import com.shub39.grit.shared.ui.navigation.fadeTransitionMetadata
+import com.shub39.grit.shared.ui.rhine.RhineScreen
 import com.shub39.grit.shared.ui.setting.ui.SettingsGraph
-import com.shub39.grit.shared.ui.stats.StatsPage
 import com.shub39.grit.shared.ui.task.ui.TasksPage
-import com.shub39.grit.shared.ui.theme.LiquidGlassDefaults
-import com.shub39.grit.shared.ui.theme.liquidGlass
-import com.shub39.grit.shared.ui.viewmodel.HabitViewModel
+import com.shub39.grit.shared.ui.theme.matteSurface
 import com.shub39.grit.shared.ui.viewmodel.SettingsViewModel
 import com.shub39.grit.shared.ui.viewmodel.TasksViewModel
 import org.jetbrains.compose.resources.painterResource
@@ -78,9 +75,25 @@ fun MainApp(state: MainAppState, onNavigateToPaywall: () -> Unit) {
             AppSections.configuration,
             when (state.startingSection) {
                 Tasks -> AppSections.TaskPages
-                Habits -> AppSections.HabitPages
+                Settings -> AppSections.SettingsPages
+                Rhine -> AppSections.RhinePages
             },
         )
+
+    val navigate: (AppSections) -> Unit = { route ->
+        appBackStack.removeAll { it == route }
+        appBackStack.add(route)
+    }
+
+    // Rhine is landscape-only and immersive; it replaces the navigation chrome entirely, so a
+    // landscape phone (no longer Compact) never shows the rail beside it.
+    if (appBackStack.last() == AppSections.RhinePages) {
+        RhineScreen(
+            onOpenTasks = { navigate(AppSections.TaskPages) },
+            onOpenSettings = { navigate(AppSections.SettingsPages) },
+        )
+        return
+    }
 
     when (windowSizeClass.widthSizeClass) {
         Compact -> {
@@ -100,57 +113,36 @@ fun MainApp(state: MainAppState, onNavigateToPaywall: () -> Unit) {
                         Modifier.padding(
                                 start = padding.calculateStartPadding(LocalLayoutDirection.current),
                                 end = padding.calculateEndPadding(LocalLayoutDirection.current),
-                                bottom = padding.calculateBottomPadding(),
                             )
                             .background(MaterialTheme.colorScheme.background),
                     backStack = appBackStack,
                     entryProvider =
                         entryProvider {
+                            // Drawn above instead; kept so a back-stack peek never misses a key.
+                            entry<AppSections.RhinePages> {}
                             entry<AppSections.TaskPages>(metadata = fadeTransitionMetadata()) {
                                 val tvm: TasksViewModel = koinViewModel()
                                 val taskPageState by tvm.state.collectAsStateWithLifecycle()
 
-                                TasksPage(state = taskPageState, onAction = tvm::onAction)
+                                Box(Modifier.padding(bottom = padding.calculateBottomPadding())) {
+                                    TasksPage(state = taskPageState, onAction = tvm::onAction)
+                                }
                             }
 
                             entry<AppSections.SettingsPages>(metadata = fadeTransitionMetadata()) {
                                 val svm: SettingsViewModel = koinViewModel()
                                 val settingsState by svm.state.collectAsStateWithLifecycle()
 
-                                SettingsGraph(
-                                    state = settingsState,
-                                    onAction = svm::onAction,
-                                    isUserSubscribed = state.isUserSubscribed,
-                                    onNavigateToPaywall = onNavigateToPaywall,
-                                )
+                                Box(Modifier.padding(bottom = padding.calculateBottomPadding())) {
+                                    SettingsGraph(
+                                        state = settingsState,
+                                        onAction = svm::onAction,
+                                        isUserSubscribed = state.isUserSubscribed,
+                                        onNavigateToPaywall = onNavigateToPaywall,
+                                    )
+                                }
                             }
 
-                            entry<AppSections.HabitPages>(metadata = fadeTransitionMetadata()) {
-                                val hvm: HabitViewModel = koinViewModel()
-                                val habitsPageState by hvm.state.collectAsStateWithLifecycle()
-
-                                HabitsGraph(
-                                    state = habitsPageState,
-                                    onAction = hvm::onAction,
-                                    isUserSubscribed = state.isUserSubscribed,
-                                    onNavigateToPaywall = onNavigateToPaywall,
-                                )
-                            }
-
-                            entry<AppSections.StatsPages>(metadata = fadeTransitionMetadata()) {
-                                val hvm: HabitViewModel = koinViewModel()
-                                val tvm: TasksViewModel = koinViewModel()
-                                val habitsPageState by hvm.state.collectAsStateWithLifecycle()
-                                val taskPageState by tvm.state.collectAsStateWithLifecycle()
-
-                                StatsPage(
-                                    habitState = habitsPageState,
-                                    taskState = taskPageState,
-                                    isUserSubscribed = state.isUserSubscribed,
-                                    onNavigateToPaywall = onNavigateToPaywall,
-                                    onHabitAction = hvm::onAction,
-                                )
-                            }
                         },
                 )
             }
@@ -173,6 +165,8 @@ fun MainApp(state: MainAppState, onNavigateToPaywall: () -> Unit) {
                     contentAlignment = Alignment.Center,
                     entryProvider =
                         entryProvider {
+                            // Drawn above instead; kept so a back-stack peek never misses a key.
+                            entry<AppSections.RhinePages> {}
                             entry<AppSections.TaskPages>(metadata = fadeTransitionMetadata()) {
                                 val tvm: TasksViewModel = koinViewModel()
                                 val taskPageState by tvm.state.collectAsStateWithLifecycle()
@@ -192,32 +186,6 @@ fun MainApp(state: MainAppState, onNavigateToPaywall: () -> Unit) {
                                 )
                             }
 
-                            entry<AppSections.HabitPages>(metadata = fadeTransitionMetadata()) {
-                                val hvm: HabitViewModel = koinViewModel()
-                                val habitsPageState by hvm.state.collectAsStateWithLifecycle()
-
-                                HabitsGraph(
-                                    state = habitsPageState,
-                                    onAction = hvm::onAction,
-                                    isUserSubscribed = state.isUserSubscribed,
-                                    onNavigateToPaywall = onNavigateToPaywall,
-                                )
-                            }
-
-                            entry<AppSections.StatsPages>(metadata = fadeTransitionMetadata()) {
-                                val hvm: HabitViewModel = koinViewModel()
-                                val tvm: TasksViewModel = koinViewModel()
-                                val habitsPageState by hvm.state.collectAsStateWithLifecycle()
-                                val taskPageState by tvm.state.collectAsStateWithLifecycle()
-
-                                StatsPage(
-                                    habitState = habitsPageState,
-                                    taskState = taskPageState,
-                                    isUserSubscribed = state.isUserSubscribed,
-                                    onNavigateToPaywall = onNavigateToPaywall,
-                                    onHabitAction = hvm::onAction,
-                                )
-                            }
                         },
                 )
             }
@@ -238,12 +206,9 @@ private fun AppNavRail(
             modifier
                 .padding(start = 12.dp, top = 12.dp, bottom = 12.dp)
                 .shadow(elevation = 6.dp, shape = railShape, clip = false)
-                .liquidGlass(
+                .matteSurface(
                     shape = railShape,
-                    fill =
-                        MaterialTheme.colorScheme.surfaceContainer.copy(
-                            alpha = LiquidGlassDefaults.NAV_ALPHA
-                        ),
+                    fill = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 1f),
                 ),
         containerColor = Color.Transparent,
     ) {
@@ -282,12 +247,9 @@ private fun AppNavBar(
         Row(
             modifier =
                 Modifier.shadow(elevation = 8.dp, shape = pill, clip = false)
-                    .liquidGlass(
+                    .matteSurface(
                         shape = pill,
-                        fill =
-                            MaterialTheme.colorScheme.surfaceContainer.copy(
-                                alpha = LiquidGlassDefaults.NAV_ALPHA
-                            ),
+                        fill = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 1f),
                     )
                     .padding(6.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),

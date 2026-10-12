@@ -16,30 +16,23 @@
  */
 package com.shub39.grit.core.tasks
 
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
-/**
- * Model for Tasks
- *
- * @param categoryId : Id of the category the task belongs to
- * @param title : the content of the task
- * @param status : task completion status
- * @param index : used for sorting in UI
- * @param reminder : [LocalDateTime] if reminder is set
- * @param description : optional free-form details
- * @param isToday : whether the task also shows in the virtual "Today" category
- * @param sections : ordered sub-sections of the task, each individually checkable
- */
 @Serializable
 data class Task(
     val id: Long = 0,
     val categoryId: Long,
     val title: String,
-    val index: Int = 0,
-    val status: Boolean = false,
+    val orderIndex: Int = 0,
+    val isCompleted: Boolean = false,
     val reminder: LocalDateTime? = null,
     val description: String = "",
     val isToday: Boolean = false,
+    val titleColor: String? = null,
+    val createdAt: Instant = Clock.System.now(),
+    val updatedAt: Instant = createdAt,
     val sections: List<Section> = emptyList(),
 )

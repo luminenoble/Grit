@@ -16,70 +16,24 @@
  */
 package com.shub39.grit.shared.ui.theme
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.*
 
-/**
- * Custom accent colors for categories and habits, stored as strings in the database. Supports hex
- * ("#RRGGBB" / "#AARRGGBB") plus the legacy named values from CategoryColors.
- */
-private val legacyNames =
-    mapOf(
-        "gray" to Color(0xFF9E9E9E),
-        "blue" to Color(0xFF5B8DEF),
-        "red" to Color(0xFFE5484D),
-        "orange" to Color(0xFFF76B15),
-        "green" to Color(0xFF46A758),
-        "yellow" to Color(0xFFEAB308),
-    )
-
-/** Parses a stored accent string to a [Color], or null when unset/unparseable. */
 fun parseAccentColor(value: String?): Color? {
-    if (value.isNullOrBlank()) return null
+    if (value == null || !Regex("#[0-9a-fA-F]{6}").matches(value)) return null
+    return Color(value.drop(1).toLong(16).or(0xFF000000).toInt())
+}
 
-    legacyNames[value.lowercase()]?.let {
-        return it
+fun Color.toHexString(): String =
+    "#" + (toArgb() and 0xFFFFFF).toString(16).padStart(6, '0').uppercase()
+
+/** Darken selected text to remain readable against the fixed light surfaces. */
+fun readableTitleColor(value: String?): Color {
+    val original = parseAccentColor(value) ?: RhineBaseColors.onSurface
+    var color = original
+    repeat(30) {
+        if ((RhineBaseColors.surface.luminance() + 0.05f) / (color.luminance() + 0.05f) >= 4.5f)
+            return color
+        color = lerp(color, Color.Black, 0.1f)
     }
-
-    val hex = value.removePrefix("#")
-    val argb =
-        when (hex.length) {
-            6 -> hex.toLongOrNull(16)?.or(0xFF000000)
-            8 -> hex.toLongOrNull(16)
-            else -> null
-        } ?: return null
-
-    return Color(argb.toInt())
-}
-
-/** Formats a color back to the stored "#AARRGGBB" form. */
-fun Color.toHexString(): String {
-    return "#" + toArgb().toUInt().toString(16).padStart(8, '0').uppercase()
-}
-
-/** Black or white, whichever reads better on this color. */
-fun Color.bestContentColor(): Color {
-    return if (luminance() > 0.5f) Color.Black else Color.White
-}
-
-/** How many shade variants an accent cycles through before repeating. */
-private const val ACCENT_VARIANT_CYCLE = 5
-
-/**
- * Shade variant for list position [position]: the same hue nudged lighter or darker in a cycle of
- * [ACCENT_VARIANT_CYCLE], so stacked cards sharing one accent don't read as a flat block. Neighbors
- * alternate direction to keep adjacent cards visibly distinct.
- */
-fun Color.accentVariant(position: Int): Color {
-    return when (
-        ((position % ACCENT_VARIANT_CYCLE) + ACCENT_VARIANT_CYCLE) % ACCENT_VARIANT_CYCLE
-    ) {
-        0 -> this
-        1 -> lerp(this, Color.White, 0.22f)
-        2 -> lerp(this, Color.Black, 0.18f)
-        3 -> lerp(this, Color.White, 0.40f)
-        else -> lerp(this, Color.Black, 0.34f)
-    }
+    return RhineBaseColors.onSurface
 }

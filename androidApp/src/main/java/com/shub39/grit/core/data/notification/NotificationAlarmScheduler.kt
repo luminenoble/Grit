@@ -20,144 +20,51 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
-import android.util.Log
 import com.shub39.grit.core.data.GritIntentReceiver
-import com.shub39.grit.core.habits.Habit
 import com.shub39.grit.core.interfaces.AlarmScheduler
 import com.shub39.grit.core.interfaces.IntentActions
 import com.shub39.grit.core.now
 import com.shub39.grit.core.tasks.Task
-import kotlin.time.ExperimentalTime
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.plus
-import kotlinx.datetime.toInstant
+import kotlinx.datetime.*
 import org.koin.core.annotation.Single
 
-// implementation of AlarmScheduler using AlarmManager
 @Single(binds = [AlarmScheduler::class])
-@OptIn(ExperimentalTime::class)
 class NotificationAlarmScheduler(private val context: Context) : AlarmScheduler {
+    private val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    companion object {
-        private const val TAG = "NotificationAlarmScheduler"
-    }
-
-    private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-    override fun schedule(habit: Habit) {
-        cancel(habit)
-        if (!habit.reminder || habit.days.isEmpty()) return
-
-        var scheduleTime = habit.time
-        val now = LocalDateTime.Companion.now()
-
-        while ((scheduleTime < now) || !habit.days.contains(scheduleTime.dayOfWeek)) {
-            scheduleTime =
-                scheduleTime.date.plus(1, DateTimeUnit.Companion.DAY).let {
-                    LocalDateTime(date = it, time = scheduleTime.time)
-                }
-        }
-
-        val notificationIntent =
+    private fun pending(task: Task, flags: Int): PendingIntent? =
+        PendingIntent.getBroadcast(
+            context,
+            0,
             Intent(context, GritIntentReceiver::class.java).apply {
-                action = IntentActions.HABIT_NOTIFICATION.action
-                putExtra("habit_id", habit.id)
-            }
-
-        val pendingIntent =
-            PendingIntent.getBroadcast(
-                context,
-                habit.id.toInt(),
-                notificationIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            scheduleTime.toInstant(TimeZone.Companion.currentSystemDefault()).toEpochMilliseconds(),
-            pendingIntent,
+                action = IntentActions.TASK_NOTIFICATION.action
+                data = Uri.parse("grit-rhine://task/${task.id}")
+                putExtra("task_id", task.id)
+            },
+            flags or PendingIntent.FLAG_IMMUTABLE,
         )
-
-        Log.d(TAG, "Scheduled: Habit '${habit.title}' at $scheduleTime")
-    }
 
     override fun schedule(task: Task) {
         cancel(task)
-        if (task.reminder == null) return
-        val scheduleTime = task.reminder!!
-
-        val now = LocalDateTime.now()
-
-        if (scheduleTime < now) {
-            Log.d(TAG, "Task '${task.title}' reminder time is in the past")
-            return
-        }
-
-        val notificationIntent =
-            Intent(context, GritIntentReceiver::class.java).apply {
-                action = IntentActions.TASK_NOTIFICATION.action
-                putExtra("task_id", task.id)
-            }
-
-        val pendingIntent =
-            PendingIntent.getBroadcast(
-                context,
-                task.id.toInt(),
-                notificationIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            scheduleTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
-            pendingIntent,
-        )
-
-        Log.d(TAG, "Scheduled: Task '${task.title}' at $scheduleTime")
-    }
-
-    override fun cancel(habit: Habit) {
-        val cancelIntent =
-            Intent(context, GritIntentReceiver::class.java).apply {
-                action = IntentActions.HABIT_NOTIFICATION.action
-            }
-
-        val pendingIntent =
-            PendingIntent.getBroadcast(
-                context,
-                habit.id.toInt(),
-                cancelIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-
-        alarmManager.cancel(pendingIntent)
-        Log.d(TAG, "Cancelled: Habit '${habit.title}'")
+        val reminder = task.reminder ?: return
+        if (task.id <= 0 || task.isCompleted || reminder <= LocalDateTime.now()) return
+        val time = reminder.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+        val intent = requireNotNull(pending(task, PendingIntent.FLAG_UPDATE_CURRENT))
+        if (Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms())
+            manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, intent)
+        else manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, intent)
     }
 
     override fun cancel(task: Task) {
-        val cancelIntent =
-            Intent(context, GritIntentReceiver::class.java).apply {
-                action = IntentActions.TASK_NOTIFICATION.action
-            }
-
-        val pendingIntent =
-            PendingIntent.getBroadcast(
-                context,
-                task.id.toInt(),
-                cancelIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-
-        alarmManager.cancel(pendingIntent)
-        Log.d(TAG, "Cancelled: Task '${task.title}'")
+        pending(task, PendingIntent.FLAG_NO_CREATE)?.let {
+            manager.cancel(it)
+            it.cancel()
+        }
     }
 
     override fun cancelAll() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            alarmManager.cancelAll()
-        }
+        if (Build.VERSION.SDK_INT >= 34) manager.cancelAll()
     }
 }

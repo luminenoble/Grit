@@ -19,33 +19,60 @@ package com.shub39.grit.app
 import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Build
+import android.util.Log
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import com.shub39.grit.BuildConfig
 import com.shub39.grit.billing.BillingInitializer
+import com.shub39.grit.core.data.notification.GritNotificationManager
+import com.shub39.grit.core.interfaces.AlarmScheduler
+import com.shub39.grit.core.tasks.TaskRepo
 import com.shub39.grit.di.GritModules
-import com.shub39.grit.shared.ui.ai.AiKeyHolder
 import com.shub39.grit.shared.ui.update.AppVersionHolder
+import com.shub39.grit.widgets.WidgetUpdates
 import com.shub39.grit.widgets.all_tasks_widget.AllTasksWidgetReceiver
-import com.shub39.grit.widgets.habit_overview_widget.HabitOverviewWidgetReceiver
-import com.shub39.grit.widgets.habit_streak_widget.HabitStreakWidgetReceiver
-import com.shub39.grit.widgets.habit_week_chart_widget.HabitWeekChartWidgetReceiver
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.plugin.module.dsl.startKoin
 
-class GritApplication : Application() {
+class GritApplication : Application(), KoinComponent {
 
     override fun onCreate() {
         super.onCreate()
-
-        AiKeyHolder.apiKey = BuildConfig.DEEPSEEK_API_KEY
         AppVersionHolder.versionName = BuildConfig.VERSION_NAME
 
         startKoin<GritModules> {
             androidLogger()
             androidContext(this@GritApplication)
+        }
+
+        GritNotificationManager.createNotificationChannel(this)
+        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+            try {
+                val scheduler = get<AlarmScheduler>()
+                val prefs = getSharedPreferences("grit_rhine_bootstrap", MODE_PRIVATE)
+                if (!prefs.getBoolean("initialized", false)) {
+                    // Android 14+ can cancel legacy alarms without reading the old database.
+                    scheduler.cancelAll()
+                    prefs.edit().putBoolean("initialized", true).apply()
+                }
+                get<TaskRepo>().getTasks().forEach { task ->
+                    try {
+                        scheduler.schedule(task)
+                    } catch (e: Exception) {
+                        Log.e("Grit_Rhine", "任务提醒调度失败", e)
+                    }
+                }
+                WidgetUpdates.tasks(this@GritApplication)
+            } catch (e: Exception) {
+                Log.e("Grit_Rhine", "启动刷新失败", e)
+            }
         }
 
         BillingInitializer().initialize(this)
@@ -54,12 +81,7 @@ class GritApplication : Application() {
             val manager = GlanceAppWidgetManager(applicationContext)
 
             @SuppressLint("CheckResult")
-            MainScope().launch {
-                manager.setWidgetPreviews(HabitOverviewWidgetReceiver::class)
-                manager.setWidgetPreviews(HabitStreakWidgetReceiver::class)
-                manager.setWidgetPreviews(AllTasksWidgetReceiver::class)
-                manager.setWidgetPreviews(HabitWeekChartWidgetReceiver::class)
-            }
+            MainScope().launch { manager.setWidgetPreviews(AllTasksWidgetReceiver::class) }
         }
     }
 }

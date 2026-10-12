@@ -19,7 +19,6 @@ package com.shub39.grit.web_demo.stubs
 import com.shub39.grit.core.app.Changelog
 import com.shub39.grit.core.billing.BillingHandler
 import com.shub39.grit.core.billing.SubscriptionResult
-import com.shub39.grit.core.habits.Habit
 import com.shub39.grit.core.interfaces.AlarmScheduler
 import com.shub39.grit.core.interfaces.BiometricUtils
 import com.shub39.grit.core.interfaces.ChangelogManager
@@ -45,11 +44,8 @@ class ChangelogManagerStub : ChangelogManager {
 
 @Single(binds = [AlarmScheduler::class])
 class AlarmSchedulerStub : AlarmScheduler {
-    override fun schedule(habit: Habit) {}
 
     override fun schedule(task: Task) {}
-
-    override fun cancel(habit: Habit) {}
 
     override fun cancel(task: Task) {}
 
@@ -58,12 +54,17 @@ class AlarmSchedulerStub : AlarmScheduler {
 
 @Single(binds = [ExportRepo::class])
 class ExportRepoStub : ExportRepo {
-    override suspend fun exportToJson() {}
+    override suspend fun exportToJson(): Boolean = false
 }
 
 @Single(binds = [RestoreRepo::class])
 class RestoreRepoStub : RestoreRepo {
-    override suspend fun restoreData(): RestoreResult = RestoreResult.Success
+    override suspend fun prepareRestore(): com.shub39.grit.core.settings.backup.RestorePreview? =
+        null
+
+    override suspend fun restoreData(
+        backup: com.shub39.grit.core.settings.backup.RhineBackup
+    ): RestoreResult = RestoreResult.Failure("Demo 不支持文件导入")
 }
 
 @Single(binds = [BiometricUtils::class])

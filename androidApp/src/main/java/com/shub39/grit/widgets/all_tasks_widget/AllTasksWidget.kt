@@ -54,20 +54,23 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.material3.ColorProviders
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextDecoration
 import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
 import com.shub39.grit.R
 import com.shub39.grit.app.MainActivity
 import com.shub39.grit.core.interfaces.SettingsDatastore
 import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.core.tasks.Category
-import com.shub39.grit.core.tasks.CategoryColors
 import com.shub39.grit.core.tasks.Task
 import com.shub39.grit.core.tasks.TaskRepo
+import com.shub39.grit.shared.ui.theme.RhineBaseColors
+import com.shub39.grit.shared.ui.theme.readableTitleColor
 import com.shub39.grit.widgets.WidgetSize
 import com.shub39.grit.widgets.bodyFontSize
 import com.shub39.grit.widgets.captionFontSize
@@ -110,7 +113,7 @@ class AllTasksWidget : GlanceAppWidget(), KoinComponent {
                 }
                 // Categories flagged hideCompleted keep their done tasks out of the widget too.
                 .mapValues { (category, list) ->
-                    if (category.hideCompleted) list.filter { !it.status } else list
+                    if (category.hideCompleted) list.filter { !it.isCompleted } else list
                 }
             val title =
                 when (widgetScope) {
@@ -120,13 +123,16 @@ class AllTasksWidget : GlanceAppWidget(), KoinComponent {
                 }
 
             key(size) {
-                GlanceTheme {
+                GlanceTheme(colors = ColorProviders(RhineBaseColors, RhineBaseColors)) {
                     Content(
                         tasks = scopedTasks.filter { it.value.isNotEmpty() },
                         title = title,
                         textSize = textSize,
                         onUpdateTaskStatus = {
-                            scope.launch { repo.upsertTask(it.copy(status = !it.status)) }
+                            scope.launch {
+                                val current = repo.getTaskById(it.id) ?: return@launch
+                                repo.upsertTask(current.copy(isCompleted = !current.isCompleted))
+                            }
                         },
                         onUpdateWidget = {
                             scope.launch { this@AllTasksWidget.update(context, id) }
@@ -153,14 +159,14 @@ class AllTasksWidget : GlanceAppWidget(), KoinComponent {
     override suspend fun providePreview(context: Context, widgetCategory: Int) {
         val previewItems =
             mapOf(
-                Category(name = "Chores", index = 1, color = CategoryColors.GRAY.color) to
+                Category(name = "Chores", orderIndex = 1, titleColor = null) to
                     listOf(
                         Task(
                             id = 1,
                             categoryId = 1,
                             title = "Laundry",
-                            index = 1,
-                            status = false,
+                            orderIndex = 1,
+                            isCompleted = false,
                             reminder = null,
                         ),
                         Task(
@@ -168,16 +174,16 @@ class AllTasksWidget : GlanceAppWidget(), KoinComponent {
                             categoryId = 1,
                             title =
                                 "Watch a 5 hour long video essay on a video game i will never play",
-                            index = 2,
-                            status = false,
+                            orderIndex = 2,
+                            isCompleted = false,
                             reminder = null,
                         ),
                         Task(
                             id = 3,
                             categoryId = 1,
                             title = "Get Groceries, Meat",
-                            index = 3,
-                            status = true,
+                            orderIndex = 3,
+                            isCompleted = true,
                             reminder = null,
                         ),
                     )
@@ -212,7 +218,7 @@ private fun Content(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(ImageProvider(R.drawable.widget_glass_bg))
+                .background(ImageProvider(R.drawable.widget_matte_bg))
                 .then(
                     if (roundedCornerSupported) GlanceModifier.cornerRadius(24.dp)
                     else GlanceModifier
@@ -264,7 +270,7 @@ private fun Content(
                     )
                     Spacer(GlanceModifier.height(taskItemSpacing * 2))
                     taskGroup.value.forEach { task ->
-                        val status = task.status
+                        val status = task.isCompleted
 
                         Column {
                             Column(
@@ -272,8 +278,8 @@ private fun Content(
                                     GlanceModifier.fillMaxWidth()
                                         .background(
                                             ImageProvider(
-                                                if (!status) R.drawable.widget_glass_item
-                                                else R.drawable.widget_glass_item_done
+                                                if (!status) R.drawable.widget_matte_item
+                                                else R.drawable.widget_matte_item_done
                                             )
                                         )
                                         .then(
@@ -301,20 +307,15 @@ private fun Content(
                                         TextStyle(
                                             fontSize = taskFontSize,
                                             color =
-                                                if (!status) {
-                                                    GlanceTheme.colors.onSurface
-                                                } else GlanceTheme.colors.onSurfaceVariant,
-                                            textDecoration =
-                                                if (!status) {
-                                                    TextDecoration.None
-                                                } else TextDecoration.LineThrough,
+                                                ColorProvider(readableTitleColor(task.titleColor)),
+                                            textDecoration = TextDecoration.None,
                                         ),
                                     maxLines = 2,
                                 )
 
                                 // Surface step progress (e.g. "2/5 sections") on the widget.
                                 if (task.sections.isNotEmpty()) {
-                                    val doneSteps = task.sections.count { it.done }
+                                    val doneSteps = task.sections.count { it.isCompleted }
                                     Text(
                                         text = "$doneSteps/${task.sections.size} sections",
                                         modifier =
@@ -352,16 +353,16 @@ private fun GlancePreview() {
                 Category(
                     id = it.toLong(),
                     name = "Category $it",
-                    index = it,
-                    color = CategoryColors.GRAY.color,
+                    orderIndex = it,
+                    titleColor = null,
                 ) to
                     (0..1).map { taskId ->
                         Task(
                             id = taskId.toLong(),
                             categoryId = it.toLong(),
                             title = "Task $taskId, Category $it",
-                            index = it,
-                            status = false,
+                            orderIndex = it,
+                            isCompleted = false,
                             reminder = null,
                         )
                     }

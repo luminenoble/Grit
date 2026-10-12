@@ -15,15 +15,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.shub39.grit.core.settings.backup
-
 interface RestoreRepo {
-    suspend fun restoreData(): RestoreResult
+    suspend fun prepareRestore(): RestorePreview?
+
+    suspend fun restoreData(backup: RhineBackup): RestoreResult
+}
+
+data class RestorePreview(val backup: RhineBackup) {
+    val categoryCount: Int
+        get() = backup.categories.size
+
+    val taskCount: Int
+        get() = backup.tasks.size
+
+    val sectionCount: Int
+        get() = backup.tasks.sumOf { it.sections.size }
 }
 
 sealed class RestoreResult {
     data object Success : RestoreResult()
 
-    data class Failure(val exceptionType: RestoreFailedException) : RestoreResult()
+    data class Failure(val message: String) : RestoreResult()
 }
 
 enum class RestoreState {
@@ -32,11 +44,3 @@ enum class RestoreState {
     RESTORED,
     FAILURE,
 }
-
-sealed interface RestoreFailedException {
-    data object InvalidFile : RestoreFailedException
-
-    data object OldSchema : RestoreFailedException
-}
-
-class SchemaMismatchException : Exception()

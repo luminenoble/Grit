@@ -1,0 +1,10 @@
+PASS Category saving disables fields and back; commits exactly one parent at zero
+PASS Task saving disables fields and back; exactly one item at U2
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段04/提交与整页草稿回归.py", line 30, in <module>
+    open_empty_task();add_draft();c.click(label='取消');c.expect('未保存的修改');c.click(label='放弃')
+    ^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段04/提交与整页草稿回归.py", line 25, in open_empty_task
+    c.expect('排序待接入');assert any(n.get('enabled')=='false' for n in c.nodes(label='Reorder sections'))
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

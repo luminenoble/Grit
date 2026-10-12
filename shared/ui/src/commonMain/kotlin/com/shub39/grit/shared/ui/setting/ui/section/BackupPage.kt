@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalIconButton
@@ -35,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +47,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.settings.backup.ExportState
 import com.shub39.grit.core.settings.backup.RestoreState
-import com.shub39.grit.core.theme.AppTheme
 import com.shub39.grit.core.theme.Theme
 import com.shub39.grit.shared.ui.components.endItemShape
 import com.shub39.grit.shared.ui.components.leadingItemShape
@@ -67,6 +68,23 @@ fun BackupPage(
 ) {
     LaunchedEffect(Unit) { onAction(SettingsAction.OnResetBackupState) }
 
+    state.restorePreview?.let { preview ->
+        AlertDialog(
+            onDismissRequest = { onAction(SettingsAction.OnCancelRestore) },
+            title = { Text("替换现有数据") },
+            text = {
+                Text(
+                    "导入 ${preview.categoryCount} 个 Category、${preview.taskCount} 个 Task、${preview.sectionCount} 个 Section。确认后替换当前数据，请先导出备份。"
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { onAction(SettingsAction.OnConfirmRestore) }) { Text("确认导入") }
+            },
+            dismissButton = {
+                TextButton(onClick = { onAction(SettingsAction.OnCancelRestore) }) { Text("取消") }
+            },
+        )
+    }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Column(
         modifier =
@@ -93,6 +111,21 @@ fun BackupPage(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 16.dp, bottom = 60.dp),
         ) {
+            item {
+                Text(
+                    "只支持 Grit_Rhine 新格式 JSON。备份包含类别、任务和 Section，不包含本机显示设置。",
+                    Modifier.padding(12.dp),
+                )
+            }
+            state.backupMessage?.let { message ->
+                item {
+                    Text(
+                        message,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+            }
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Column(modifier = Modifier.clip(leadingItemShape())) {
@@ -203,7 +236,7 @@ fun BackupPage(
 @Preview
 @Composable
 private fun Preview() {
-    GritTheme(theme = Theme(appTheme = AppTheme.DARK)) {
+    GritTheme(theme = Theme()) {
         Surface { BackupPage(state = SettingsState(), onAction = {}, onNavigateBack = {}) }
     }
 }

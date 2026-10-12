@@ -1,0 +1,119 @@
+Starting a Gradle Daemon, 1 busy and 1 incompatible Daemons could not be reused, use --status for details
+Type-safe project accessors is an incubating feature.
+> Task :shared:core:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:core:compileKotlinJvm UP-TO-DATE
+> Task :shared:core:compileJvmMainJava NO-SOURCE
+> Task :shared:core:jvmProcessResources NO-SOURCE
+> Task :shared:core:processJvmMainResources SKIPPED
+> Task :shared:core:jvmMainClasses UP-TO-DATE
+> Task :shared:core:jvmJar UP-TO-DATE
+> Task :shared:ui:checkJvmMainComposeLibrariesCompatibility
+> Task :shared:ui:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:ui:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:ui:convertXmlValueResourcesForCommonMain
+> Task :shared:ui:copyNonXmlValueResourcesForCommonMain
+> Task :shared:ui:prepareComposeResourcesTaskForCommonMain
+> Task :shared:ui:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :shared:ui:convertXmlValueResourcesForJvmMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForJvmMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForJvmMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForJvmMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForJvmMain UP-TO-DATE
+> Task :shared:ui:generateComposeResClass UP-TO-DATE
+> Task :shared:ui:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :shared:ui:kspKotlinJvm SKIPPED
+> Task :shared:core:compileKotlinWasmJs UP-TO-DATE
+> Task :shared:ui:checkWasmJsMainComposeLibrariesCompatibility
+> Task :shared:ui:convertXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForWasmJsMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForWasmJsMain NO-SOURCE
+> Task :shared:ui:convertXmlValueResourcesForWebMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForWebMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForWebMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForWebMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForWasmJsMain UP-TO-DATE
+> Task :shared:ui:kspKotlinWasmJs SKIPPED
+
+> Task :shared:ui:compileKotlinWasmJs
+e: file:///mnt/d/wsl-share/grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.kt:688:17 None of the following candidates is applicable:
+
+fun OutlinedTextField(state: TextFieldState, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., labelPosition: TextFieldLabelPosition = ..., label: ComposableFunction1<TextFieldLabelScope, Unit>? = ..., placeholder: ComposableFunction0<Unit>? = ..., leadingIcon: ComposableFunction0<Unit>? = ..., trailingIcon: ComposableFunction0<Unit>? = ..., prefix: ComposableFunction0<Unit>? = ..., suffix: ComposableFunction0<Unit>? = ..., supportingText: ComposableFunction0<Unit>? = ..., isError: Boolean = ..., inputTransformation: InputTransformation? = ..., outputTransformation: OutputTransformation? = ..., keyboardOptions: KeyboardOptions = ..., onKeyboardAction: KeyboardActionHandler? = ..., lineLimits: TextFieldLineLimits = ..., onTextLayout: (Density.(() -> TextLayoutResult?) -> Unit)? = ..., scrollState: ScrollState = ..., shape: Shape = ..., colors: TextFieldColors = ..., contentPadding: PaddingValues = ..., interactionSource: MutableInteractionSource? = ...): Unit:
+  No parameter with name 'singleLine' found.
+  No value passed for parameter 'state'.
+
+fun OutlinedTextField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: ComposableFunction0<Unit>? = ..., placeholder: ComposableFunction0<Unit>? = ..., leadingIcon: ComposableFunction0<Unit>? = ..., trailingIcon: ComposableFunction0<Unit>? = ..., prefix: ComposableFunction0<Unit>? = ..., suffix: ComposableFunction0<Unit>? = ..., supportingText: ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit:
+  No value passed for parameter 'value'.
+  No value passed for parameter 'onValueChange'.
+
+fun OutlinedTextField(value: TextFieldValue, onValueChange: (TextFieldValue) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: ComposableFunction0<Unit>? = ..., placeholder: ComposableFunction0<Unit>? = ..., leadingIcon: ComposableFunction0<Unit>? = ..., trailingIcon: ComposableFunction0<Unit>? = ..., prefix: ComposableFunction0<Unit>? = ..., suffix: ComposableFunction0<Unit>? = ..., supportingText: ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit:
+  No value passed for parameter 'value'.
+  No value passed for parameter 'onValueChange'.
+e: file:///mnt/d/wsl-share/grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.kt:690:21 Mixing named and positional arguments is not allowed unless the order of the arguments matches the order of the parameters.
+e: file:///mnt/d/wsl-share/grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.kt:691:21 Mixing named and positional arguments is not allowed unless the order of the arguments matches the order of the parameters.
+e: file:///mnt/d/wsl-share/grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.kt:691:40 Unresolved reference 'it'.
+e: file:///mnt/d/wsl-share/grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.kt:692:31 @Composable invocations can only happen from the context of a @Composable function
+
+> Task :shared:ui:compileKotlinWasmJs FAILED
+> Task :shared:ui:compileKotlinJvm
+e: file:///mnt/d/wsl-share/grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.kt:688:17 None of the following candidates is applicable:
+
+fun OutlinedTextField(state: TextFieldState, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., labelPosition: TextFieldLabelPosition = ..., label: ComposableFunction1<TextFieldLabelScope, Unit>? = ..., placeholder: ComposableFunction0<Unit>? = ..., leadingIcon: ComposableFunction0<Unit>? = ..., trailingIcon: ComposableFunction0<Unit>? = ..., prefix: ComposableFunction0<Unit>? = ..., suffix: ComposableFunction0<Unit>? = ..., supportingText: ComposableFunction0<Unit>? = ..., isError: Boolean = ..., inputTransformation: InputTransformation? = ..., outputTransformation: OutputTransformation? = ..., keyboardOptions: KeyboardOptions = ..., onKeyboardAction: KeyboardActionHandler? = ..., lineLimits: TextFieldLineLimits = ..., onTextLayout: (Density.(() -> TextLayoutResult?) -> Unit)? = ..., scrollState: ScrollState = ..., shape: Shape = ..., colors: TextFieldColors = ..., contentPadding: PaddingValues = ..., interactionSource: MutableInteractionSource? = ...): Unit:
+  No parameter with name 'singleLine' found.
+  No value passed for parameter 'state'.
+
+fun OutlinedTextField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: ComposableFunction0<Unit>? = ..., placeholder: ComposableFunction0<Unit>? = ..., leadingIcon: ComposableFunction0<Unit>? = ..., trailingIcon: ComposableFunction0<Unit>? = ..., prefix: ComposableFunction0<Unit>? = ..., suffix: ComposableFunction0<Unit>? = ..., supportingText: ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit:
+  No value passed for parameter 'value'.
+  No value passed for parameter 'onValueChange'.
+
+fun OutlinedTextField(value: TextFieldValue, onValueChange: (TextFieldValue) -> Unit, modifier: Modifier = ..., enabled: Boolean = ..., readOnly: Boolean = ..., textStyle: TextStyle = ..., label: ComposableFunction0<Unit>? = ..., placeholder: ComposableFunction0<Unit>? = ..., leadingIcon: ComposableFunction0<Unit>? = ..., trailingIcon: ComposableFunction0<Unit>? = ..., prefix: ComposableFunction0<Unit>? = ..., suffix: ComposableFunction0<Unit>? = ..., supportingText: ComposableFunction0<Unit>? = ..., isError: Boolean = ..., visualTransformation: VisualTransformation = ..., keyboardOptions: KeyboardOptions = ..., keyboardActions: KeyboardActions = ..., singleLine: Boolean = ..., maxLines: Int = ..., minLines: Int = ..., interactionSource: MutableInteractionSource? = ..., shape: Shape = ..., colors: TextFieldColors = ...): Unit:
+  No value passed for parameter 'value'.
+  No value passed for parameter 'onValueChange'.
+e: file:///mnt/d/wsl-share/grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.kt:690:21 Mixing named and positional arguments is not allowed unless the order of the arguments matches the order of the parameters.
+e: file:///mnt/d/wsl-share/grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.kt:691:21 Mixing named and positional arguments is not allowed unless the order of the arguments matches the order of the parameters.
+e: file:///mnt/d/wsl-share/grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.kt:691:40 Unresolved reference 'it'.
+e: file:///mnt/d/wsl-share/grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.kt:692:31 @Composable invocations can only happen from the context of a @Composable function
+
+> Task :shared:ui:compileKotlinJvm FAILED
+
+[Incubating] Problems report is available at: file:///mnt/d/wsl-share/grit/build/reports/problems/problems-report.html
+
+FAILURE: Build completed with 2 failures.
+
+1: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':shared:ui:compileKotlinWasmJs' (registered in build file 'shared/ui/build.gradle.kts').
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+2: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':shared:ui:compileKotlinJvm' (registered in build file 'shared/ui/build.gradle.kts').
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 51s
+17 actionable tasks: 9 executed, 8 up-to-date

@@ -27,10 +27,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions.Companion.Default
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonShapes
 import androidx.compose.material3.FilledTonalIconButton
@@ -40,6 +42,7 @@ import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
@@ -66,6 +69,7 @@ import com.shub39.grit.shared.ui.components.detachedItemShape
 import com.shub39.grit.shared.ui.components.listItemColors
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
 import com.shub39.grit.shared.ui.theme.parseAccentColor
+import com.shub39.grit.shared.ui.theme.readableTitleColor
 import com.shub39.grit.shared.ui.theme.toHexString
 import grit.shared.ui.generated.resources.*
 import kotlinx.coroutines.delay
@@ -81,6 +85,8 @@ fun CategoryUpsertSheet(
     onUpsertCategory: (Category) -> Unit,
     fullScreen: Boolean = false,
     autoFocusTitle: Boolean = true,
+    saving: Boolean = false,
+    pinnedActions: Boolean = false,
 ) {
     var newCategory by remember { mutableStateOf(category) }
     var colorPickerDialog by remember { mutableStateOf(false) }
@@ -105,7 +111,11 @@ fun CategoryUpsertSheet(
 
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier =
+                Modifier.fillMaxWidth()
+                    .then(if (fullScreen) Modifier.weight(1f) else Modifier)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
         ) {
             if (!fullScreen) {
                 Box(
@@ -119,7 +129,9 @@ fun CategoryUpsertSheet(
                 ) {
                     Icon(
                         imageVector =
-                            vectorResource(if (isEditSheet) Res.drawable.edit else Res.drawable.add),
+                            vectorResource(
+                                if (isEditSheet) Res.drawable.edit else Res.drawable.add
+                            ),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
@@ -130,13 +142,12 @@ fun CategoryUpsertSheet(
                             if (isEditSheet) Res.string.edit_categories else Res.string.add_category
                         ),
                     style =
-                        MaterialTheme.typography.headlineSmall.copy(
-                            fontFamily = flexFontEmphasis()
-                        ),
+                        MaterialTheme.typography.headlineSmall.copy(fontFamily = flexFontEmphasis()),
                 )
             }
 
             OutlinedTextField(
+                enabled = !saving,
                 state = textFieldState,
                 lineLimits = TextFieldLineLimits.SingleLine,
                 shape = MaterialTheme.shapes.medium,
@@ -149,7 +160,22 @@ fun CategoryUpsertSheet(
                 modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
             )
 
-            // Accent color for this category and all its tasks
+            OutlinedTextField(
+                enabled = !saving,
+                value = newCategory.description,
+                onValueChange = { newCategory = newCategory.copy(description = it) },
+                label = { Text("类别描述") },
+                minLines = 3,
+                maxLines = 4,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            TextButton(
+                onClick = { newCategory = newCategory.copy(titleColor = null) },
+                enabled = !saving,
+            ) {
+                Text("使用默认文字颜色")
+            }
+            // Category text color is independent of task colors.
             ListItem(
                 colors = listItemColors(),
                 modifier = Modifier.clip(detachedItemShape()),
@@ -159,17 +185,22 @@ fun CategoryUpsertSheet(
                         contentDescription = null,
                     )
                 },
-                headlineContent = { Text(text = stringResource(Res.string.accent_color)) },
+                headlineContent = {
+                    Text(
+                        text = stringResource(Res.string.accent_color),
+                        color = readableTitleColor(newCategory.titleColor),
+                    )
+                },
                 trailingContent = {
                     Box(
                         modifier =
                             Modifier.size(32.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    parseAccentColor(newCategory.color)
+                                    parseAccentColor(newCategory.titleColor)
                                         ?: MaterialTheme.colorScheme.primaryContainer
                                 )
-                                .clickable { colorPickerDialog = true }
+                                .clickable(enabled = !saving) { colorPickerDialog = true }
                     )
                 },
             )
@@ -187,6 +218,7 @@ fun CategoryUpsertSheet(
                 headlineContent = { Text(text = stringResource(Res.string.hide_completed)) },
                 trailingContent = {
                     ExpressiveSwitch(
+                        enabled = !saving,
                         checked = newCategory.hideCompleted,
                         onCheckedChange = { newCategory = newCategory.copy(hideCompleted = it) },
                     )
@@ -203,7 +235,7 @@ fun CategoryUpsertSheet(
                         pressedShape = MaterialTheme.shapes.small,
                     ),
                 modifier = Modifier.padding(bottom = 32.dp).fillMaxWidth(),
-                enabled = textFieldState.text.isNotBlank() && textFieldState.text.length <= 20,
+                enabled = !saving && textFieldState.text.isNotBlank(),
             ) {
                 Text(text = stringResource(if (isEditSheet) Res.string.done else Res.string.save))
             }
@@ -212,8 +244,8 @@ fun CategoryUpsertSheet(
         if (colorPickerDialog) {
             ColorPickerDialog(
                 initialColor =
-                    parseAccentColor(newCategory.color) ?: MaterialTheme.colorScheme.primary,
-                onSelect = { newCategory = newCategory.copy(color = it.toHexString()) },
+                    parseAccentColor(newCategory.titleColor) ?: MaterialTheme.colorScheme.primary,
+                onSelect = { newCategory = newCategory.copy(titleColor = it.toHexString()) },
                 onDismiss = { colorPickerDialog = false },
             )
         }
@@ -222,12 +254,24 @@ fun CategoryUpsertSheet(
     if (fullScreen) {
         Column(
             modifier =
-                modifier
-                    .fillMaxSize()
-                    .imePadding()
-                    .background(MaterialTheme.colorScheme.background)
+                modifier.fillMaxSize().imePadding().background(MaterialTheme.colorScheme.background)
         ) {
             TopAppBar(
+                actions = {
+                    if (pinnedActions) {
+                        TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+                        TextButton(
+                            onClick = {
+                                onUpsertCategory(
+                                    newCategory.copy(name = textFieldState.text.toString())
+                                )
+                            },
+                            enabled = !saving && textFieldState.text.isNotBlank(),
+                        ) {
+                            Text(if (saving) "保存中…" else "保存")
+                        }
+                    }
+                },
                 title = {
                     Text(
                         text =
@@ -239,7 +283,7 @@ fun CategoryUpsertSheet(
                     )
                 },
                 navigationIcon = {
-                    FilledTonalIconButton(onClick = onDismiss) {
+                    FilledTonalIconButton(onClick = onDismiss, enabled = !saving) {
                         Icon(
                             imageVector = vectorResource(Res.drawable.nav_arrow_back),
                             contentDescription = "Navigate Back",
@@ -250,7 +294,11 @@ fun CategoryUpsertSheet(
             body()
         }
     } else {
-        GritBottomSheet(modifier = modifier.imePadding(), padding = 0.dp, onDismissRequest = onDismiss) {
+        GritBottomSheet(
+            modifier = modifier.imePadding(),
+            padding = 0.dp,
+            onDismissRequest = onDismiss,
+        ) {
             body()
         }
     }

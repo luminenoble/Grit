@@ -37,6 +37,9 @@ actual fun TaskUpsertSheet(
     isEditSheet: Boolean,
     fullScreen: Boolean,
     autoFocusTitle: Boolean,
+    saving: Boolean,
+    restrictStructure: Boolean,
+    allowDraftChanges: Boolean,
 ) {
     var showDateTimePicker by remember { mutableStateOf(false) }
 
@@ -55,5 +58,8 @@ actual fun TaskUpsertSheet(
         modifier = modifier,
         fullScreen = fullScreen,
         autoFocusTitle = autoFocusTitle,
+        saving = saving,
+        restrictStructure = restrictStructure,
+        allowDraftChanges = allowDraftChanges,
     )
 }

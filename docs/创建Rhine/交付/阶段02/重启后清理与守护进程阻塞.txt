@@ -1,0 +1,112 @@
+Starting a Gradle Daemon, 1 busy and 1 incompatible Daemons could not be reused, use --status for details
+Type-safe project accessors is an incubating feature.
+> Task :shared:ui:cleanJvmTest UP-TO-DATE
+> Task :shared:ui:cleanWasmJsBrowserTest UP-TO-DATE
+> Task :shared:ui:cleanAllTests UP-TO-DATE
+> Task :shared:ui:clean
+> Task :androidApp:clean
+> Task :shared:core:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:core:compileKotlinJvm UP-TO-DATE
+> Task :shared:core:compileJvmMainJava NO-SOURCE
+> Task :shared:core:jvmProcessResources NO-SOURCE
+> Task :shared:core:processJvmMainResources SKIPPED
+> Task :shared:core:jvmMainClasses UP-TO-DATE
+> Task :shared:core:jvmJar UP-TO-DATE
+> Task :shared:ui:checkJvmMainComposeLibrariesCompatibility
+> Task :shared:ui:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:ui:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:ui:convertXmlValueResourcesForCommonMain
+> Task :shared:ui:copyNonXmlValueResourcesForCommonMain
+> Task :shared:ui:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :shared:ui:generateResourceAccessorsForCommonMain
+> Task :shared:ui:convertXmlValueResourcesForJvmMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForJvmMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForJvmMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForJvmMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForJvmMain
+> Task :shared:ui:generateComposeResClass
+> Task :shared:ui:generateExpectResourceCollectorsForCommonMain
+> Task :shared:ui:kspKotlinJvm SKIPPED
+> Task :shared:core:compileKotlinWasmJs UP-TO-DATE
+> Task :shared:ui:checkWasmJsMainComposeLibrariesCompatibility
+> Task :shared:ui:convertXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForWasmJsMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForWasmJsMain NO-SOURCE
+> Task :shared:ui:convertXmlValueResourcesForWebMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForWebMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForWebMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForWebMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForWasmJsMain
+> Task :shared:ui:kspKotlinWasmJs SKIPPED
+> Task :webDemo:checkJvmMainComposeLibrariesCompatibility
+> Task :webDemo:kmpPartiallyResolvedDependenciesChecker
+> Task :webDemo:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webDemo:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :webDemo:copyNonXmlValueResourcesForCommonMain NO-SOURCE
+> Task :webDemo:prepareComposeResourcesTaskForCommonMain NO-SOURCE
+> Task :webDemo:generateResourceAccessorsForCommonMain NO-SOURCE
+> Task :webDemo:convertXmlValueResourcesForJvmMain NO-SOURCE
+> Task :webDemo:copyNonXmlValueResourcesForJvmMain NO-SOURCE
+> Task :webDemo:prepareComposeResourcesTaskForJvmMain NO-SOURCE
+> Task :webDemo:generateResourceAccessorsForJvmMain NO-SOURCE
+> Task :webDemo:generateActualResourceCollectorsForJvmMain UP-TO-DATE
+> Task :webDemo:generateComposeResClass UP-TO-DATE
+> Task :webDemo:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :shared:ui:assembleJvmMainResources
+> Task :shared:ui:jvmProcessResources
+> Task :shared:ui:processJvmMainResources SKIPPED
+> Task :webDemo:checkWasmJsMainComposeLibrariesCompatibility
+> Task :webDemo:convertXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :webDemo:copyNonXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :webDemo:prepareComposeResourcesTaskForWasmJsMain NO-SOURCE
+> Task :webDemo:generateResourceAccessorsForWasmJsMain NO-SOURCE
+> Task :webDemo:convertXmlValueResourcesForWebMain NO-SOURCE
+> Task :webDemo:copyNonXmlValueResourcesForWebMain NO-SOURCE
+> Task :webDemo:prepareComposeResourcesTaskForWebMain NO-SOURCE
+> Task :webDemo:generateResourceAccessorsForWebMain NO-SOURCE
+> Task :webDemo:generateActualResourceCollectorsForWasmJsMain UP-TO-DATE
+> Task :androidApp:generateChangelog UP-TO-DATE
+> Task :androidApp:preBuild UP-TO-DATE
+> Task :androidApp:preFossDebugBuild UP-TO-DATE
+> Task :androidApp:generateFossDebugBuildConfig
+> Task :androidApp:generateFossDebugResValues
+> Task :androidApp:extractFossDebugSupportedLocales
+> Task :androidApp:mapFossDebugSourceSetPaths
+> Task :androidApp:generateFossDebugLocaleConfig
+> Task :androidApp:generateFossDebugResources
+> Task :androidApp:packageFossDebugResources
+> Task :shared:core:androidPreBuild UP-TO-DATE
+> Task :shared:core:preAndroidMainBuild UP-TO-DATE
+> Task :shared:core:generateAndroidMainEmptyResourceFiles UP-TO-DATE
+> Task :shared:ui:androidPreBuild UP-TO-DATE
+> Task :shared:ui:preAndroidMainBuild UP-TO-DATE
+> Task :shared:ui:compileKotlinJvm
+> Task :shared:ui:generateAndroidMainEmptyResourceFiles
+> Task :androidApp:processFossDebugNavigationResources
+> Task :shared:core:packageAndroidMainResources UP-TO-DATE
+> Task :shared:core:parseAndroidMainLocalResources UP-TO-DATE
+> Task :shared:core:generateAndroidMainRFile UP-TO-DATE
+> Task :shared:core:compileAndroidMain UP-TO-DATE
+> Task :shared:core:bundleAndroidMainClassesToCompileJar UP-TO-DATE
+> Task :shared:ui:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForAndroidMain
+> Task :shared:ui:compileKotlinWasmJs
+> Task :androidApp:parseFossDebugLocalResources
+> Task :shared:ui:copyAndroidMainComposeResourcesToAndroidAssets
+> Task :androidApp:generateFossDebugRFile
+> Task :shared:ui:packageAndroidMainResources
+> Task :androidApp:javaPreCompileFossDebug
+> Task :shared:core:writeAndroidMainAarMetadata UP-TO-DATE
+> Task :shared:ui:writeAndroidMainAarMetadata
+> Task :androidApp:checkFossDebugAarMetadata
+> Task :androidApp:compileFossDebugNavigationResources
+> Task :shared:ui:parseAndroidMainLocalResources
+> Task :shared:ui:generateAndroidMainRFile
+> Task :shared:ui:kspAndroidMain SKIPPED
+> Task :androidApp:mergeFossDebugResources
+> Task :shared:ui:compileAndroidMain

@@ -19,12 +19,17 @@ package com.shub39.grit.widgets
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
+import com.shub39.grit.core.interfaces.AlarmScheduler
+import com.shub39.grit.core.tasks.TaskRepo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 
 /** Refresh persisted RemoteViews when the calendar day or device clock changes. */
-class WidgetDateReceiver : BroadcastReceiver() {
+class WidgetDateReceiver : BroadcastReceiver(), KoinComponent {
     override fun onReceive(context: Context, intent: Intent) {
         if (
             intent.action !in
@@ -40,7 +45,19 @@ class WidgetDateReceiver : BroadcastReceiver() {
         val pending = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                WidgetUpdates.habits(context)
+                if (
+                    intent.action == Intent.ACTION_TIME_CHANGED ||
+                        intent.action == Intent.ACTION_TIMEZONE_CHANGED
+                ) {
+                    val scheduler = get<AlarmScheduler>()
+                    get<TaskRepo>().getTasks().forEach { task ->
+                        try {
+                            scheduler.schedule(task)
+                        } catch (e: Exception) {
+                            Log.e("WidgetDateReceiver", "时间变化后调度任务提醒失败", e)
+                        }
+                    }
+                }
                 WidgetUpdates.tasks(context)
             } finally {
                 pending.finish()

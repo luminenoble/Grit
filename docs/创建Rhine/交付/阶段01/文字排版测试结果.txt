@@ -1,0 +1,9 @@
+2026-10-09
+Android 16 / API 36, rhine-p0-api36, 1080x2400, 420 dpi
+Final APK, RhineTextLayoutTest
+
+com.shub39.grit.RhineTextLayoutTest:..
+
+Time: 0.414
+
+OK (2 tests)

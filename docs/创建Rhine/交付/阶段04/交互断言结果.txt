@@ -1,0 +1,20 @@
+PASS preview placeholder tap creates no objects
+PASS cancel distant Task creation preserves counts and U99
+PASS rapid save submits one tail item and locates U2 by returned ID
+PASS rapid deletion removes once and falls back to predecessor
+PASS cancel cascade confirmation leaves focused Task and camera unchanged
+PASS delete middle Task chooses same-position successor
+PASS full import with reused IDs invalidates both cameras, parent snapshot and cache
+PASS re-enter after import does not restore cached Section U1
+PASS external reorder still restores cached Section by stable identity
+PASS external move preserves parent snapshot and follows current Category on return
+PASS external deletion of owning Category exits Section layer
+PASS resize retains distant short-column position
+PASS cancel unique empty start leaves no Category or implicit Task
+PASS Android back during delete cannot dismiss pending operation; failure preserves confirmation
+PASS retry after failed delete commits once and reaches empty start
+PASS deleting longest Task column cascades Sections and selects sibling zero
+PASS Section layer with no Tasks keeps unique new sibling start and cancel is inert
+PASS cancel new Section in empty Task writes nothing and preserves shared U
+PASS resize during delete retains retry context; cancel preserves data
+PASS external longest tail deletion during fling invalidates old U101 boundary

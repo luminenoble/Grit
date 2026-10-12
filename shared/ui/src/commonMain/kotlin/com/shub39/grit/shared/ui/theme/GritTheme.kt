@@ -16,8 +16,43 @@
  */
 package com.shub39.grit.shared.ui.theme
 
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import com.shub39.grit.core.theme.Theme
+import com.shub39.grit.shared.ui.toFontRes
 
-/** Wrapper to apply theme from [com.shub39.grit.core.theme.Theme] to all composables */
-@Composable expect fun GritTheme(theme: Theme = Theme(), content: @Composable () -> Unit)
+val RhineBaseColors =
+    lightColorScheme(
+        primary = Color(0xFF5B554B),
+        onPrimary = Color(0xFFFFFBF4),
+        primaryContainer = Color(0xFFE2D9C9),
+        onPrimaryContainer = Color(0xFF332F29),
+        secondary = Color(0xFF686154),
+        secondaryContainer = Color(0xFFE6DECF),
+        onSecondaryContainer = Color(0xFF3C3A36),
+        tertiary = Color(0xFF626A5D),
+        tertiaryContainer = Color(0xFFE0E3D6),
+        onTertiaryContainer = Color(0xFF33382F),
+        background = Color(0xFFECE8E1),
+        onBackground = Color(0xFF3C3A36),
+        surface = Color(0xFFF0EBE2),
+        onSurface = Color(0xFF3C3A36),
+        onSurfaceVariant = Color(0xFF625F58),
+        surfaceContainer = Color(0xFFE9E3D9),
+        surfaceContainerLow = Color(0xFFF2EDE5),
+        surfaceContainerHigh = Color(0xFFE3DCCE),
+        surfaceContainerHighest = Color(0xFFDED7CB),
+        outline = Color(0xFF928B80),
+        outlineVariant = Color(0xFFC9C1B4),
+    )
+
+@Composable
+fun GritTheme(theme: Theme = Theme(), content: @Composable () -> Unit) {
+    MaterialExpressiveTheme(
+        colorScheme = RhineBaseColors,
+        motionScheme = MotionScheme.expressive(),
+        typography = provideTypography(theme.font.toFontRes()),
+        content = content,
+    )
+}

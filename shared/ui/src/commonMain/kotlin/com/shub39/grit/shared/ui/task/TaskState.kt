@@ -24,6 +24,8 @@ import com.shub39.grit.core.tasks.Task
 @Stable
 @Immutable
 data class TaskState(
+    val saving: Boolean = false,
+    val error: String? = null,
     val tasks: Map<Category, List<Task>> = emptyMap(),
     val currentCategory: Category? = null,
     val completedTasks: List<Task> = emptyList(),

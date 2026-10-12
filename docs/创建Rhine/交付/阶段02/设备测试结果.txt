@@ -1,0 +1,9 @@
+
+com.shub39.grit.RhineBrowseRepositoryTest:...
+com.shub39.grit.RhineTextLayoutTest:..
+
+Time: 0.466
+
+OK (5 tests)
+
+

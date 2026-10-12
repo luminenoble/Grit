@@ -1,9 +1,9 @@
 [versions]
+test-runner = "1.7.0"
 agp = "9.2.1"
 compileSdk = "37"
 minSdk = "29"
 targetSdk = "37"
-calendar = "2.10.1"
 espresso-core = "3.7.0"
 junit = "4.13.2"
 junit-version = "1.3.0"
@@ -21,7 +21,6 @@ material3 = "1.11.0-alpha07"
 reorderable = "3.1.0"
 room3 = "3.0.0"
 navigation = "1.1.1"
-materialkolor = "4.1.1"
 compose-junit = "1.11.4"
 biometric = "1.4.0-alpha02"
 truth = "1.4.5"
@@ -34,6 +33,7 @@ ktfmt = "0.61"
 browser-preloader = "1.0.3"
 
 [libraries]
+androidx-runner = { module = "androidx.test:runner", version.ref = "test-runner" }
 # Android and compose stuff
 compose-windowsizeclass = { module = "org.jetbrains.compose.material3:material3-window-size-class", version.ref = "material3" }
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso-core" }
@@ -75,9 +75,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 purchases = { module = "com.revenuecat.purchases:purchases", version.ref = "purchases" }
 purchases-ui = { module = "com.revenuecat.purchases:purchases-ui", version.ref = "purchases" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
-materialkolor = { module = "com.materialkolor:material-kolor", version.ref = "materialkolor" }
 colorpicker-compose = { module = "com.github.skydoves:colorpicker-compose", version.ref = "colorpicker" }
-calendar = { module = "com.kizitonwose.calendar:compose-multiplatform", version.ref = "calendar" }
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }

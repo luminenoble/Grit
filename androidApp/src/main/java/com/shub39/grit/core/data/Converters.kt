@@ -17,85 +17,21 @@
 package com.shub39.grit.core.data
 
 import androidx.room3.ColumnTypeConverter
-import com.shub39.grit.core.tasks.Section
-import com.shub39.grit.core.tasks.SectionsSerializer
 import kotlin.time.Instant
-import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
-import kotlinx.serialization.json.Json
 
 object Converters {
-    val allDays = dayOfWeekToString(DayOfWeek.entries.toSet())
+    @ColumnTypeConverter fun instantToString(value: Instant): String = value.toString()
+
+    @ColumnTypeConverter fun stringToInstant(value: String): Instant = Instant.parse(value)
+
+    @ColumnTypeConverter fun reminderToString(value: LocalDateTime?): String? = value?.toString()
 
     @ColumnTypeConverter
-    fun dayOfWeekToString(value: Set<DayOfWeek>): String {
-        return value.joinToString(",") { it.name }
-    }
+    fun stringToReminder(value: String?): LocalDateTime? = value?.let(LocalDateTime::parse)
 
-    @ColumnTypeConverter
-    fun dayOfWeekFromString(value: String): Set<DayOfWeek> {
-        return if (value.isBlank()) emptySet()
-        else value.split(",").map { DayOfWeek.valueOf(it) }.toSet()
-    }
+    @ColumnTypeConverter fun dateToString(value: LocalDate?): String? = value?.toString()
 
-    @ColumnTypeConverter
-    fun dateFromTimestamp(value: Long?): LocalDateTime? {
-        return value?.let {
-            Instant.fromEpochSeconds(value).toLocalDateTime(TimeZone.currentSystemDefault())
-        }
-    }
-
-    @ColumnTypeConverter
-    fun dateToTimestamp(date: LocalDateTime?): Long? {
-        return date?.toInstant(TimeZone.currentSystemDefault())?.epochSeconds
-    }
-
-    @ColumnTypeConverter
-    fun dayFromTimestamp(value: Long): LocalDate {
-        return value.let { LocalDate.fromEpochDays(value) }
-    }
-
-    @ColumnTypeConverter
-    fun dayToTimestamp(date: LocalDate): Long {
-        return date.toEpochDays()
-    }
-
-    @ColumnTypeConverter
-    fun nullableDayFromTimestamp(value: Long?): LocalDate? {
-        return value?.let { LocalDate.fromEpochDays(it) }
-    }
-
-    @ColumnTypeConverter
-    fun nullableDayToTimestamp(date: LocalDate?): Long? {
-        return date?.toEpochDays()
-    }
-
-    // JSON keeps step text safe regardless of separators or special characters.
-    @ColumnTypeConverter
-    fun stringListToJson(value: List<String>): String {
-        return Json.encodeToString(value)
-    }
-
-    @ColumnTypeConverter
-    fun stringListFromJson(value: String): List<String> {
-        return if (value.isBlank()) emptyList()
-        else
-            try {
-                Json.decodeFromString(value)
-            } catch (_: Exception) {
-                emptyList()
-            }
-    }
-
-    @ColumnTypeConverter
-    fun sectionsToJson(value: List<Section>): String =
-        Json.encodeToString(SectionsSerializer, value)
-
-    @ColumnTypeConverter
-    fun sectionsFromJson(value: String): List<Section> =
-        if (value.isBlank()) emptyList() else Json.decodeFromString(SectionsSerializer, value)
+    @ColumnTypeConverter fun stringToDate(value: String?): LocalDate? = value?.let(LocalDate::parse)
 }

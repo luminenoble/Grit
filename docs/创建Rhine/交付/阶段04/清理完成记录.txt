@@ -1,0 +1,5 @@
+Java 21，TTY 会话 99153。
+./gradlew :shared:ui:clean :androidApp:clean --max-workers=2 -Pkotlin.compiler.execution.strategy=in-process -x spotlessCheck -x spotlessApply
+BUILD SUCCESSFUL in 1m 17s
+4 actionable tasks: 2 executed, 2 up-to-date
+此前非 TTY 尝试 exit 143；本次清理成功后才启动最终构建复验。

@@ -1,0 +1,3 @@
+PASS embedded Section add stays draft; discard preserves empty Task and sorting remains disabled
+PASS whole Task save commits embedded Section through the existing transaction
+4 submission/draft checks passed

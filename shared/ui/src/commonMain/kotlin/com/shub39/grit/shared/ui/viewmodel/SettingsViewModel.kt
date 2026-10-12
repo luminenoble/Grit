@@ -16,7 +16,6 @@
  */
 package com.shub39.grit.shared.ui.viewmodel
 
-import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shub39.grit.core.interfaces.BiometricUtils
@@ -75,58 +74,109 @@ class SettingsViewModel(
     fun onAction(action: SettingsAction) =
         viewModelScope.launch {
             when (action) {
-                is ChangeAmoled -> themeDatastore.setAmoledPref(action.pref)
-
-                is ChangeAppTheme -> themeDatastore.setAppTheme(action.appTheme)
-
                 is ChangeIs24Hr -> settingsDatastore.setIs24Hr(action.pref)
-
-                is ChangeMaterialYou -> themeDatastore.setMaterialYou(action.pref)
-
-                is ChangePaletteStyle -> themeDatastore.setPaletteStyle(action.style)
-
-                is ChangeSeedColor -> themeDatastore.setSeedColor(action.color.toArgb())
-
-                is ChangeStartOfTheWeek -> settingsDatastore.setStartOfWeek(action.pref)
 
                 is ChangeStartingPage -> settingsDatastore.setStartingPage(action.page)
 
                 OnResetBackupState -> {
-                    _state.update { it.copy(backupState = BackupState()) }
+                    _state.update {
+                        it.copy(
+                            backupState = BackupState(),
+                            restorePreview = null,
+                            backupMessage = null,
+                        )
+                    }
                 }
 
                 OnExport -> {
+                    if (_state.value.backupState.exportState == EXPORTING) return@launch
                     _state.update {
-                        it.copy(backupState = it.backupState.copy(exportState = EXPORTING))
+                        it.copy(
+                            backupMessage = null,
+                            backupState = it.backupState.copy(exportState = EXPORTING),
+                        )
                     }
-
-                    exportRepo.exportToJson()
-
-                    _state.update {
-                        it.copy(backupState = it.backupState.copy(exportState = EXPORTED))
+                    try {
+                        val saved = exportRepo.exportToJson()
+                        _state.update {
+                            it.copy(
+                                backupState =
+                                    it.backupState.copy(exportState = if (saved) EXPORTED else IDLE)
+                            )
+                        }
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        _state.update {
+                            it.copy(
+                                backupMessage = e.message ?: "导出失败",
+                                backupState = it.backupState.copy(exportState = IDLE),
+                            )
+                        }
                     }
                 }
 
                 OnRestore -> {
-                    _state.update {
-                        it.copy(backupState = it.backupState.copy(restoreState = RESTORING))
+                    if (
+                        _state.value.restorePreview == null &&
+                            _state.value.backupState.restoreState != RESTORING
+                    ) {
+                        _state.update {
+                            it.copy(backupState = it.backupState.copy(restoreState = RESTORING))
+                        }
+                        try {
+                            val preview = restoreRepo.prepareRestore()
+                            _state.update {
+                                it.copy(
+                                    restorePreview = preview,
+                                    backupMessage = null,
+                                    backupState = it.backupState.copy(restoreState = IDLE),
+                                )
+                            }
+                        } catch (e: kotlinx.coroutines.CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            _state.update {
+                                it.copy(
+                                    backupMessage = e.message ?: "无效的备份文件",
+                                    backupState = it.backupState.copy(restoreState = FAILURE),
+                                )
+                            }
+                        }
                     }
-
-                    val result = restoreRepo.restoreData()
-
+                }
+                OnConfirmRestore -> {
+                    val preview = _state.value.restorePreview ?: return@launch
+                    _state.update {
+                        it.copy(
+                            restorePreview = null,
+                            backupMessage = null,
+                            backupState = it.backupState.copy(restoreState = RESTORING),
+                        )
+                    }
+                    val result = restoreRepo.restoreData(preview.backup)
                     _state.update {
                         it.copy(
                             backupState =
                                 it.backupState.copy(
                                     restoreState =
-                                        when (result) {
-                                            is Failure -> FAILURE
-                                            Success -> RESTORED
-                                        }
-                                )
+                                        if (
+                                            result
+                                                is
+                                                com.shub39.grit.core.settings.backup.RestoreResult.Success
+                                        )
+                                            RESTORED
+                                        else FAILURE
+                                ),
+                            backupMessage =
+                                (result
+                                        as?
+                                        com.shub39.grit.core.settings.backup.RestoreResult.Failure)
+                                    ?.message,
                         )
                     }
                 }
+                OnCancelRestore -> _state.update { it.copy(restorePreview = null) }
 
                 is ChangePauseNotifications -> settingsDatastore.setNotifications(action.pref)
 
@@ -203,44 +253,9 @@ class SettingsViewModel(
                     .launchIn(this)
 
                 themeDatastore
-                    .getAppThemeFlow()
-                    .onEach { flow ->
-                        _state.update { it.copy(theme = it.theme.copy(appTheme = flow)) }
-                    }
-                    .launchIn(this)
-
-                themeDatastore
                     .getFontPrefFlow()
                     .onEach { flow ->
                         _state.update { it.copy(theme = it.theme.copy(font = flow)) }
-                    }
-                    .launchIn(this)
-
-                themeDatastore
-                    .getSeedColorFlow()
-                    .onEach { flow ->
-                        _state.update { it.copy(theme = it.theme.copy(seedColor = flow)) }
-                    }
-                    .launchIn(this)
-
-                themeDatastore
-                    .getAmoledPref()
-                    .onEach { flow ->
-                        _state.update { it.copy(theme = it.theme.copy(isAmoled = flow)) }
-                    }
-                    .launchIn(this)
-
-                themeDatastore
-                    .getMaterialYouFlow()
-                    .onEach { flow ->
-                        _state.update { it.copy(theme = it.theme.copy(isMaterialYou = flow)) }
-                    }
-                    .launchIn(this)
-
-                themeDatastore
-                    .getPaletteStyle()
-                    .onEach { flow ->
-                        _state.update { it.copy(theme = it.theme.copy(paletteStyle = flow)) }
                     }
                     .launchIn(this)
 
@@ -252,11 +267,6 @@ class SettingsViewModel(
                 settingsDatastore
                     .getStartingSectionPref()
                     .onEach { flow -> _state.update { it.copy(startingPage = flow) } }
-                    .launchIn(this)
-
-                settingsDatastore
-                    .getStartOfTheWeekPref()
-                    .onEach { flow -> _state.update { it.copy(startOfTheWeek = flow) } }
                     .launchIn(this)
 
                 settingsDatastore

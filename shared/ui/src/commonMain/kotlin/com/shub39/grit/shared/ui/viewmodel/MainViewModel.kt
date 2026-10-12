@@ -27,7 +27,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -79,32 +78,10 @@ class MainViewModel(
         observerJob?.cancel()
         observerJob =
             viewModelScope.launch {
-                combine(
-                        themeDatastore.getPaletteStyle(),
-                        themeDatastore.getSeedColorFlow(),
-                        themeDatastore.getFontPrefFlow(),
-                        themeDatastore.getMaterialYouFlow(),
-                        themeDatastore.getAppThemeFlow(),
-                    ) { palette, seedColor, font, materialYou, appTheme ->
-                        _state.update {
-                            it.copy(
-                                theme =
-                                    it.theme.copy(
-                                        paletteStyle = palette,
-                                        seedColor = seedColor,
-                                        font = font,
-                                        isMaterialYou = materialYou,
-                                        appTheme = appTheme,
-                                    )
-                            )
-                        }
-                    }
-                    .launchIn(this)
-
                 themeDatastore
-                    .getAmoledPref()
-                    .onEach { pref ->
-                        _state.update { it.copy(theme = it.theme.copy(isAmoled = pref)) }
+                    .getFontPrefFlow()
+                    .onEach { font ->
+                        _state.update { it.copy(theme = it.theme.copy(font = font)) }
                     }
                     .launchIn(this)
 

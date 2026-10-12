@@ -30,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.shub39.grit.shared.ui.theme.liquidGlass
+import com.shub39.grit.shared.ui.theme.matteSurface
 
 @Composable
 fun GritDialog(
@@ -48,7 +48,7 @@ fun GritDialog(
                     contentColor = MaterialTheme.colorScheme.onSurface,
                 ),
             modifier =
-                Modifier.liquidGlass(
+                Modifier.matteSurface(
                     shape = MaterialTheme.shapes.extraLarge,
                     fill = MaterialTheme.colorScheme.surfaceContainerHigh,
                 ),

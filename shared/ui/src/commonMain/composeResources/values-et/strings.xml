@@ -4,12 +4,10 @@
     <string name="material_theme">Material You teema</string>
     <string name="done">Valmis</string>
     <string name="add_task">Lisa ülesanne</string>
-    <string name="add_habit">Lisa uus harjumus</string>
     <string name="update_description">Muuda kirjeldust</string>
     <string name="delete">Kustuta</string>
     <string name="cancel">Loobu</string>
     <string name="select_time">Vali aeg</string>
-    <string name="habits">Harjumused</string>
     <string name="settings">Seaded</string>
     <string name="too_long">Liiga pikk</string>
     <string name="save">Salvesta</string>
@@ -19,7 +17,6 @@
     <string name="add_category">Lisa kategooria</string>
     <string name="add">Lisa midagi</string>
     <string name="look_and_feel">Välimus</string>
-    <string name="use_amoled">Amoled värviskeem</string>
     <string name="backup">Varunda</string>
     <string name="export">Ekspordi andmed</string>
     <string name="material_theme_desc">Vali värvid taustapildi järgi</string>
@@ -32,7 +29,6 @@
     <string name="completed">Täna lõpetatud</string>
     <string name="title">Pealkiri</string>
     <string name="description">Kirjeldus</string>
-    <string name="edit_habit">Muuda harjumust</string>
     <string name="font">Font</string>
     <string name="biometric_lock">Biomeetriline lukk</string>
     <string name="biometric_lock_desc">Kasuta rakenduse avamiseks biomeetria</string>
@@ -48,17 +44,9 @@
     <string name="delete_category">Oled sa kindel? Kõik ülesanded selles kategoorias kustutatakse</string>
     <string name="select_seed_desc">Vali värv, millest värviskeem luuakse</string>
     <string name="select_seed">Vali põhivärv</string>
-    <string name="palette_style">Paletti stiil</string>
-    <string name="look_and_feel_desc">Kohanda rakendust</string>
-    <string name="backup_desc">Ekspordi või taasta oma ülesandeid ja harjumusi</string>
-    <string name="export_desc">Kõik andmed on eksporditud allalaadimistesse/Griti</string>
     <string name="restore">Taasta</string>
-    <string name="restore_desc">Taasta ülesanded ja harjumused valitud failist</string>
-    <string name="show_habits">Näita alguses harjumusi</string>
-    <string name="show_habits_desc">Näita rakenduse käivitamisel harjumuste lehekülge</string>
     <string name="use_24Hr">Kasuta 24 tunnist kella</string>
     <string name="use_24Hr_desc">Kasuta kellaaja määramiseks 24-tunnist kella</string>
-    <string name="staring_day">Nädal algab pühapäevaga</string>
     <string name="pause_notifications">Peata teavitused</string>
     <string name="pause_notifications_desc">Peata kõik rakenduse teavitused</string>
     <string name="started_on">Algas</string>
@@ -74,9 +62,4 @@
     <string name="add_reminder_desc">Saa teavituste meeldetuletusi valitud päevadel</string>
     <string name="reorder_tasks">Muuda ülesannete järjstust</string>
     <string name="reorder_tasks_desc">Muuda ülesannete järjestus, kui need märgitakse lõpetatuks</string>
-    <string name="delete_warning">Oled sa kindel, et soovid seda harjumust kustutada? Kogu edenemine läheb kaduma</string>
-    <string name="use_amoled_desc">Parim kogemus AMOLED ekraanidel</string>
-    <string name="streak">Praegune seeria</string>
-    <string name="best_streak">Parim seeria</string>
-    <string name="habit_map">Harjumuste soojuskaart</string>
 </resources>

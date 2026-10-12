@@ -1,0 +1,4 @@
+24-new-section-date-v1.png
+25-new-section-date-keyboard-v1.png
+26-new-section-past-date-saved-v1.png
+New Section rejects future date and saves past date with keyboard-visible actions

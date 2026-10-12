@@ -1,0 +1,87 @@
+"""Actual Android evidence, using only RhinePreviewActivity's isolated in-memory Room database."""
+from pathlib import Path
+import subprocess
+import time
+import re
+import json
+import xml.etree.ElementTree as ET
+
+ADB='/mnt/d/professionalTools/AndroidStorage/sdk/platform-tools/adb.exe'
+OUT=Path(__file__).resolve().parent
+COMPONENT='com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity'
+
+def adb(*args,binary=False):
+    return subprocess.check_output([ADB,*map(str,args)],text=not binary,timeout=25)
+
+def tree():
+    for _ in range(4):
+        dumped=adb('shell','uiautomator','dump','/sdcard/rhine03.xml')
+        if 'dumped to' in dumped: return ET.fromstring(adb('exec-out','cat','/sdcard/rhine03.xml'))
+        time.sleep(.5)
+    raise AssertionError('Accessibility tree unavailable')
+
+def nodes(label=None,desc=None,klass=None):
+    return [n for n in tree().iter('node') if (label is None or n.get('text')==label) and (desc is None or n.get('content-desc')==desc) and (klass is None or n.get('class')==klass)]
+
+def tap_node(n):
+    x1,y1,x2,y2=map(int,re.findall(r'\d+',n.get('bounds')))
+    adb('shell','input','tap',(x1+x2)//2,(y1+y2)//2)
+
+def click(label=None,desc=None):
+    ns=nodes(label,desc)
+    if not ns: raise AssertionError(f'Control missing: {label or desc}')
+    tap_node(ns[-1] if label == "确认删除" else ns[0]);time.sleep(.65)
+
+def expect(text):
+    t=tree()
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+
+def start(u=2,v=1,fail=False,trace=False,detail=True,dataset="detail",fail_delete=False,delay=500):
+    adb('shell','am','start','-S','-n',COMPONENT,'--es','dataset',dataset,'--ef','u',u,'--ef','v',v,'--ez','detail',str(detail).lower(),'--ez','failSaveOnce',str(fail).lower(),'--ez','traceTouch',str(trace).lower(),'--ez','failDeleteOnce',str(fail_delete).lower(),'--el','submitDelayMs',str(delay))
+    time.sleep(3)
+    expect('GRIT RHINE')
+
+def shot(name):
+    time.sleep(1)
+    (OUT/name).write_bytes(adb('exec-out','screencap','-p',binary=True))
+    print(name,flush=True)
+
+def replace_field(index,text):
+    ns=nodes(klass='android.widget.EditText');tap_node(ns[index]);time.sleep(.4)
+    adb('shell','input','keycombination','113','29')
+    adb('shell','input','text',text)
+    time.sleep(.4)
+
+def scroll(x=1800,y1=830,y2=340):
+    adb('shell','input','swipe',x,y1,x,y2,600);time.sleep(.6)
+
+def back():
+    adb('shell','input','keyevent','4');time.sleep(.7)
+
+def enter():
+    click(desc='进入 Section 层');expect('SECTION LAYER');expect('TASK 02')
+
+def record(name,actions,seconds=30):
+    adb('shell','dumpsys','gfxinfo','com.shub39.grit.debug','reset')
+    remote='/sdcard/'+name
+    record_started=time.monotonic()
+    events=[]
+    proc=subprocess.Popen([ADB,'shell','screenrecord','--time-limit','120','--bit-rate','10000000',remote],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    time.sleep(1)
+    recorder_pid=adb("shell","pidof","screenrecord").strip()
+    assert recorder_pid.isdigit(), recorder_pid
+    time.sleep(2)
+    for index,action in enumerate(actions):
+        events.append({"action":index,"start":time.monotonic()-record_started})
+        action()
+        events[-1]["end"]=time.monotonic()-record_started
+        time.sleep(1)
+    time.sleep(3)
+    adb("shell","kill","-2",recorder_pid)
+    stdout,stderr=proc.communicate(timeout=20)
+    assert proc.returncode==0,(stdout,stderr)
+    (OUT/name).write_bytes(adb('exec-out','cat',remote,binary=True))
+    (OUT/(name.removesuffix('.mp4')+'-gfx.txt')).write_text(adb('shell','dumpsys','gfxinfo','com.shub39.grit.debug'))
+    (OUT/(name.removesuffix('.mp4')+'-actions.json')).write_text(json.dumps(events,indent=2))
+    print(name,flush=True)
+

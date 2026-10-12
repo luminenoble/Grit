@@ -24,24 +24,12 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import com.shub39.grit.widgets.all_tasks_widget.AllTasksWidget
 import com.shub39.grit.widgets.all_tasks_widget.AllTasksWidgetReceiver
-import com.shub39.grit.widgets.habit_overview_widget.HabitOverviewWidget
-import com.shub39.grit.widgets.habit_overview_widget.HabitOverviewWidgetReceiver
-import com.shub39.grit.widgets.habit_streak_widget.HabitStreakWidget
-import com.shub39.grit.widgets.habit_streak_widget.HabitStreakWidgetReceiver
-import com.shub39.grit.widgets.habit_week_chart_widget.HabitWeekChartWidget
-import com.shub39.grit.widgets.habit_week_chart_widget.HabitWeekChartWidgetReceiver
 import kotlinx.coroutines.CancellationException
 
 /** Resolve IDs from Android's provider registry, never from Glance's cached class mapping. */
 object WidgetUpdates {
     suspend fun tasks(context: Context) =
         update(context, AllTasksWidgetReceiver::class.java, AllTasksWidget())
-
-    suspend fun habits(context: Context) {
-        update(context, HabitOverviewWidgetReceiver::class.java, HabitOverviewWidget())
-        update(context, HabitStreakWidgetReceiver::class.java, HabitStreakWidget())
-        update(context, HabitWeekChartWidgetReceiver::class.java, HabitWeekChartWidget())
-    }
 
     private suspend fun update(context: Context, receiver: Class<*>, widget: GlanceAppWidget) {
         val manager = AppWidgetManager.getInstance(context)

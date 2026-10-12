@@ -19,12 +19,8 @@ package com.shub39.grit.core.interfaces
 import com.shub39.grit.core.settings.Sections
 import com.shub39.grit.core.settings.WidgetTextSize
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.DayOfWeek
 
 interface SettingsDatastore {
-    fun getStartOfTheWeekPref(): Flow<DayOfWeek>
-
-    suspend fun setStartOfWeek(day: DayOfWeek)
 
     fun getStartingSectionPref(): Flow<Sections>
 
@@ -45,10 +41,6 @@ interface SettingsDatastore {
     fun getTaskReorderPref(): Flow<Boolean>
 
     suspend fun setTaskReorderPref(pref: Boolean)
-
-    fun getCompactViewPref(): Flow<Boolean>
-
-    suspend fun setCompactView(pref: Boolean)
 
     fun getLastChangelogShown(): Flow<String>
 

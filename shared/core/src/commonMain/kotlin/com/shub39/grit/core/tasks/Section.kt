@@ -16,61 +16,32 @@
  */
 package com.shub39.grit.core.tasks
 
-import kotlinx.serialization.KSerializer
+import com.shub39.grit.core.now
+import kotlin.time.Clock
+import kotlin.time.Instant
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.*
+import kotlinx.serialization.Transient
 
-/** A named, editable part of a task or habit. Completion is used by tasks. */
 @Serializable
-data class Section(val name: String, val content: String = "", val done: Boolean = false)
+data class Section(
+    val id: Long = 0,
+    @Transient val taskId: Long = 0,
+    val title: String = "unname",
+    val content: String = "",
+    val orderIndex: Int = 0,
+    val completedOn: LocalDate? = null,
+    val createdAt: Instant = Clock.System.now(),
+    val updatedAt: Instant = createdAt,
+) {
+    val isCompleted: Boolean
+        get() = completedOn != null
 
-/** Reads legacy string steps and text/done steps, assigning names in their original order. */
-object SectionsSerializer : KSerializer<List<Section>> {
-    private val delegate = ListSerializer(Section.serializer())
-    override val descriptor: SerialDescriptor = delegate.descriptor
+    fun toggleCompleted(today: LocalDate = LocalDate.now()): Section =
+        copy(completedOn = if (isCompleted) null else today)
 
-    override fun serialize(encoder: Encoder, value: List<Section>) =
-        delegate.serialize(encoder, value)
-
-    override fun deserialize(decoder: Decoder): List<Section> {
-        val jsonDecoder =
-            decoder as? JsonDecoder ?: throw SerializationException("Sections support JSON only")
-        val array =
-            jsonDecoder.decodeJsonElement() as? JsonArray
-                ?: throw SerializationException("Expected a sections array")
-        return array.mapIndexed { index, item ->
-            when (item) {
-                is JsonPrimitive -> {
-                    if (!item.isString) throw SerializationException("Expected section text")
-                    Section(name = "section ${index + 1}", content = item.content)
-                }
-                is JsonObject ->
-                    Section(
-                        name =
-                            (item["name"] as? JsonPrimitive)?.content?.takeIf { it.isNotBlank() }
-                                ?: "section ${index + 1}",
-                        content =
-                            ((item["content"] ?: item["text"]) as? JsonPrimitive)?.content ?: "",
-                        done = (item["done"] as? JsonPrimitive)?.booleanOrNull ?: false,
-                    )
-                else -> throw SerializationException("Invalid section")
-            }
-        }
+    fun normalized(): Section {
+        require(completedOn == null || completedOn <= LocalDate.now()) { "完成日期不能在未来" }
+        return copy(title = title.trim().ifBlank { "unname" })
     }
-}
-
-/** Do not reuse a remaining default name after deleting or rearranging sections. */
-fun nextSectionName(sections: List<Section>): String {
-    val last =
-        sections
-            .mapNotNull {
-                Regex("section (\\d+)").matchEntire(it.name)?.groupValues?.get(1)?.toIntOrNull()
-            }
-            .maxOrNull() ?: 0
-    return "section ${maxOf(last, sections.size) + 1}"
 }

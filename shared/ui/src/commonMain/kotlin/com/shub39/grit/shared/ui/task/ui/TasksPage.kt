@@ -56,15 +56,14 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.shub39.grit.core.tasks.Category
+import com.shub39.grit.core.tasks.Task
 import com.shub39.grit.shared.ui.components.GritDialog
 import com.shub39.grit.shared.ui.components.detachedItemShape
 import com.shub39.grit.shared.ui.components.endItemShape
 import com.shub39.grit.shared.ui.components.leadingItemShape
 import com.shub39.grit.shared.ui.components.listItemColors
 import com.shub39.grit.shared.ui.components.middleItemShape
-import com.shub39.grit.core.tasks.Category
-import com.shub39.grit.core.tasks.CategoryColors
-import com.shub39.grit.core.tasks.Task
 import com.shub39.grit.shared.ui.navigation.horizontalTransitionMetadata
 import com.shub39.grit.shared.ui.task.TaskAction
 import com.shub39.grit.shared.ui.task.TaskState
@@ -142,8 +141,8 @@ fun TasksPage(state: TaskState, onAction: (TaskAction) -> Unit) {
                                 Task(
                                     categoryId = category.id,
                                     title = "",
-                                    index = state.tasks[category]?.size ?: 0,
-                                    status = false,
+                                    orderIndex = state.tasks[category]?.size ?: 0,
+                                    isCompleted = false,
                                     reminder = null,
                                     isToday = state.isTodayView,
                                 ),
@@ -155,7 +154,14 @@ fun TasksPage(state: TaskState, onAction: (TaskAction) -> Unit) {
                             onDismissRequest = {
                                 if (backStack.size != 1) backStack.removeLastOrNull()
                             },
-                            onUpsert = { onAction(TaskAction.UpsertTask(it)) },
+                            saving = state.saving,
+                            onUpsert = { updated ->
+                                onAction(
+                                    TaskAction.UpsertTask(updated) {
+                                        if (backStack.size != 1) backStack.removeLastOrNull()
+                                    }
+                                )
+                            },
                             onDelete = {},
                         )
                     }
@@ -165,7 +171,7 @@ fun TasksPage(state: TaskState, onAction: (TaskAction) -> Unit) {
                     val isEditing = route.categoryId != 0L
                     val category =
                         if (isEditing) state.tasks.keys.firstOrNull { it.id == route.categoryId }
-                        else Category(name = "", color = CategoryColors.GRAY.color)
+                        else Category(name = "", titleColor = null)
 
                     if (category == null) {
                         LaunchedEffect(Unit) {
@@ -177,12 +183,14 @@ fun TasksPage(state: TaskState, onAction: (TaskAction) -> Unit) {
                             category = category,
                             fullScreen = true,
                             autoFocusTitle = false,
-                            onDismiss = {
-                                if (backStack.size != 1) backStack.removeLastOrNull()
-                            },
+                            onDismiss = { if (backStack.size != 1) backStack.removeLastOrNull() },
+                            saving = state.saving,
                             onUpsertCategory = {
-                                onAction(TaskAction.AddCategory(it))
-                                if (backStack.size != 1) backStack.removeLastOrNull()
+                                onAction(
+                                    TaskAction.AddCategory(it) {
+                                        if (backStack.size != 1) backStack.removeLastOrNull()
+                                    }
+                                )
                             },
                         )
                     }
@@ -207,16 +215,41 @@ fun TasksPage(state: TaskState, onAction: (TaskAction) -> Unit) {
                             onDismissRequest = {
                                 if (backStack.size != 1) backStack.removeLastOrNull()
                             },
-                            onUpsert = { onAction(TaskAction.UpsertTask(it)) },
+                            saving = state.saving,
+                            onUpsert = { updated ->
+                                onAction(
+                                    TaskAction.UpsertTask(updated) {
+                                        if (backStack.size != 1) backStack.removeLastOrNull()
+                                    }
+                                )
+                            },
                             onDelete = {
-                                onAction(TaskAction.DeleteTask(task))
-                                if (backStack.size != 1) backStack.removeLastOrNull()
+                                onAction(
+                                    TaskAction.DeleteTask(task) {
+                                        if (backStack.size != 1) backStack.removeLastOrNull()
+                                    }
+                                )
                             },
                         )
                     }
                 }
             },
     )
+
+    if (state.error != null) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { onAction(TaskAction.ClearError) },
+            title = { androidx.compose.material3.Text("操作失败") },
+            text = { androidx.compose.material3.Text(state.error) },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = { onAction(TaskAction.ClearError) }
+                ) {
+                    androidx.compose.material3.Text("关闭")
+                }
+            },
+        )
+    }
 
     if (showCategoryEditor) {
         CategoryEditDialog(
@@ -328,7 +361,7 @@ private fun CategoryEditDialog(
 
                                     IconButton(
                                         onClick = { showDeleteDialog = true },
-                                        enabled = categories.size > 1,
+                                        enabled = !state.saving,
                                     ) {
                                         Icon(
                                             imageVector = vectorResource(Res.drawable.delete),

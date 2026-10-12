@@ -18,26 +18,14 @@ package com.shub39.grit.shared.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.shub39.grit.core.interfaces.AlarmScheduler
-import com.shub39.grit.core.interfaces.SettingsDatastore
-import com.shub39.grit.core.tasks.Category
-import com.shub39.grit.core.tasks.CategoryColors
-import com.shub39.grit.core.tasks.TaskRepo
-import com.shub39.grit.shared.ui.task.TaskAction
-import com.shub39.grit.shared.ui.task.TaskState
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import org.koin.core.annotation.KoinViewModel
-import org.koin.core.annotation.Provided
+import com.shub39.grit.core.interfaces.*
+import com.shub39.grit.core.tasks.*
+import com.shub39.grit.shared.ui.task.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import org.koin.core.annotation.*
 
 @KoinViewModel
 class TasksViewModel(
@@ -45,143 +33,121 @@ class TasksViewModel(
     @Provided private val scheduler: AlarmScheduler,
     @Provided private val datastore: SettingsDatastore,
 ) : ViewModel() {
+    private val writeLock = Mutex()
+    private var pendingWrites = 0
+    private val mutable = MutableStateFlow(TaskState())
+    val state = mutable.asStateFlow()
 
-    companion object {
-        private const val REORDER_DELAY = 200L
-    }
-
-    private var savedJob: Job? = null
-    private var observerJob: Job? = null
-
-    private val _state = MutableStateFlow(TaskState())
-
-    val state =
-        _state
-            .asStateFlow()
-            .onStart {
-                observeTasks()
-                observeDatastore()
-
-                rescheduleAllTasks()
+    init {
+        viewModelScope.launch {
+            repo.getTasksFlow().collect { data ->
+                mutable.update { old ->
+                    old.copy(
+                        tasks = data,
+                        completedTasks = data.values.flatten().filter { it.isCompleted },
+                        currentCategory =
+                            data.keys.firstOrNull { it.id == old.currentCategory?.id }
+                                ?: data.keys.firstOrNull(),
+                    )
+                }
             }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TaskState())
+        }
+        viewModelScope.launch {
+            combine(datastore.getIs24Hr(), datastore.getTaskReorderPref()) { hours, reorder ->
+                    hours to reorder
+                }
+                .collect { (hours, reorder) ->
+                    mutable.update { it.copy(is24Hour = hours, reorderTasks = reorder) }
+                }
+        }
+        viewModelScope.launch { repo.getTasks().forEach { scheduler.schedule(it) } }
+    }
 
     fun onAction(action: TaskAction) {
+        if (action is TaskAction.ClearError) {
+            mutable.update { it.copy(error = null) }
+            return
+        }
+        if (action is TaskAction.ChangeCategory) {
+            mutable.update { it.copy(currentCategory = action.category, isTodayView = false) }
+            return
+        }
+        if (action is TaskAction.SelectTodayView) {
+            mutable.update { it.copy(isTodayView = true) }
+            return
+        }
+        val isReorder = action is TaskAction.ReorderTasks || action is TaskAction.ReorderCategories
+        if (mutable.value.saving && !isReorder) return
+        pendingWrites++
+        mutable.update { it.copy(saving = true, error = null) }
         viewModelScope.launch {
-            when (action) {
-                is UpsertTask -> {
-                    if (action.task.status) {
-                        repo.upsertTask(action.task.copy(reminder = null))
-                    } else {
-                        repo.upsertTask(action.task)
-
-                        scheduler.schedule(action.task)
-                    }
-                }
-
-                DeleteTasks -> {
-                    deleteTasks()
-                }
-
-                is ChangeCategory -> {
-                    _state.update {
-                        it.copy(currentCategory = action.category, isTodayView = false)
-                    }
-                }
-
-                SelectTodayView -> {
-                    _state.update { it.copy(isTodayView = true) }
-                }
-
-                is AddCategory -> {
-                    upsertCategory(action.category)
-
-                    _state.update { it.copy(currentCategory = it.tasks.keys.firstOrNull()) }
-                }
-
-                is ReorderTasks -> {
-                    for (pair in action.mapping) {
-                        repo.updateTaskIndexById(pair.second.id, pair.first)
-                    }
-                }
-
-                is ReorderCategories -> {
-                    for (category in action.mapping) {
-                        upsertCategory(category.second.copy(index = category.first))
-                    }
-
-                    delay(REORDER_DELAY)
-
-                    _state.update { it.copy(currentCategory = it.tasks.keys.firstOrNull()) }
-                }
-
-                is DeleteCategory -> {
-                    deleteCategory(action.category)
-
-                    delay(REORDER_DELAY)
-
-                    _state.update { it.copy(currentCategory = it.tasks.keys.firstOrNull()) }
-                }
-
-                is DeleteTask -> repo.deleteTask(action.task)
-            }
-        }
-    }
-
-    private fun observeDatastore() {
-        observerJob?.cancel()
-        observerJob =
-            viewModelScope.launch {
-                combine(datastore.getIs24Hr(), datastore.getTaskReorderPref()) {
-                        is24Hr,
-                        reorderTasks ->
-                        _state.update { it.copy(is24Hour = is24Hr, reorderTasks = reorderTasks) }
-                    }
-                    .launchIn(this)
-            }
-    }
-
-    private fun observeTasks() {
-        savedJob?.cancel()
-        savedJob =
-            viewModelScope.launch {
-                combine(repo.getTasksFlow(), repo.getCompletedTasksFlow()) { tasks, completedTasks
-                        ->
-                        _state.update { it.copy(tasks = tasks, completedTasks = completedTasks) }
-
-                        if (_state.value.currentCategory == null) {
-                            _state.update { it.copy(currentCategory = tasks.keys.firstOrNull()) }
+            writeLock.withLock {
+                try {
+                    when (action) {
+                        is TaskAction.UpsertTask -> {
+                            repo.upsertTask(action.task)
+                            action.onSaved?.invoke()
                         }
-
-                        if (tasks.isEmpty()) addDefault()
+                        is TaskAction.AddCategory -> {
+                            val id = repo.upsertCategory(action.category)
+                            mutable.update {
+                                it.copy(
+                                    currentCategory =
+                                        repo.getCategories().firstOrNull { c -> c.id == id },
+                                    isTodayView = false,
+                                )
+                            }
+                            action.onSaved?.invoke()
+                        }
+                        is TaskAction.DeleteTask -> {
+                            repo.deleteTask(action.task)
+                            action.onDeleted?.invoke()
+                        }
+                        is TaskAction.DeleteCategory -> repo.deleteCategory(action.category)
+                        is TaskAction.DeleteTasks ->
+                            repo.deleteTasks(mutable.value.completedTasks.map { it.id })
+                        is TaskAction.ReorderCategories ->
+                            repo.reorderCategories(
+                                action.mapping.sortedBy { it.first }.map { it.second.id }
+                            )
+                        is TaskAction.ReorderTasks -> {
+                            // Hidden completed items retain their slots; each category is
+                            // independently
+                            // ordered.
+                            action.mapping
+                                .groupBy { it.second.categoryId }
+                                .forEach { (categoryId, mapping) ->
+                                    val existing =
+                                        repo
+                                            .getTasks()
+                                            .filter { it.categoryId == categoryId }
+                                            .sortedBy { it.orderIndex }
+                                            .map { it.id }
+                                    val requested =
+                                        mapping.sortedBy { it.first }.map { it.second.id }
+                                    require(
+                                        requested.distinct().size == requested.size &&
+                                            requested.all { it in existing }
+                                    )
+                                    val selected = requested.toSet()
+                                    val iterator = requested.iterator()
+                                    repo.reorderTasks(
+                                        categoryId,
+                                        existing.map { if (it in selected) iterator.next() else it },
+                                    )
+                                }
+                        }
+                        else -> Unit
                     }
-                    .launchIn(this)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    mutable.update { it.copy(error = e.message ?: "保存失败，请重试") }
+                } finally {
+                    pendingWrites--
+                    mutable.update { it.copy(saving = pendingWrites > 0) }
+                }
             }
-    }
-
-    private suspend fun rescheduleAllTasks() {
-        repo.getTasks().forEach { task -> scheduler.schedule(task) }
-    }
-
-    private suspend fun addDefault() {
-        upsertCategory(Category(name = "Misc", color = CategoryColors.GRAY.color))
-    }
-
-    private suspend fun deleteTasks() {
-        for (task in _state.value.completedTasks) {
-            repo.deleteTask(task)
         }
-    }
-
-    private suspend fun upsertCategory(category: Category) {
-        repo.upsertCategory(category)
-    }
-
-    private suspend fun deleteCategory(category: Category) {
-        if (_state.value.currentCategory == category) {
-            _state.update { it.copy(currentCategory = it.tasks.keys.first()) }
-        }
-
-        repo.deleteCategory(category)
     }
 }

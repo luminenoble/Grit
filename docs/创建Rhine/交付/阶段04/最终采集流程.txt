@@ -1,0 +1,9 @@
+START 采集证据.py
+END 采集证据.py exit=0
+START 补充日期证据.py
+END 补充日期证据.py exit=0
+START 录制流程.py
+END 录制流程.py exit=0
+START 阶段03交互回归.py
+END 阶段03交互回归.py exit=0
+FINAL EVIDENCE PIPELINE PASSED

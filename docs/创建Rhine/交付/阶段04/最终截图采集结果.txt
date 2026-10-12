@@ -1,0 +1,25 @@
+01-empty-start-v1.png
+02-category-form-v1.png
+03-category-keyboard-v1.png
+04-category-zero-v1.png
+05-first-task-v1.png
+06-u99-short-before-v1.png
+07-create-failed-draft-v1.png
+08-short-second-after-v1.png
+09-section-u99-short-before-v1.png
+10-section-create-v1.png
+11-section-second-after-v1.png
+12-sibling-form-v1.png
+13-sibling-zero-v1.png
+14-section-delete-confirm-v1.png
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段04/采集证据.py", line 51, in <module>
+    if __name__=='__main__': run()
+                             ^^^^^
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段04/采集证据.py", line 39, in run
+    c.click(label='确认删除');time.sleep(1);c.expect('00   NewSibling');c.shot('15-section-deleted-zero-v1.png')
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段04/采集工具.py", line 36, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 00   NewSibling

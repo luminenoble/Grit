@@ -27,11 +27,9 @@ import org.jetbrains.compose.resources.StringResource
 
 @Serializable
 sealed interface AppSections : NavKey {
-    @Serializable data object HabitPages : AppSections
+    @Serializable data object RhinePages : AppSections
 
     @Serializable data object TaskPages : AppSections
-
-    @Serializable data object StatsPages : AppSections
 
     @Serializable data object SettingsPages : AppSections
 
@@ -40,30 +38,26 @@ sealed interface AppSections : NavKey {
             serializersModule = SerializersModule {
                 polymorphic(NavKey::class) {
                     subclass(TaskPages::class, TaskPages.serializer())
-                    subclass(HabitPages::class, HabitPages.serializer())
-                    subclass(StatsPages::class, StatsPages.serializer())
+                    subclass(RhinePages::class, RhinePages.serializer())
                     subclass(SettingsPages::class, SettingsPages.serializer())
                 }
             }
         }
 
-        val mainRoutes: List<AppSections> =
-            listOf(TaskPages, HabitPages, StatsPages, SettingsPages)
+        val mainRoutes: List<AppSections> = listOf(TaskPages, SettingsPages, RhinePages)
 
         fun AppSections.toStringRes(): StringResource {
             return when (this) {
-                HabitPages -> Res.string.habits
-                TaskPages -> Res.string.tasks
-                StatsPages -> Res.string.statistics
-                SettingsPages -> Res.string.settings
+                RhinePages -> Res.string.rhine
+                TaskPages -> Res.string.task_tab
+                SettingsPages -> Res.string.setting_tab
             }
         }
 
         fun AppSections.toIconRes(): DrawableResource {
             return when (this) {
-                HabitPages -> Res.drawable.alarm
+                RhinePages -> Res.drawable.view_week
                 TaskPages -> Res.drawable.check_list
-                StatsPages -> Res.drawable.analytics
                 SettingsPages -> Res.drawable.settings
             }
         }

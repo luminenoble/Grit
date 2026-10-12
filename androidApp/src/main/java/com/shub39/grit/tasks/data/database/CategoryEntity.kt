@@ -16,15 +16,17 @@
  */
 package com.shub39.grit.tasks.data.database
 
-import androidx.room3.ColumnInfo
-import androidx.room3.Entity
-import androidx.room3.PrimaryKey
+import androidx.room3.*
+import kotlin.time.Instant
 
-@Entity(tableName = "categories")
+@Entity(tableName = "categories", indices = [Index(value = ["orderIndex"])])
 data class CategoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-    val index: Int = 0,
-    val color: String,
-    @ColumnInfo(defaultValue = "0") val hideCompleted: Boolean = false,
+    val description: String,
+    val orderIndex: Int,
+    val titleColor: String?,
+    val hideCompleted: Boolean,
+    val createdAt: Instant,
+    val updatedAt: Instant,
 )

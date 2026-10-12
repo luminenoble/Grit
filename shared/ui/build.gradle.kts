@@ -70,8 +70,6 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.reorderable)
-            implementation(libs.calendar)
-            implementation(libs.materialkolor)
             implementation(libs.colorpicker.compose)
 
             implementation(libs.koin.core)

@@ -1,0 +1,2 @@
+24 PNGs 2400x1080; 2 original MP4s reviewed; JUnit [49, 0, 0, 0]; stage04 links OK; current APK hash OK; stages 01–03 confirmed APKs unchanged.
+前期进度索引中阶段01的10-default-final.png、11-long-title-color-final.png、12-zero-and-placeholders-final.png链接无目标；这些旧竖屏历史条目不属于本期修改，保留原状。阶段04新增链接全部有效。

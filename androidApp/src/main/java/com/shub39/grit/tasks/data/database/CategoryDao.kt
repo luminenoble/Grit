@@ -16,21 +16,26 @@
  */
 package com.shub39.grit.tasks.data.database
 
-import androidx.room3.Dao
-import androidx.room3.Delete
-import androidx.room3.Query
-import androidx.room3.Upsert
+import androidx.room3.*
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CategoryDao {
-    @Query("SELECT * FROM categories") fun getCategoriesFlow(): Flow<List<CategoryEntity>>
+    @Query("SELECT * FROM categories ORDER BY orderIndex")
+    fun getCategoriesFlow(): Flow<List<CategoryEntity>>
 
-    @Query("SELECT * FROM categories") suspend fun getCategories(): List<CategoryEntity>
+    @Query("SELECT * FROM categories ORDER BY orderIndex")
+    suspend fun getCategories(): List<CategoryEntity>
 
-    @Upsert suspend fun upsertCategory(categoryEntity: CategoryEntity)
+    @Query("SELECT * FROM categories WHERE id = :id") suspend fun getById(id: Long): CategoryEntity?
 
-    @Delete suspend fun deleteCategory(categoryEntity: CategoryEntity)
+    @Upsert suspend fun upsert(category: CategoryEntity): Long
 
-    @Query("DELETE FROM categories") suspend fun deleteAllCategories()
+    @Query("UPDATE categories SET orderIndex = :position, updatedAt = :time WHERE id = :id")
+    suspend fun setOrder(id: Long, position: Int, time: Instant)
+
+    @Query("DELETE FROM categories WHERE id = :id") suspend fun delete(id: Long)
+
+    @Query("DELETE FROM categories") suspend fun deleteAll()
 }

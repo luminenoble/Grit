@@ -16,20 +16,18 @@
  */
 package com.shub39.grit.core.tasks
 
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 
 @Serializable
-/**
- * Task Category
- *
- * @param color : accent color for the category and its tasks, hex or legacy name
- * @param hideCompleted : when set, completed tasks in this category stay hidden in lists and
- *   widgets
- */
 data class Category(
     val id: Long = 0,
     val name: String,
-    val index: Int = 0,
-    val color: String,
+    val description: String = "",
+    val orderIndex: Int = 0,
+    val titleColor: String? = null,
     val hideCompleted: Boolean = false,
+    val createdAt: Instant = Clock.System.now(),
+    val updatedAt: Instant = createdAt,
 )

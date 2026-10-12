@@ -40,6 +40,7 @@ import com.shub39.grit.shared.ui.setting.ui.section.BackupPage
 import com.shub39.grit.shared.ui.setting.ui.section.Changelog
 import com.shub39.grit.shared.ui.setting.ui.section.LookAndFeelPage
 import com.shub39.grit.shared.ui.setting.ui.section.RootPage
+import com.shub39.grit.shared.ui.update.AppVersionHolder
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -130,7 +131,10 @@ fun SettingsGraph(
 
                     entry<SettingsRoutes.About>(metadata = horizontalTransitionMetadata()) {
                         About(
-                            versionName = state.currentVersion ?: "1.0.00-Demo",
+                            versionName =
+                                AppVersionHolder.versionName.ifBlank {
+                                    state.currentVersion ?: "1.0.00-Demo"
+                                },
                             onNavigateBack = {
                                 if (backStack.size != 1) backStack.removeLastOrNull()
                             },

@@ -1,0 +1,4 @@
+PASS Category saving disables fields and back; commits exactly one parent at zero
+PASS Task saving disables fields and back; exactly one item at U2
+PASS embedded Section add stays draft; discard preserves empty Task and sorting remains disabled
+PASS whole Task save commits embedded Section through the existing transaction

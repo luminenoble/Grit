@@ -15,13 +15,4 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.shub39.grit.core.theme
-
-/** data class representing the current theme of the app */
-data class Theme(
-    val appTheme: AppTheme = AppTheme.SYSTEM,
-    val isAmoled: Boolean = false,
-    val isMaterialYou: Boolean = false,
-    val font: Fonts = Fonts.FIGTREE,
-    val paletteStyle: PaletteStyle = PaletteStyle.TONALSPOT,
-    val seedColor: Int = 0xFFFFFF,
-)
+data class Theme(val font: Fonts = Fonts.FIGTREE)
