@@ -55,6 +55,7 @@ class RhineBrowser(initial: RhineCamera = RhineCamera(0f, 0f)) {
     /** Uncommitted drag camera must never become a process-restoration checkpoint. */
     var transientSnapshot: RhineSnapshot? = null
     var motion: Job? = null
+    var reduceMotion: Boolean = false
     var restoreEpoch by mutableIntStateOf(0)
         private set
 
@@ -136,6 +137,10 @@ class RhineBrowser(initial: RhineCamera = RhineCamera(0f, 0f)) {
 
     suspend fun settle(velocity: RhineCamera = RhineCamera(0f, 0f)) {
         try {
+            if (reduceMotion) {
+                move(bounds.snap(camera))
+                return
+            }
             var state = RhineMotion(camera, velocity)
             var last = withFrameNanos { it }
             while (state.moving) {
@@ -156,7 +161,10 @@ class RhineBrowser(initial: RhineCamera = RhineCamera(0f, 0f)) {
             val start = camera
             val target = bounds.snap(destination)
             if (target == start) return
-            Animatable(0f).animateTo(1f, tween(240, easing = FastOutSlowInEasing)) {
+            Animatable(0f).animateTo(
+                1f,
+                tween(if (reduceMotion) 0 else 240, easing = FastOutSlowInEasing),
+            ) {
                 move(
                     RhineCamera(
                         start.u + (target.u - start.u) * value,
@@ -260,7 +268,7 @@ fun rememberRhineInput(
                                     }
                                 snapshotFlow {
                                         RhineProjection(geometry, density, size, browser.camera)
-                                            .visibleSlots(margin = 2)
+                                            .visibleSlots(margin = 3, extraHeight = 9f)
                                             .queryWindow()
                                     }
                                     .distinctUntilChanged()

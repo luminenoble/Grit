@@ -1,0 +1,21 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+23-settings-save-restart-reset-v1.mp4
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+24-focused-scroll-and-reduced-v1.mp4
+Recording assertions passed
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+27-section-hidden-numbers-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+29-font-eight-seven-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+28-font-twelve-ten-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.

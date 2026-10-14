@@ -1,0 +1,394 @@
+10-12 02:50:30.677   710   732 V WindowManager:     ]}
+10-12 02:50:30.678   952  1074 V WindowManagerShell: Playing animation for (#221) android.os.BinderProxy@da7aa3d@0
+10-12 02:50:30.678   952  1074 V ShellRecents: RecentsTransitionHandler.startAnimation: no controller found
+10-12 02:50:30.678   952  1074 V WindowManagerShell: start default transition animation, info = {id=221 t=CHANGE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{m=CHANGE f=NONE p=WCT{android.window.IWindowContainerToken$Stub$Proxy@6abbaf9} leash=Surface(name=Task=225)/@0x3523054 sb=Rect(0, 0 - 2400, 1080) eb=Rect(0, 0 - 2000, 1080) epz=Point(2000, 1080) d=0 taskParent=-1},{m=CHANGE f=FLAG_IS_TASK_DISPLAY_AREA p=WCT{android.window.IWindowContainerToken$Stub$Proxy@facaa3e} leash=Surface(name=DefaultTaskDisplayArea)/@0x9b05bfd sb=Rect(0, 0 - 2400, 1080) eb=Rect(0, 0 - 2000, 1080) epz=Point(2000, 1080) d=0},{m=CHANGE f=IS_DISPLAY leash=Surface(name=WindowedMagnification:0:31)/@0xecc70f2 sb=Rect(0, 0 - 2400, 1080) eb=Rect(0, 0 - 2000, 1080) epz=Point(2000, 1080) d=0 snapshot=Surface(name=transition snapshot: Display{#0 state=ON size=2000x1080 ROTATION_270})/@0x4a20343}]}
+10-12 02:50:30.678   952  1074 V WindowManagerShell: Display is changing, resolve the animation hint.
+10-12 02:50:30.682   952  1074 V WindowManagerShell:  animated by com.android.wm.shell.transition.DefaultTransitionHandler@f0c2bcd
+10-12 02:50:30.816   952  1074 V WindowManagerShell: Transition animation finished (aborted=false), notifying core (#221) android.os.BinderProxy@da7aa3d@0
+10-12 02:50:30.818   952  1074 V WindowManagerShell: Track 0 became idle
+10-12 02:50:30.818   952  1074 V WindowManagerShell: All active transition animations finished
+10-12 02:50:30.845   710   732 V WindowManager: Finish Transition (#221): created at 10-12 02:50:28.648 collect-started=0.062ms request-sent=0.103ms started=102.265ms ready=102.769ms sent=2015.718ms commit=30.539ms finished=2168.666ms
+10-12 02:50:34.884   710   814 W InputDispatcher: Window c16685c com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity is unresponsive: c16685c com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity is not responding. Waited 5010ms for MotionEvent(deviceId=-1, eventTime=2225308000000, source=TOUCHSCREEN, displayId=0, action=UP, actionButton=0x00000000, flags=0x00000000, metaState=0x00000000, buttonState=0x00000000, classification=NONE, edgeFlags=0x00000000, xPrecision=1.0, yPrecision=1.0, xCursorPosition=nan, yCursorPosition=nan, pointers=[0: (360.0, 1584.0)]), policyFlags=0x6b000000
+10-12 02:50:34.884   710   814 W InputDispatcher: Canceling events for c16685c com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity because it is unresponsive
+10-12 02:50:34.898   710   814 I WindowManager: ANR in Window{c16685c u0 com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity}. Reason:Input dispatching timed out (c16685c com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity is not responding. Waited 5010ms for MotionEvent(deviceId=-1, eventTime=2225308000000, source=TOUCHSCREEN, displayId=0, action=UP, actionButton=0x00000000, flags=0x00000000, metaState=0x00000000, buttonState=0x00000000, classification=NONE, edgeFlags=0x00000000, xPrecision=1.0, yPrecision=1.0, xCursorPosition=nan, yCursorPosition=nan, pointers=[0: (360.0, 1584.0)]), policyFlags=0x6b000000).
+10-12 02:50:34.902   710   814 W InputDispatcher: Window [Gesture Monitor] edge-swipe is unresponsive: [Gesture Monitor] edge-swipe is not responding. Waited 5045ms for MotionEvent(deviceId=-1, eventTime=2225308000000, source=TOUCHSCREEN, displayId=0, action=UP, actionButton=0x00000000, flags=0x00000000, metaState=0x00000000, buttonState=0x00000000, classification=NONE, edgeFlags=0x00000000, xPrecision=1.0, yPrecision=1.0, xCursorPosition=nan, yCursorPosition=nan, pointers=[0: (360.0, 1584.0)]), policyFlags=0x6b000000
+10-12 02:50:34.902   710   814 W InputDispatcher: Canceling events for [Gesture Monitor] edge-swipe because it is unresponsive
+10-12 02:50:34.926   710   814 I WindowManager: ANR in input window owned by pid=952. Reason: Input dispatching timed out ([Gesture Monitor] edge-swipe is not responding. Waited 5045ms for MotionEvent(deviceId=-1, eventTime=2225308000000, source=TOUCHSCREEN, displayId=0, action=UP, actionButton=0x00000000, flags=0x00000000, metaState=0x00000000, buttonState=0x00000000, classification=NONE, edgeFlags=0x00000000, xPrecision=1.0, yPrecision=1.0, xCursorPosition=nan, yCursorPosition=nan, pointers=[0: (360.0, 1584.0)]), policyFlags=0x6b000000).
+10-12 02:50:34.927   710   814 W InputDispatcher: Window [Gesture Monitor] swipe-up is unresponsive: [Gesture Monitor] swipe-up is not responding. Waited 5070ms for MotionEvent(deviceId=-1, eventTime=2225308000000, source=TOUCHSCREEN, displayId=0, action=UP, actionButton=0x00000000, flags=0x00000000, metaState=0x00000000, buttonState=0x00000000, classification=NONE, edgeFlags=0x00000000, xPrecision=1.0, yPrecision=1.0, xCursorPosition=nan, yCursorPosition=nan, pointers=[0: (360.0, 1584.0)]), policyFlags=0x6b000000
+10-12 02:50:34.927   710   814 W InputDispatcher: Canceling events for [Gesture Monitor] swipe-up because it is unresponsive
+10-12 02:50:34.927   710 11453 D ActivityManager: created ANR temporary file:/data/anr/temp_anr_7396025955556294681.txt
+10-12 02:50:34.927   710 11453 I ActivityManager: Collecting stacks for pid 11376 into temporary file temp_anr_7396025955556294681.txt
+10-12 02:50:34.930   710 11458 D ActivityManager: created ANR temporary file:/data/anr/temp_anr_3169085558718498058.txt
+10-12 02:50:34.930   710 11458 I ActivityManager: Collecting stacks for pid 952 into temporary file temp_anr_3169085558718498058.txt
+10-12 02:50:34.996   710 11454 I ActivityManager: dumpStackTraces pids={1087=true, 1104=true, 1146=true, 1179=true, 1296=true, 1437=true, 1456=true, 1516=true, 1529=true, 1540=true, 1561=true, 1579=true, 1620=true, 1672=true, 1696=true, 1730=true, 1768=true, 1802=true, 1852=true, 1993=true, 2074=true, 2103=true, 2152=true, 2225=true, 2318=true, 2325=true, 2329=true, 2348=true, 2363=true, 2389=true, 2395=true, 2487=true, 2583=true, 2639=true, 2668=true, 2676=true, 2716=true, 2719=true, 2769=true, 2778=true, 2828=true, 2898=true, 2975=true, 3026=true, 3051=true, 3071=true, 3081=true, 3111=true, 3136=true, 3154=true, 3168=true, 3254=true, 3274=true, 3288=true, 3392=true, 4627=true, 6051=true}
+10-12 02:50:35.007   710 11454 I ActivityManager: Dumping to /data/anr/anr_2026-10-12-02-50-35-006
+10-12 02:50:35.036   710   814 I WindowManager: ANR in input window owned by pid=1087. Reason: Input dispatching timed out ([Gesture Monitor] swipe-up is not responding. Waited 5070ms for MotionEvent(deviceId=-1, eventTime=2225308000000, source=TOUCHSCREEN, displayId=0, action=UP, actionButton=0x00000000, flags=0x00000000, metaState=0x00000000, buttonState=0x00000000, classification=NONE, edgeFlags=0x00000000, xPrecision=1.0, yPrecision=1.0, xCursorPosition=nan, yCursorPosition=nan, pointers=[0: (360.0, 1584.0)]), policyFlags=0x6b000000).
+10-12 02:50:35.314   710   740 W IPCThreadState: Sending oneway calls to frozen process.
+10-12 02:50:35.315   710   740 W IPCThreadState: Sending oneway calls to frozen process.
+10-12 02:50:36.231   710 11457 I ActivityManager: Skipping next CPU consuming process, not a java proc: 513
+10-12 02:50:36.231   710 11457 I ActivityManager: Skipping next CPU consuming process, not a java proc: 508
+10-12 02:50:36.231   710 11457 I ActivityManager: Skipping next CPU consuming process, not a java proc: 710
+10-12 02:50:36.232   710 11457 I ActivityManager: Skipping next CPU consuming process, not a java proc: 952
+10-12 02:50:36.232   710 11457 I ActivityManager: Skipping next CPU consuming process, not a java proc: 11376
+10-12 02:50:36.232   710 11457 I ActivityManager: Skipping next CPU consuming process, not a java proc: 15
+10-12 02:50:36.232   710 11457 I ActivityManager: Skipping next CPU consuming process, not a java proc: 509
+10-12 02:50:36.526   710   740 W IPCThreadState: Sending oneway calls to frozen process.
+10-12 02:50:40.182   710   800 W CpuMonitorService: Current CPU frequency (4367425) is greater than maximum CPU frequency (2) for policy ID (0). Skipping CPU frequency policy
+10-12 02:50:40.242   710   800 W CpuMonitorService: Current CPU frequency (4289572) is greater than maximum CPU frequency (2) for policy ID (1). Skipping CPU frequency policy
+10-12 02:50:40.302   710   800 W CpuMonitorService: Current CPU frequency (4347131) is greater than maximum CPU frequency (2) for policy ID (2). Skipping CPU frequency policy
+10-12 02:50:40.302   710   800 W CpuMonitorService: Current CPU frequency (4373304) is greater than maximum CPU frequency (2) for policy ID (3). Skipping CPU frequency policy
+10-12 02:50:44.201   710   854 E WifiScoringParams: Invalid frequency(-1), using 5G as default rssi array
+10-12 02:50:44.202   710   858 I WifiScanningService: Registering listener= com.android.server.wifi.scanner.WifiScannerInternal$ScanListener@e75e0fb uid=1000 packageName=null workSource=WorkSource{1000}
+10-12 02:50:44.202   710   858 I WifiScanningService: start scan: ClientInfo[uid=1000, package=null, attributionTag=null, com.android.server.wifi.scanner.WifiScannerInternal$ScanListener@e75e0fb] package null AttributionTag null
+10-12 02:50:44.203   710   858 I WifiScanningService: addSingleScanRequest: ClientInfo[uid=1000, package=null, attributionTag=null, com.android.server.wifi.scanner.WifiScannerInternal$ScanListener@e75e0fb],WorkSource{1010}, ScanSettings {  type:HIGH ACCURACY band:24Ghz & 5Ghz (DFS incl) & 6Ghz ignoreLocationSettings:false period:0 reportEvents:3 numBssidsPerScan:0 maxScansToCache:0 rnrSetting:1 6GhzPscOnlyEnabled:true channels:[  ]  }
+10-12 02:50:44.203   710   858 D WifiScanningService: replySucceeded onSuccess
+10-12 02:50:44.219   710   854 V WifiConnectivityManager: schedulePeriodicScanTimer intervalMs 160000
+10-12 02:50:44.220   939   939 D wpa_supplicant: nl80211: Drv Event 33 (NL80211_CMD_TRIGGER_SCAN) received for wlan0
+10-12 02:50:44.220   939   939 D wpa_supplicant: wlan0: nl80211: Scan trigger
+10-12 02:50:44.220   939   939 D wpa_supplicant: wlan0: Event SCAN_STARTED (47) received
+10-12 02:50:44.221   939   939 D wpa_supplicant: wlan0: External program started a scan
+10-12 02:50:45.507   710 11458 E android.os.Debug: Failed to get binder state info for pid: 952 status: -2: Socket operation on non-socket
+10-12 02:50:45.587   710 11458 I system_server: libdebuggerd_client: started dumping process 952
+10-12 02:50:45.644   319   319 I tombstoned: registered intercept for pid 952 and type kDebuggerdJavaBacktrace
+10-12 02:50:45.679   952   958 I ndroid.systemui: Thread[2,tid=958,WaitingInMainSignalCatcherLoop,Thread*=0x7da9bfa44010,peer=0x2001518,"Signal Catcher"]: reacting to signal 3
+10-12 02:50:45.680   952   958 I ndroid.systemui:
+10-12 02:50:46.019   710 11453 E android.os.Debug: Failed to get binder state info for pid: 11376 status: -2: Socket operation on non-socket
+10-12 02:50:46.021   710 11453 I system_server: libdebuggerd_client: started dumping process 11376
+10-12 02:50:46.032   319   319 I tombstoned: registered intercept for pid 11376 and type kDebuggerdJavaBacktrace
+10-12 02:50:46.047 11376 11378 I ub39.grit.debug: Thread[2,tid=11378,WaitingInMainSignalCatcherLoop,Thread*=0x7da9bfa45be0,peer=0x20019f8,"Signal Catcher"]: reacting to signal 3
+10-12 02:50:46.048 11376 11378 I ub39.grit.debug:
+10-12 02:50:47.535   319   319 I tombstoned: received crash request for pid 11376
+10-12 02:50:47.535   319   319 I tombstoned: found intercept fd 513 for pid 11376 and type kDebuggerdJavaBacktrace
+10-12 02:50:47.536 11376 11378 I ub39.grit.debug: Wrote stack traces to tombstoned
+10-12 02:50:47.536   319   319 W tombstoned: skipping tombstone file creation due to intercept
+10-12 02:50:47.543   710 11453 I system_server: libdebuggerd_client: done dumping process 11376
+10-12 02:50:47.563   710 11453 E ActivityManager: Aborted stack trace dump (current primary pid=11376); deadline exceeded.
+10-12 02:50:47.564   710 11453 D ActivityManager: created ANR temporary file:/data/anr/temp_anr_1069728669864781457.txt
+10-12 02:50:47.564   710 11453 I ActivityManager: Collecting stacks for pid 1087 into temporary file temp_anr_1069728669864781457.txt
+10-12 02:50:47.565   710 11454 I ActivityManager: Collecting stacks for pid 710
+10-12 02:50:48.171   319   319 I tombstoned: received crash request for pid 952
+10-12 02:50:48.171   319   319 I tombstoned: found intercept fd 512 for pid 952 and type kDebuggerdJavaBacktrace
+10-12 02:50:48.172   952   958 I ndroid.systemui: Wrote stack traces to tombstoned
+10-12 02:50:48.172   319   319 W tombstoned: skipping tombstone file creation due to intercept
+10-12 02:50:48.192   710 11458 I system_server: libdebuggerd_client: done dumping process 952
+10-12 02:50:48.198   710 11458 E ActivityManager: Aborted stack trace dump (current primary pid=952); deadline exceeded.
+10-12 02:50:48.293   939   939 D wpa_supplicant: nl80211: Drv Event 34 (NL80211_CMD_NEW_SCAN_RESULTS) received for wlan0
+10-12 02:50:48.293   710  1915 D WifiNl80211Manager: Scan result ready event
+10-12 02:50:48.293   939   939 D wpa_supplicant: wlan0: nl80211: New scan results available
+10-12 02:50:48.293   939   939 D wpa_supplicant: nl80211: Scan probed for SSID ''
+10-12 02:50:48.293   710  1915 D WifiNative: Scan result ready event
+10-12 02:50:48.293   939   939 D wpa_supplicant: nl80211: Scan included frequencies: 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462 2467 2472 2484 5180 5200 5220 5240 5260 5280 5300 5320 5500 5520 5540 5560 5580 5600 5620 5640 5660 5680 5700 5745 5765 5785 5805 5825
+10-12 02:50:48.293   939   939 D wpa_supplicant: wlan0: Event SCAN_RESULTS (3) received
+10-12 02:50:48.294   939   939 D wpa_supplicant: nl80211: Received scan results (1 BSSes)
+10-12 02:50:48.294   939   939 D wpa_supplicant: wlan0: BSS: Start scan result update 18
+10-12 02:50:48.294   939   939 D wpa_supplicant: BSS: last_scan_res_used=1/32
+10-12 02:50:48.294   939   939 D wpa_supplicant: wlan0: New scan results available (own=0 ext=1)
+10-12 02:50:48.294   939   939 D wpa_supplicant: wlan0: Do not use results from externally requested scan operation for network selection
+10-12 02:50:48.294   939   939 D wpa_supplicant: p2p-dev-wlan0: Updating scan results from sibling
+10-12 02:50:48.294   939   939 D wpa_supplicant: nl80211: Received scan results (1 BSSes)
+10-12 02:50:48.294   939   939 D wpa_supplicant: p2p-dev-wlan0: BSS: Start scan result update 18
+10-12 02:50:48.295   939   939 D wpa_supplicant: BSS: last_scan_res_used=1/32
+10-12 02:50:48.295   939   939 D wpa_supplicant: p2p-dev-wlan0: New scan results available (own=0 ext=1)
+10-12 02:50:48.295   939   939 D wpa_supplicant: p2p-dev-wlan0: Do not use results from externally requested scan operation for network selection
+10-12 02:50:48.308   710   858 D WifiNl80211Manager: get 1 scan results from wificond
+10-12 02:50:48.309   710   858 D WifiNative: get 1 scan results from wificond
+10-12 02:50:48.310   710   858 I WifiScanningService: singleScanResults: ClientInfo[uid=1000, package=null, attributionTag=null, com.android.server.wifi.scanner.WifiScannerInternal$ScanListener@e75e0fb],results=1
+10-12 02:50:48.310   710   858 I WifiScanningService: singleScanResults listener: ClientInfo[uid=1000, package=android, attributionTag=null, com.android.server.wifi.scanner.WifiScannerInternal$ScanListener@ca7258b],results=1
+10-12 02:50:48.310   710   858 I WifiScanningService: singleScanResults listener: ClientInfo[uid=1000, package=android, attributionTag=null, com.android.server.wifi.scanner.WifiScannerInternal$ScanListener@d15b7e5],results=1
+10-12 02:50:48.310   710   858 I WifiScanningService: singleScanResults listener: ClientInfo[uid=1000, package=android, attributionTag=null, com.android.server.wifi.scanner.WifiScannerInternal$ScanListener@1cd3823],results=1
+10-12 02:50:48.311   710   854 D WifiScanRequestProxy: Scan results received
+10-12 02:50:48.311   710   854 D WifiScanRequestProxy: Received 1 scan results
+10-12 02:50:48.311   710   858 I WifiScanningService: singleScanResults listener: ClientInfo[uid=10144, package=com.google.android.gms, attributionTag=network_location_provider, android.net.wifi.IWifiScannerListener$Stub$Proxy@7f46f50],results=1
+10-12 02:50:48.311   710   858 I WifiScanningService: singleScanResults listener: ClientInfo[uid=10144, package=com.google.android.gms, attributionTag=fused_location_provider, android.net.wifi.IWifiScannerListener$Stub$Proxy@9639ddf],results=1
+10-12 02:50:48.311   710   858 I WifiScanningService: Unregistering listener= com.android.server.wifi.scanner.WifiScannerInternal$ScanListener@e75e0fb uid=1000 packageName=null workSource=WorkSource{1000}
+10-12 02:50:48.324   710   854 D WifiHealthMonitor:  2G scanResult count: 1, Above2g scanResult count: 0
+10-12 02:50:48.324   710   854 V WifiConfigManager: getSavedNetworkFromScanResult Found "AndroidWifi"NONE for AndroidWifi[[ESS]]
+10-12 02:50:48.326   710  1915 I WifiService: getScanResults uid=10185
+10-12 02:50:48.327   710   854 I HalDevMgr: bestIfaceCreationProposal is null, requestIface=STA, existingIface=[name=wlan0 type=STA]
+10-12 02:50:48.327   710   854 V WifiConnectivityManager: Clearing blocklist for REASON_FRAMEWORK_DISCONNECT_FAST_RECONNECT
+10-12 02:50:48.327   710   854 V WifiConnectivityManager: AllSingleScanListener onResults: start network selection
+10-12 02:50:48.327   710   854 V WifiConfigManager: getSavedNetworkFromScanResult Found "AndroidWifi"NONE for AndroidWifi[[ESS]]
+10-12 02:50:48.328   710   854 V WifiConfigManager: Clear network candidate scan result for 0
+10-12 02:50:48.328   710   854 D WifiNetworkSelector: Disabled configured networks:
+10-12 02:50:48.328   710   854 D WifiNetworkSelector:   "AndroidWifi":0 reason=NETWORK_SELECTION_DISABLED_NO_INTERNET_PERMANENT, count=1;
+10-12 02:50:48.328   710   854 D WifiNetworkSelector:
+10-12 02:50:58.499 11487 11507 I ub39.grit.debug: hiddenapi: Accessing hidden method Landroid/database/sqlite/SQLiteSession;->beginTransaction(ILandroid/database/sqlite/SQLiteTransactionListener;ILandroid/os/CancellationSignal;)V (runtime_flags=0, domain=platform, api=unsupported) from Landroidx/sqlite/db/framework/FrameworkSQLiteDatabase; (domain=app) using reflection: allowed
+10-12 02:50:58.510   710  1227 I AppWidgetServiceImpl: getAppWidgetIds() 0
+10-12 02:50:58.516 11487 11487 D DesktopModeFlags: Toggle override initialized to: OVERRIDE_UNSET
+10-12 02:50:58.579   319   319 I tombstoned: received crash request for pid 1405
+10-12 02:50:58.580   319   319 I tombstoned: found intercept fd 512 for pid 1405 and type kDebuggerdJavaBacktrace
+10-12 02:50:58.580   319   319 W tombstoned: skipping tombstone file creation due to intercept
+10-12 02:50:58.580  1405  1408 I putmethod.latin: Wrote stack traces to tombstoned
+10-12 02:50:58.582   710 11454 I system_server: libdebuggerd_client: done dumping process 1405
+10-12 02:50:58.583 11487 11487 W HWUI    : Unknown dataspace 0
+10-12 02:50:58.630     0     0 I servicemanager: Caller(pid=11487,uid=10217,sid=u:r:untrusted_app:s0:c217,c256,c512,c768) Found android.hardware.graphics.allocator.IAllocator/default in device VINTF manifest.
+10-12 02:50:58.591   710 11454 E ActivityManager: Aborting stack trace dump (current firstPid=1405); deadline exceeded.
+10-12 02:50:58.608 11487 11487 I Choreographer: Skipped 31 frames!  The application may be doing too much work on its main thread.
+10-12 02:50:58.615   710 11454 E ActivityManager: ANR in com.shub39.grit.debug (com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity)
+10-12 02:50:58.615   710 11454 E ActivityManager: PID: 11376
+10-12 02:50:58.615   710 11454 E ActivityManager: Reason: Input dispatching timed out (c16685c com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity is not responding. Waited 5010ms for MotionEvent(deviceId=-1, eventTime=2225308000000, source=TOUCHSCREEN, displayId=0, action=UP, actionButton=0x00000000, flags=0x00000000, metaState=0x00000000, buttonState=0x00000000, classification=NONE, edgeFlags=0x00000000, xPrecision=1.0, yPrecision=1.0, xCursorPosition=nan, yCursorPosition=nan, pointers=[0: (360.0, 1584.0)]), policyFlags=0x6b000000).
+10-12 02:50:58.615   710 11454 E ActivityManager: Parent: com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity
+10-12 02:50:58.615   710 11454 E ActivityManager: ErrorId: a0f2140b-b05a-4f55-8d23-f257c7b4ea23
+10-12 02:50:58.615   710 11454 E ActivityManager: Frozen: false
+10-12 02:50:58.615   710 11454 E ActivityManager: Load: 4.55 / 3.81 / 2.76
+10-12 02:50:58.615   710 11454 E ActivityManager: ----- Output from /proc/pressure/memory -----
+10-12 02:50:58.615   710 11454 E ActivityManager: some avg10=0.00 avg60=0.01 avg300=0.07 total=10298406
+10-12 02:50:58.615   710 11454 E ActivityManager: full avg10=0.00 avg60=0.00 avg300=0.01 total=4577733
+10-12 02:50:58.615   710 11454 E ActivityManager: ----- End output from /proc/pressure/memory -----
+10-12 02:50:58.615   710 11454 E ActivityManager: ----- Output from /proc/pressure/cpu -----
+10-12 02:50:58.615   710 11454 E ActivityManager: some avg10=26.70 avg60=18.31 avg300=13.42 total=161409726
+10-12 02:50:58.615   710 11454 E ActivityManager: full avg10=0.00 avg60=0.00 avg300=0.00 total=0
+10-12 02:50:58.615   710 11454 E ActivityManager: ----- End output from /proc/pressure/cpu -----
+10-12 02:50:58.615   710 11454 E ActivityManager: ----- Output from /proc/pressure/io -----
+10-12 02:50:58.615   710 11454 E ActivityManager: some avg10=0.00 avg60=0.01 avg300=0.04 total=10366703
+10-12 02:50:58.615   710 11454 E ActivityManager: full avg10=0.00 avg60=0.00 avg300=0.00 total=2480118
+10-12 02:50:58.615   710 11454 E ActivityManager: ----- End output from /proc/pressure/io -----
+10-12 02:50:58.615   710 11454 E ActivityManager:
+10-12 02:50:58.615   710 11454 E ActivityManager: CPU usage from 1ms to 23674ms later (2026-10-12 02:50:34.922 to 2026-10-12 02:50:58.595):
+10-12 02:50:58.615   710 11454 E ActivityManager:   89% 508/android.hardware.radio-service.ranchu: 15% user + 73% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:   78% 513/android.hardware.graphics.composer3-service.ranchu: 0.2% user + 78% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:   50% 710/system_server: 5.8% user + 44% kernel / faults: 5714 minor 347 major
+10-12 02:50:58.615   710 11454 E ActivityManager:   39% 1087/com.google.android.apps.nexuslauncher: 4.1% user + 34% kernel / faults: 2466 minor 22 major
+10-12 02:50:58.615   710 11454 E ActivityManager:   38% 952/com.android.systemui: 4.6% user + 33% kernel / faults: 2969 minor 79 major
+10-12 02:50:58.615   710 11454 E ActivityManager:   9.6% 505/android.hardware.graphics.allocator-service.ranchu: 0% user + 9.6% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:   5.3% 566/surfaceflinger: 0.5% user + 4.8% kernel / faults: 91 minor 11 major
+10-12 02:50:58.615   710 11454 E ActivityManager:   1.3% 1405/com.google.android.inputmethod.latin: 0.6% user + 0.6% kernel / faults: 5866 minor 49 major
+10-12 02:50:58.615   710 11454 E ActivityManager:   1% 509/android.hardware.sensors-service.multihal: 0% user + 0.9% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:   0% 3288/com.google.android.apps.photos: 0% user + 0% kernel / faults: 62 minor 913 major
+10-12 02:50:58.615   710 11454 E ActivityManager: 79% TOTAL: 5.4% user + 73% kernel + 0.2% iowait + 0.1% softirq
+10-12 02:50:58.615   710 11454 E ActivityManager: CPU usage from 109ms to 1281ms later (2026-10-12 02:50:35.030 to 2026-10-12 02:50:36.202):
+10-12 02:50:58.615   710 11454 E ActivityManager:   98% 513/android.hardware.graphics.composer3-service.ranchu: 0% user + 98% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:     95% 513/binder:513_2: 0% user + 95% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:     2.8% 603/_thread: 0% user + 2.8% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:   88% 508/android.hardware.radio-service.ranchu: 17% user + 71% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:     88% 1230/android.hardwar: 17% user + 71% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:   53% 710/system_server: 6.9% user + 46% kernel / faults: 519 minor 23 major
+10-12 02:50:58.615   710 11454 E ActivityManager:     21% 11458/AnrMainProcessD: 0% user + 21% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:     20% 11457/AnrAuxiliaryTas: 1.1% user + 19% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:     6.9% 11453/AnrMainProcessD: 1.1% user + 5.7% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:   47% 1087/com.google.android.apps.nexuslauncher: 5.2% user + 42% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:     43% 1120/RenderThread: 1.3% user + 42% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:   44% 952/com.android.systemui: 5.1% user + 38% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:     44% 1204/RenderThread: 1.2% user + 42% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:   75% 11376/com.shub39.grit.debug: 0% user + 75% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:     75% 11397/RenderThread: 0% user + 75% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:   0.8% 15/ksoftirqd/0: 0% user + 0.8% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:   0.9% 509/android.hardware.sensors-service.multihal: 0% user + 0.9% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager:     0.9% 530/android.hardwar: 0% user + 0.9% kernel
+10-12 02:50:58.615   710 11454 E ActivityManager: 98% TOTAL: 4.6% user + 93% kernel + 0.7% softirq
+10-12 02:50:58.623   710 11517 I DropBoxManagerService: add tag=data_app_anr isTagEnabled=true flags=0x6
+10-12 02:50:58.623   710  1912 D CoreBackPreview: Window{51d0306 u0 com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@2dd2ebf, mPriority=-1, mIsAnimationCallback=false, mOverrideBehavior=0}
+10-12 02:50:58.667     0     0 I servicemanager: Caller(pid=11487,uid=10217,sid=u:r:untrusted_app:s0:c217,c256,c512,c768) Found android.hardware.graphics.allocator.IAllocator/default in device VINTF manifest.
+10-12 02:50:58.669     0     0 I servicemanager: Caller(pid=11487,uid=10217,sid=u:r:untrusted_app:s0:c217,c256,c512,c768) Found mapper/ranchu in device VINTF manifest.
+10-12 02:50:58.642   710 11454 D ActivityManager: Completed ANR of com.shub39.grit.debug in 23717ms, latency 0ms
+10-12 02:50:58.646   710 11454 I ActivityManager: dumpStackTraces pids={}
+10-12 02:50:58.647   710 11454 I ActivityManager: Dumping to /data/anr/anr_2026-10-12-02-50-58-646
+10-12 02:50:58.647   710 11454 I ActivityManager: dumpStackTraces nativepids=null
+10-12 02:50:58.946   710   732 I ActivityTaskManager: Displayed com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity for user 0: +2s400ms
+10-12 02:50:58.996 11487 11502 I HWUI    : Davey! duration=822ms; Flags=1, FrameTimelineVsyncId=418112, IntendedVsync=2253531590936, Vsync=2254048257582, InputEventId=0, HandleInputStart=2254060827866, AnimationStart=2254060903566, PerformTraversalsStart=2254061224366, DrawStart=2254247893466, FrameDeadline=2253548257602, FrameStartTime=2254060310366, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=2254248658266, SyncStart=2254271947266, IssueDrawCommandsStart=2254275709866, SwapBuffers=2254288224166, FrameCompleted=2254376920966, DequeueBufferDuration=19500, QueueBufferDuration=580900, GpuCompleted=2254376363366, SwapBuffersCompleted=2254376920966, DisplayPresentTime=0, CommandSubmissionCompleted=2254288224166,
+10-12 02:50:59.015   710  1912 I AppWidgetServiceImpl: getInstalledProvidersForProfiles() 0
+10-12 02:50:59.015   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{931920b com.android.chrome/10160} BLOCKED
+10-12 02:50:59.016   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{931920b com.android.chrome/10160} BLOCKED
+10-12 02:50:59.016   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{931920b com.android.chrome/10160} BLOCKED
+10-12 02:50:59.016   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{931920b com.android.chrome/10160} BLOCKED
+10-12 02:50:59.016   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{41cb8e8 com.google.android.apps.docs/10172} BLOCKED
+10-12 02:50:59.016   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{41cb8e8 com.google.android.apps.docs/10172} BLOCKED
+10-12 02:50:59.016   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{2f2f53d com.google.android.apps.maps/10158} BLOCKED
+10-12 02:50:59.016   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{2f2f53d com.google.android.apps.maps/10158} BLOCKED
+10-12 02:50:59.017   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{c019b01 com.google.android.apps.photos/10159} BLOCKED
+10-12 02:50:59.017   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{c019b01 com.google.android.apps.photos/10159} BLOCKED
+10-12 02:50:59.017   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{daf7da6 com.google.android.apps.youtube.music/10151} BLOCKED
+10-12 02:50:59.017   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{daf7da6 com.google.android.apps.youtube.music/10151} BLOCKED
+10-12 02:50:59.017   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{d91f3e8 com.google.android.calendar/10170} BLOCKED
+10-12 02:50:59.017   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{d91f3e8 com.google.android.calendar/10170} BLOCKED
+10-12 02:50:59.017   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{1787b94 com.google.android.contacts/10171} BLOCKED
+10-12 02:50:59.017   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{1787b94 com.google.android.contacts/10171} BLOCKED
+10-12 02:50:59.017   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{1787b94 com.google.android.contacts/10171} BLOCKED
+10-12 02:50:59.017   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{e6be63d com.google.android.deskclock/10169} BLOCKED
+10-12 02:50:59.018   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{e6be63d com.google.android.deskclock/10169} BLOCKED
+10-12 02:50:59.018   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{e6be63d com.google.android.deskclock/10169} BLOCKED
+10-12 02:50:59.018   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{e6be63d com.google.android.deskclock/10169} BLOCKED
+10-12 02:50:59.018   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{e6be63d com.google.android.deskclock/10169} BLOCKED
+10-12 02:50:59.018   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{445ce32 com.google.android.gm/10161} BLOCKED
+10-12 02:50:59.018   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{445ce32 com.google.android.gm/10161} BLOCKED
+10-12 02:50:59.018   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{3383783 com.google.android.googlequicksearchbox/10147} BLOCKED
+10-12 02:50:59.018   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{3383783 com.google.android.googlequicksearchbox/10147} BLOCKED
+10-12 02:50:59.018   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{3383783 com.google.android.googlequicksearchbox/10147} BLOCKED
+10-12 02:50:59.018   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{3383783 com.google.android.googlequicksearchbox/10147} BLOCKED
+10-12 02:50:59.019   710  1912 I AppsFilter: interaction: PackageSetting{8d73af7 com.shub39.grit.debug/10217} -> PackageSetting{3383783 com.google.android.googlequicksearchbox/10147} BLOCKED
+10-12 02:50:59.205   710 11518 I ActivityManager: Skipping next CPU consuming process, not a java proc: 11487
+10-12 02:50:59.205   710 11518 I ActivityManager: Skipping next CPU consuming process, not a java proc: 513
+10-12 02:50:59.205   710 11518 I ActivityManager: Skipping next CPU consuming process, not a java proc: 710
+10-12 02:50:59.205   710 11518 I ActivityManager: Skipping next CPU consuming process, not a java proc: 505
+10-12 02:50:59.205   710 11518 I ActivityManager: Skipping next CPU consuming process, not a java proc: 566
+10-12 02:50:59.206   710 11518 I ActivityManager: Skipping next CPU consuming process, not a java proc: 952
+10-12 02:50:59.206   710 11518 I ActivityManager: Skipping next CPU consuming process, not a java proc: 509
+10-12 02:50:59.206   710 11518 I ActivityManager: Skipping next CPU consuming process, not a java proc: 614
+10-12 02:50:59.206   710 11518 I ActivityManager: Skipping next CPU consuming process, not a java proc: 1405
+10-12 02:50:59.206   710 11518 I ActivityManager: Skipping next CPU consuming process, not a java proc: 10452
+10-12 02:50:59.208   710 11454 I ActivityManager: dumpStackTraces extraPids=[]
+10-12 02:50:59.208   710 11454 I ActivityManager: Done dumping
+10-12 02:50:59.209   710 11454 E ActivityManager: ANR in com.android.systemui
+10-12 02:50:59.209   710 11454 E ActivityManager: PID: 952
+10-12 02:50:59.209   710 11454 E ActivityManager: Reason: Input dispatching timed out ([Gesture Monitor] edge-swipe is not responding. Waited 5045ms for MotionEvent(deviceId=-1, eventTime=2225308000000, source=TOUCHSCREEN, displayId=0, action=UP, actionButton=0x00000000, flags=0x00000000, metaState=0x00000000, buttonState=0x00000000, classification=NONE, edgeFlags=0x00000000, xPrecision=1.0, yPrecision=1.0, xCursorPosition=nan, yCursorPosition=nan, pointers=[0: (360.0, 1584.0)]), policyFlags=0x6b000000).
+10-12 02:50:59.209   710 11454 E ActivityManager: ErrorId: a2e5c081-625c-4d72-aa1d-e71d2c97841f
+10-12 02:50:59.209   710 11454 E ActivityManager: Frozen: false
+10-12 02:50:59.209   710 11454 E ActivityManager: Load: 6.62 / 4.34 / 2.97
+10-12 02:50:59.209   710 11454 E ActivityManager: ----- Output from /proc/pressure/memory -----
+10-12 02:50:59.209   710 11454 E ActivityManager: some avg10=0.00 avg60=0.00 avg300=0.06 total=10301355
+10-12 02:50:59.209   710 11454 E ActivityManager: full avg10=0.00 avg60=0.00 avg300=0.01 total=4580115
+10-12 02:50:59.209   710 11454 E ActivityManager: ----- End output from /proc/pressure/memory -----
+10-12 02:50:59.209   710 11454 E ActivityManager: ----- Output from /proc/pressure/cpu -----
+10-12 02:50:59.209   710 11454 E ActivityManager: some avg10=54.36 avg60=32.88 avg300=17.32 total=176928171
+10-12 02:50:59.209   710 11454 E ActivityManager: full avg10=0.00 avg60=0.00 avg300=0.00 total=0
+10-12 02:50:59.209   710 11454 E ActivityManager: ----- End output from /proc/pressure/cpu -----
+10-12 02:50:59.209   710 11454 E ActivityManager: ----- Output from /proc/pressure/io -----
+10-12 02:50:59.209   710 11454 E ActivityManager: some avg10=1.53 avg60=0.64 avg300=0.18 total=10879403
+10-12 02:50:59.209   710 11454 E ActivityManager: full avg10=0.00 avg60=0.00 avg300=0.00 total=2502458
+10-12 02:50:59.209   710 11454 E ActivityManager: ----- End output from /proc/pressure/io -----
+10-12 02:50:59.209   710 11454 E ActivityManager:
+10-12 02:50:59.209   710 11454 E ActivityManager: CPU usage from 23721ms to 48ms ago (2026-10-12 02:50:34.922 to 2026-10-12 02:50:58.595):
+10-12 02:50:59.209   710 11454 E ActivityManager:   89% 508/android.hardware.radio-service.ranchu: 15% user + 73% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   78% 513/android.hardware.graphics.composer3-service.ranchu: 0.2% user + 78% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   50% 710/system_server: 5.8% user + 44% kernel / faults: 5714 minor 347 major
+10-12 02:50:59.209   710 11454 E ActivityManager:   39% 1087/com.google.android.apps.nexuslauncher: 4.1% user + 34% kernel / faults: 2466 minor 22 major
+10-12 02:50:59.209   710 11454 E ActivityManager:   38% 952/com.android.systemui: 4.6% user + 33% kernel / faults: 2969 minor 79 major
+10-12 02:50:59.209   710 11454 E ActivityManager:   9.6% 505/android.hardware.graphics.allocator-service.ranchu: 0% user + 9.6% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   5.3% 566/surfaceflinger: 0.5% user + 4.8% kernel / faults: 91 minor 11 major
+10-12 02:50:59.209   710 11454 E ActivityManager:   1.3% 1405/com.google.android.inputmethod.latin: 0.6% user + 0.6% kernel / faults: 5866 minor 49 major
+10-12 02:50:59.209   710 11454 E ActivityManager:   1% 509/android.hardware.sensors-service.multihal: 0% user + 0.9% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   0% 3288/com.google.android.apps.photos: 0% user + 0% kernel / faults: 62 minor 913 major
+10-12 02:50:59.209   710 11454 E ActivityManager: 79% TOTAL: 5.4% user + 73% kernel + 0.2% iowait + 0.1% softirq
+10-12 02:50:59.209   710 11454 E ActivityManager: CPU usage from 3ms to 500ms later (2026-10-12 02:50:58.646 to 2026-10-12 02:50:59.143):
+10-12 02:50:59.209   710 11454 E ActivityManager:   86% 508/android.hardware.radio-service.ranchu: 6.4% user + 79% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     86% 1230/android.hardwar: 6.4% user + 79% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   120% 11487/com.shub39.grit.debug: 36% user + 84% kernel / faults: 1049 minor
+10-12 02:50:59.209   710 11454 E ActivityManager:     80% 11509/DefaultDispatch: 36% user + 44% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     36% 11487/ub39.grit.debug: 0% user + 36% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:    +0% 11521/DefaultDispatch: 0% user + 0% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:    +0% 11522/DefaultDispatch: 0% user + 0% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   57% 513/android.hardware.graphics.composer3-service.ranchu: 0% user + 57% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     57% 513/binder:513_2: 0% user + 57% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   35% 710/system_server: 7.1% user + 28% kernel / faults: 590 minor
+10-12 02:50:59.209   710 11454 E ActivityManager:     19% 11518/AnrAuxiliaryTas: 7.1% user + 11% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     2.3% 734/android.io: 0% user + 2.3% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     2.3% 737/android.anim.lf: 0% user + 2.3% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     2.3% 1758/binder:710_E: 0% user + 2.3% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     2.3% 1912/binder:710_11: 0% user + 2.3% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   21% 505/android.hardware.graphics.allocator-service.ranchu: 0% user + 21% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     19% 602/binder:505_3: 0% user + 19% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   19% 566/surfaceflinger: 2.3% user + 16% kernel / faults: 6 minor
+10-12 02:50:59.209   710 11454 E ActivityManager:     9.5% 596/RenderEngine: 0% user + 9.5% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     7.1% 566/surfaceflinger: 2.3% user + 4.7% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     2.3% 622/RegionSampling: 0% user + 2.3% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     2.3% 694/binder:566_4: 2.3% user + 0% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   15% 952/com.android.systemui: 10% user + 5.2% kernel / faults: 412 minor
+10-12 02:50:59.209   710 11454 E ActivityManager:     10% 963/HeapTaskDaemon: 10% user + 0% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     5.2% 1204/RenderThread: 0% user + 5.2% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   2.1% 509/android.hardware.sensors-service.multihal: 0% user + 2.1% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:     2.1% 530/android.hardwar: 0% user + 2.1% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   2.3% 614/logcat: 0% user + 2.3% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager:   2.9% 1405/com.google.android.inputmethod.latin: 0% user + 2.9% kernel / faults: 11 minor
+10-12 02:50:59.209   710 11454 E ActivityManager:   4% 10452/kworker/0:1-events: 0% user + 4% kernel
+10-12 02:50:59.209   710 11454 E ActivityManager: 86% TOTAL: 13% user + 72% kernel
+10-12 02:50:59.211   710 11454 D ActivityManager: Completed ANR of com.android.systemui in 568ms, latency 23717ms (expired, only dump ANR app)
+10-12 02:50:59.213   710 11525 I DropBoxManagerService: add tag=system_app_anr isTagEnabled=true flags=0x6
+10-12 02:50:59.247   489   557 I netd    : tetherGetStats() -> {[]} <4.06ms>
+10-12 02:50:59.248   952  1074 W Looper  : Slow delivery took 30ms wmshell.main app=com.android.systemui main=false group=FOREGROUND h=android.os.Handler c=com.android.wm.shell.common.DisplayInsetsController$PerDisplay$DisplayWindowInsetsControllerImpl$$ExternalSyntheticLambda2@ee90b52 m=0
+10-12 02:50:59.252   710 11454 I ActivityManager: dumpStackTraces pids=null
+10-12 02:50:59.253   710 11454 I ActivityManager: Dumping to /data/anr/anr_2026-10-12-02-50-59-253
+10-12 02:50:59.265   710 11454 I ActivityManager: dumpStackTraces nativepids=null
+10-12 02:50:59.266   710 11454 I ActivityManager: dumpStackTraces extraPids=null
+10-12 02:50:59.266   710 11454 I ActivityManager: Done dumping
+10-12 02:50:59.266   710 11454 E ActivityManager: ANR in com.google.android.apps.nexuslauncher
+10-12 02:50:59.266   710 11454 E ActivityManager: PID: 1087
+10-12 02:50:59.266   710 11454 E ActivityManager: Reason: Input dispatching timed out ([Gesture Monitor] swipe-up is not responding. Waited 5070ms for MotionEvent(deviceId=-1, eventTime=2225308000000, source=TOUCHSCREEN, displayId=0, action=UP, actionButton=0x00000000, flags=0x00000000, metaState=0x00000000, buttonState=0x00000000, classification=NONE, edgeFlags=0x00000000, xPrecision=1.0, yPrecision=1.0, xCursorPosition=nan, yCursorPosition=nan, pointers=[0: (360.0, 1584.0)]), policyFlags=0x6b000000).
+10-12 02:50:59.266   710 11454 E ActivityManager: ErrorId: 07d3fec1-bbc5-4617-981d-7a7cdda8c582
+10-12 02:50:59.266   710 11454 E ActivityManager: Frozen: false
+10-12 02:50:59.266   710 11454 E ActivityManager: Load: 0.0 / 0.0 / 0.0
+10-12 02:50:59.266   710 11454 E ActivityManager: ----- Output from /proc/pressure/memory -----
+10-12 02:50:59.266   710 11454 E ActivityManager: some avg10=0.00 avg60=0.00 avg300=0.06 total=10301355
+10-12 02:50:59.266   710 11454 E ActivityManager: full avg10=0.00 avg60=0.00 avg300=0.01 total=4580115
+10-12 02:50:59.266   710 11454 E ActivityManager: ----- End output from /proc/pressure/memory -----
+10-12 02:50:59.266   710 11454 E ActivityManager: ----- Output from /proc/pressure/cpu -----
+10-12 02:50:59.266   710 11454 E ActivityManager: some avg10=53.75 avg60=33.48 avg300=17.55 total=177301073
+10-12 02:50:59.266   710 11454 E ActivityManager: full avg10=0.00 avg60=0.00 avg300=0.00 total=0
+10-12 02:50:59.266   710 11454 E ActivityManager: ----- End output from /proc/pressure/cpu -----
+10-12 02:50:59.266   710 11454 E ActivityManager: ----- Output from /proc/pressure/io -----
+10-12 02:50:59.266   710 11454 E ActivityManager: some avg10=1.25 avg60=0.62 avg300=0.18 total=10936497
+10-12 02:50:59.266   710 11454 E ActivityManager: full avg10=0.00 avg60=0.00 avg300=0.00 total=2502635
+10-12 02:50:59.266   710 11454 E ActivityManager: ----- End output from /proc/pressure/io -----
+10-12 02:50:59.266   710 11454 E ActivityManager:
+10-12 02:50:59.266   710 11454 E ActivityManager: CPU usage from 24290ms to 617ms ago (2026-10-12 02:50:34.922 to 2026-10-12 02:50:58.595):
+10-12 02:50:59.266   710 11454 E ActivityManager:   89% 508/android.hardware.radio-service.ranchu: 15% user + 73% kernel
+10-12 02:50:59.266   710 11454 E ActivityManager:   78% 513/android.hardware.graphics.composer3-service.ranchu: 0.2% user + 78% kernel
+10-12 02:50:59.266   710 11454 E ActivityManager:   50% 710/system_server: 5.8% user + 44% kernel / faults: 5714 minor 347 major
+10-12 02:50:59.266   710 11454 E ActivityManager:   39% 1087/com.google.android.apps.nexuslauncher: 4.1% user + 34% kernel / faults: 2466 minor 22 major
+10-12 02:50:59.266   710 11454 E ActivityManager:   38% 952/com.android.systemui: 4.6% user + 33% kernel / faults: 2969 minor 79 major
+10-12 02:50:59.266   710 11454 E ActivityManager:   9.6% 505/android.hardware.graphics.allocator-service.ranchu: 0% user + 9.6% kernel
+10-12 02:50:59.266   710 11454 E ActivityManager:   5.3% 566/surfaceflinger: 0.5% user + 4.8% kernel / faults: 91 minor 11 major
+10-12 02:50:59.266   710 11454 E ActivityManager:   1.3% 1405/com.google.android.inputmethod.latin: 0.6% user + 0.6% kernel / faults: 5866 minor 49 major
+10-12 02:50:59.266   710 11454 E ActivityManager:   1% 509/android.hardware.sensors-service.multihal: 0% user + 0.9% kernel
+10-12 02:50:59.266   710 11454 E ActivityManager:   0% 3288/com.google.android.apps.photos: 0% user + 0% kernel / faults: 62 minor 913 major
+10-12 02:50:59.266   710 11454 E ActivityManager: 79% TOTAL: 5.4% user + 73% kernel + 0.2% iowait + 0.1% softirq
+10-12 02:50:59.266   710 11454 E ActivityManager: CPU usage from 2254664ms to 2254664ms ago (1970-01-01 00:00:00.000 to 1970-01-01 00:00:00.000) with 0% awake:
+10-12 02:50:59.266   710 11454 E ActivityManager: 0% TOTAL: 0% user + 0% kernel
+10-12 02:50:59.343   710   733 I system_server: AssetManager2(0x7da90fadeb98) locale list changing from [] to [en-US]
+10-12 02:50:59.353   710   732 W Looper  : Slow dispatch took 115ms android.fg app=system_server main=false group=FOREGROUND h=com.android.server.DropBoxManagerService$DropBoxManagerBroadcastHandler c=null m=1
+10-12 02:50:59.353   710 11527 I DropBoxManagerService: add tag=system_app_anr isTagEnabled=true flags=0x6
+10-12 02:50:59.355   710   733 W Looper  : Slow dispatch took 122ms android.ui app=system_server main=false group=TOP_APP h=com.android.server.am.ActivityManagerService$UiHandler c=null m=2
+10-12 02:50:59.356   710 11454 I ActivityManager: Killing 1087:com.google.android.apps.nexuslauncher/u0a184 (adj 100): bg anr
+10-12 02:50:59.357   710 11454 D ActivityManager: Completed ANR of com.google.android.apps.nexuslauncher in 145ms, latency 24175ms (expired, only dump ANR app)
+10-12 02:50:59.380 11487 11487 D InsetsController: hide(ime(), fromIme=false)
+10-12 02:50:59.381 11487 11487 I ImeTracker: com.shub39.grit.debug:7f8d7cb8: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+10-12 02:50:59.427  1296  2195 I FontLog : Received query Noto Color Emoji Compat, URI content://com.google.android.gms.fonts [CONTEXT service_id=132 ]
+10-12 02:50:59.428  1296  2195 I FontLog : Query [emojicompat-emoji-font] resolved to {Noto Color Emoji Compat, wdth 100.0, wght 400, ital 0.0, bestEffort false}, isVf false} [CONTEXT service_id=132 ]
+10-12 02:50:59.430  1296  2195 I FontLog : Fetch {Noto Color Emoji Compat, wdth 100.0, wght 400, ital 0.0, bestEffort false}, isVf false} end status Status{statusCode=SUCCESS, resolution=null} [CONTEXT service_id=132 ]
+10-12 02:50:59.442  1296  2195 I FontLog : Pulling font file for id = 55, cache size = 6 [CONTEXT service_id=132 ]
+10-12 02:50:59.452  1296  2195 I FontLog : Pulling font file for id = 55, cache size = 6 [CONTEXT service_id=132 ]
+10-12 02:50:59.600   710  1912 I AppWidgetServiceImpl: setWidgetPreview() 0
+10-12 02:50:59.618 11487 11487 W GlanceAppWidgetManager: setWidgetPreview call for ComponentInfo{com.shub39.grit.debug/com.shub39.grit.widgets.all_tasks_widget.AllTasksWidgetReceiver} with categories 7 was rate-limited
+10-12 02:50:59.649   710   733 W Looper  : Slow dispatch took 293ms android.ui app=system_server main=false group=TOP_APP h=com.android.server.am.ActivityManagerService$UiHandler c=com.android.server.am.ErrorDialogController$$ExternalSyntheticLambda4@7892a65 m=0
+10-12 02:50:59.653   710   733 W Looper  : Slow delivery took 241ms android.ui app=system_server main=false group=TOP_APP h=com.android.server.am.ActivityManagerService$UiHandler c=com.android.server.am.UidObserverController$$ExternalSyntheticLambda0@bc9984e m=0
+10-12 02:50:59.679   710   733 D CoreBackPreview: Window{4d113c4 u0 Application Not Responding: com.android.systemui}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.WindowOnBackInvokedDispatcher$OnBackInvokedCallbackWrapper@dcb1906, mPriority=-1, mIsAnimationCallback=false, mOverrideBehavior=0}
+10-12 02:50:59.752   710   814 W InputDispatcher: channel '2a4c23f Taskbar' ~ Consumer closed input channel or an error occurred.  events=0x9
+10-12 02:50:59.752   710   814 E InputDispatcher: channel '2a4c23f Taskbar' ~ Channel is unrecoverably broken and will be disposed!
+10-12 02:50:59.753   710   814 I WindowManager: WINDOW DIED Window{2a4c23f u0 Taskbar}
+10-12 02:50:59.758   710   814 E IPCThreadState: Binder transaction failure. id: 662011, BR_*: 29189, error: -3 (No such process)
+10-12 02:50:59.758   710   814 W ActivityManager: pid 710 system sent binder code 13 with flags 1 to frozen apps and got error -32
+10-12 02:50:59.762   710   814 E IPCThreadState: Binder transaction failure. id: 662020, BR_*: 29189, error: -3 (No such process)
+10-12 02:50:59.762   710   814 W ActivityManager: pid 710 system sent binder code 54 with flags 1 to frozen apps and got error -32
+10-12 02:50:59.762   710   814 D ActivityManager: Too many transaction errors, throttling freezer binder callback.
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: Failed to deliver transaction for ProcessRecord{a301db3 1087:com.google.android.apps.nexuslauncher/u0a184}
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: transaction=com.android.server.wm.ClientLifecycleManager@73276d5
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: android.os.DeadObjectException
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at android.os.BinderProxy.transactNative(Native Method)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at android.os.BinderProxy.transact(BinderProxy.java:592)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at android.app.IApplicationThread$Stub$Proxy.scheduleTransaction(IApplicationThread.java:2308)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at android.app.IApplicationThread$Delegator.scheduleTransaction(IApplicationThread.java:439)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at android.app.servertransaction.ClientTransaction.schedule(ClientTransaction.java:245)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at com.android.server.wm.ClientLifecycleManager.scheduleTransaction(ClientLifecycleManager.java:75)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at com.android.server.wm.ClientLifecycleManager.dispatchPendingTransactions(ClientLifecycleManager.java:185)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at com.android.server.wm.RootWindowContainer.performSurfacePlacementNoTrace(RootWindowContainer.java:792)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at com.android.server.wm.RootWindowContainer.performSurfacePlacement(RootWindowContainer.java:746)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at com.android.server.wm.WindowSurfacePlacer.performSurfacePlacementLoop(WindowSurfacePlacer.java:173)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at com.android.server.wm.WindowSurfacePlacer.performSurfacePlacement(WindowSurfacePlacer.java:123)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at com.android.server.wm.WindowSurfacePlacer.performSurfacePlacement(WindowSurfacePlacer.java:112)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at com.android.server.wm.WindowManagerService.postWindowRemoveCleanupLocked(WindowManagerService.java:2199)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at com.android.server.wm.WindowState.removeImmediately(WindowState.java:2236)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at com.android.server.wm.WindowState.removeIfPossible(WindowState.java:2395)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at com.android.server.wm.InputManagerCallback.notifyInputChannelBroken(InputManagerCallback.java:96)
+10-12 02:50:59.763   710   814 W ClientLifecycleManager: 	at com.android.server.input.InputManagerService.notifyInputChannelBroken(InputManagerService.java:2461)
+10-12 02:50:59.802     0     0 I binder_alloc: 1087: binder_alloc_buf, no vma
+10-12 02:50:59.802     0     0 I binder  : cannot allocate buffer: vma cleared, target dead or dying
+10-12 02:50:59.803     0     0 I binder  : 710:814 transaction async to 1087:0 failed 662011/29189/-3, size 60-0 line 3548
+10-12 02:50:59.805     0     0 I binder_alloc: 1087: binder_alloc_buf, no vma
+10-12 02:50:59.805     0     0 I binder  : cannot allocate buffer: vma cleared, target dead or dying
+10-12 02:50:59.805     0     0 I binder  : 710:814 transaction async to 1087:0 failed 662020/29189/-3, size 436-8 line 3548
+10-12 02:50:59.780   492   492 I Zygote  : Process 1087 exited due to signal 9 (Killed)
+10-12 02:50:59.789   952  1074 E IPCThreadState: Binder transaction failure. id: 662037, BR_*: 29189, error: -3 (No such process)
+10-12 02:50:59.790   952  1074 E SingleInstanceRemoteListener: Failed remote call
+10-12 02:50:59.790   952  1074 E SingleInstanceRemoteListener: android.os.DeadObjectException
+10-12 02:50:59.790   952  1074 E SingleInstanceRemoteListener: 	at android.os.BinderProxy.transactNative(Native Method)
+10-12 02:50:59.790   952  1074 E SingleInstanceRemoteListener: 	at android.os.BinderProxy.transact(BinderProxy.java:592)
+10-12 02:50:59.790   952  1074 E SingleInstanceRemoteListener: 	at com.android.wm.shell.transition.HomeTransitionObserver$1.insetsChanged(go/retraceme 5ef7505f3172d45c77e95a8eba788f1ba3487bafbb4dd5bf3a1ad9be0371fc04:42)

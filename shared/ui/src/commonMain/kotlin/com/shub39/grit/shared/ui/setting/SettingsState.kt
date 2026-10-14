@@ -29,6 +29,10 @@ import com.shub39.grit.shared.ui.update.UpdateCheckState
 @Stable
 @Immutable
 data class SettingsState(
+    val rhineDisplay: com.shub39.grit.core.settings.RhineDisplayConfig =
+        com.shub39.grit.core.settings.RhineDisplayConfig(),
+    val rhineSaving: Boolean = false,
+    val rhineMessage: String? = null,
     val changelog: Changelog = emptyList(),
     val currentVersion: String? = null,
     val restorePreview: com.shub39.grit.core.settings.backup.RestorePreview? = null,

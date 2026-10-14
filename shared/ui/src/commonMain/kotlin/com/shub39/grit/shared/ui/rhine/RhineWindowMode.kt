@@ -24,3 +24,7 @@ import androidx.compose.runtime.Composable
  * platform has no such window control.
  */
 @Composable expect fun RhineWindowMode()
+
+@Composable expect fun rhineSystemAnimationsEnabled(): Boolean
+
+@Composable expect fun rhineSafeDrawingInsets(): androidx.compose.foundation.layout.WindowInsets

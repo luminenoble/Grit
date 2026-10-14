@@ -16,6 +16,13 @@
  */
 package com.shub39.grit.shared.ui.rhine
 
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.runtime.Composable
 
 @Composable actual fun RhineWindowMode() = Unit
+
+@Composable actual fun rhineSystemAnimationsEnabled(): Boolean = true
+
+@Composable
+actual fun rhineSafeDrawingInsets(): androidx.compose.foundation.layout.WindowInsets =
+    androidx.compose.foundation.layout.WindowInsets.safeDrawing

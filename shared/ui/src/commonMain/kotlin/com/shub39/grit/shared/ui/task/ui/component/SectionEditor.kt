@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.now
 import com.shub39.grit.core.tasks.Section
@@ -39,6 +40,7 @@ fun SectionEditor(
     wide: Boolean = false,
     confirmDeletion: Boolean = true,
 ) {
+    val compactIme = wide && WindowInsets.ime.getBottom(LocalDensity.current) > 0
     var title by remember(section.id) { mutableStateOf(section.title) }
     var content by remember(section.id) { mutableStateOf(section.content) }
     var dateText by
@@ -49,7 +51,9 @@ fun SectionEditor(
     val valid = dateText.isBlank() || (date != null && date <= LocalDate.now())
     val fields: @Composable () -> Unit = {
         Column(
-            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp),
+            Modifier.fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(if (compactIme) 4.dp else 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
@@ -92,6 +96,7 @@ fun SectionEditor(
     }
     val saveButton: @Composable () -> Unit = {
         TextButton(
+            modifier = if (compactIme) Modifier.height(36.dp) else Modifier,
             enabled = valid && !saving,
             onClick = {
                 onSave(
@@ -106,12 +111,19 @@ fun SectionEditor(
         Row {
             if (allowDelete)
                 TextButton(
+                    modifier = if (compactIme) Modifier.height(36.dp) else Modifier,
                     onClick = { if (confirmDeletion) confirmDelete = true else onDelete() },
                     enabled = !saving,
                 ) {
                     Text("删除")
                 }
-            TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }
+            TextButton(
+                onClick = onDismiss,
+                enabled = !saving,
+                modifier = if (compactIme) Modifier.height(36.dp) else Modifier,
+            ) {
+                Text("取消")
+            }
         }
     }
     if (wide) {
@@ -125,7 +137,10 @@ fun SectionEditor(
                 ),
         ) {
             Box(
-                Modifier.fillMaxSize().imePadding().padding(8.dp),
+                Modifier.fillMaxSize()
+                    .windowInsetsPadding(com.shub39.grit.shared.ui.rhine.rhineSafeDrawingInsets())
+                    .imePadding()
+                    .padding(8.dp),
                 contentAlignment = androidx.compose.ui.Alignment.Center,
             ) {
                 Surface(
@@ -136,14 +151,16 @@ fun SectionEditor(
                     Column {
                         Row(
                             Modifier.fillMaxWidth()
-                                .heightIn(min = 64.dp)
+                                .heightIn(min = if (compactIme) 36.dp else 64.dp)
                                 .padding(horizontal = 16.dp),
                             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                         ) {
                             Text(
                                 if (section.id == 0L) "新建 Section" else "编辑 Section",
                                 Modifier.weight(1f),
-                                style = MaterialTheme.typography.titleLarge,
+                                style =
+                                    if (compactIme) MaterialTheme.typography.titleSmall
+                                    else MaterialTheme.typography.titleLarge,
                             )
                             dismissButtons()
                             saveButton()

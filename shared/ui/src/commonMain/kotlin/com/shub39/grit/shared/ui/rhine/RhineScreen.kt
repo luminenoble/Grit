@@ -27,8 +27,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,6 +37,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -98,8 +97,10 @@ fun RhineScreen(
     onOpenTasks: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
-    geometry: RhineGeometry = RhineGeometry(),
-    style: RhineStyle = RhineStyle(),
+    geometryOverride: RhineGeometry? = null,
+    styleOverride: RhineStyle? = null,
+    display: com.shub39.grit.core.settings.RhineDisplayConfig =
+        com.shub39.grit.core.settings.RhineDisplayConfig(),
     dataSource: RhineDataSource? = null,
     initialCamera: RhineCamera = RhineCamera(0f, 0f),
     editRepository: TaskRepo? = null,
@@ -114,6 +115,13 @@ fun RhineScreen(
     val lower = rememberSaveable(saver = RhineBrowser.saver) { RhineBrowser() }
     val density = LocalDensity.current.density
     var viewport by remember { mutableStateOf(Size(1f, 1f)) }
+    val geometry =
+        geometryOverride ?: display.geometry(viewport.width / density, viewport.height / density)
+    val style = styleOverride ?: display.style()
+    val systemMotion = rhineSystemAnimationsEnabled()
+    val reduced = display.reduceMotion || !systemMotion
+    upper.reduceMotion = reduced
+    lower.reduceMotion = reduced
     val upperInput = rememberRhineInput(source, upper, geometry, density, viewport)
     val sectionSource =
         remember(session.categoryId, repo) {
@@ -220,7 +228,20 @@ fun RhineScreen(
             }
         }
     }
-    LaunchedEffect(viewport) { if (adjustment.dragging) cancelAdjustment() }
+    LaunchedEffect(viewport, display, LocalDensity.current.fontScale, density, reduced) {
+        if (!adjustment.submitting) cancelAdjustment()
+        upper.stop()
+        lower.stop()
+        selectionJob?.cancel()
+        selecting = false
+        search = null
+        val cancelledEntry = transition && !session.showingSections
+        transitionJob?.cancel()
+        transition = false
+        if (cancelledEntry) session.clearParent()
+        epoch += 1
+        phase.snapTo(0f)
+    }
     androidx.compose.runtime.DisposableEffect(Unit) {
         onDispose {
             adjustment.clear()
@@ -381,14 +402,20 @@ fun RhineScreen(
         transitionJob =
             scope.launch {
                 try {
-                    phase.animateTo(1f, androidx.compose.animation.core.tween(180))
+                    phase.animateTo(
+                        1f,
+                        androidx.compose.animation.core.tween(if (reduced) 0 else 180),
+                    )
                     val catalog = source.catalog().first()
                     val item = snapshot.focus.itemId?.let { repo?.getTaskSummaryFlow(it)?.first() }
                     val camera = snapshot.resolve(catalog, item)
                     upper.updateBounds(catalog.bounds)
                     upper.restore(snapshot.copy(camera = camera))
                     session.clearParent()
-                    phase.animateTo(0f, androidx.compose.animation.core.tween(180))
+                    phase.animateTo(
+                        0f,
+                        androidx.compose.animation.core.tween(if (reduced) 0 else 180),
+                    )
                 } finally {
                     if (epoch == token) transition = false
                 }
@@ -467,7 +494,10 @@ fun RhineScreen(
             transitionJob =
                 scope.launch {
                     try {
-                        phase.animateTo(1f, androidx.compose.animation.core.tween(180))
+                        phase.animateTo(
+                            1f,
+                            androidx.compose.animation.core.tween(if (reduced) 0 else 180),
+                        )
                         val task = repo.getTaskSummaryFlow(item.id).first()
                         if (task == null || task.categoryId != session.categoryId) {
                             returnToParent()
@@ -485,7 +515,10 @@ fun RhineScreen(
                                 )
                         )
                         session.showingSections = true
-                        phase.animateTo(0f, androidx.compose.animation.core.tween(180))
+                        phase.animateTo(
+                            0f,
+                            androidx.compose.animation.core.tween(if (reduced) 0 else 180),
+                        )
                     } finally {
                         if (epoch == token) transition = false
                     }
@@ -670,6 +703,8 @@ fun RhineScreen(
             onPickup = { slot, stable, point -> beginAdjustment(slot, stable, true, point) },
             onDrop = { commitAdjustment(adjustment.target) },
             onCancel = ::cancelAdjustment,
+            display = display,
+            reduced = reduced,
         )
         Box(
             Modifier.fillMaxSize()
@@ -730,12 +765,16 @@ fun RhineScreen(
                     onOpenSettings()
                 }
             },
-            modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.displayCutout),
+            display = display,
+            modifier =
+                Modifier.fillMaxSize()
+                    .windowInsetsPadding(com.shub39.grit.shared.ui.rhine.rhineSafeDrawingInsets()),
         )
         if (adjustment.dragging) {
             val m = adjustment.move!!
             Row(
                 Modifier.align(Alignment.TopCenter)
+                    .windowInsetsPadding(rhineSafeDrawingInsets())
                     .padding(top = 12.dp)
                     .widthIn(max = 540.dp)
                     .background(style.floor),
@@ -779,6 +818,7 @@ fun RhineScreen(
             Text(
                 "正在保存排序…",
                 Modifier.align(Alignment.TopCenter)
+                    .windowInsetsPadding(rhineSafeDrawingInsets())
                     .padding(12.dp)
                     .background(style.floor)
                     .padding(8.dp),
@@ -787,6 +827,7 @@ fun RhineScreen(
             Text(
                 if (loading) "载入详情…" else notice!!,
                 Modifier.align(Alignment.TopCenter)
+                    .windowInsetsPadding(rhineSafeDrawingInsets())
                     .padding(12.dp)
                     .background(style.floor)
                     .padding(8.dp),
@@ -879,19 +920,26 @@ fun RhineCanvas(
     onPickup: (RhineSlot, Boolean, Offset) -> Boolean = { _, _, _ -> false },
     onDrop: () -> Unit = {},
     onCancel: () -> Unit = {},
+    display: com.shub39.grit.core.settings.RhineDisplayConfig =
+        com.shub39.grit.core.settings.RhineDisplayConfig(),
+    reduced: Boolean = display.reduceMotion || !rhineSystemAnimationsEnabled(),
 ) {
     val measurer = rememberTextMeasurer(cacheSize = 128)
     val density = LocalDensity.current.density
     val labels =
-        remember(input.layer) {
+        remember(input.layer, display) {
             RhineLabels(
                 zeroTop = { slot ->
                     val c = slot.column
-                    if (c == null) "" else "00  " + c.title
+                    if (c == null) ""
+                    else "${if (display.parentNumbers(input.layer)) "00  " else ""}✎  " + c.title
                 },
                 addParentTop =
                     if (input.layer == RhineLayer.Categories) "+  新建 Category" else "+  新建 Task",
-                sideLabel = { c -> indexLabel(c.index) + "  " + c.title },
+                sideLabel = { c ->
+                    (if (display.parentNumbers(input.layer)) indexLabel(c.index) + "  " else "") +
+                        c.title
+                },
             )
         }
     val currentInput by rememberUpdatedState(input)
@@ -902,14 +950,32 @@ fun RhineCanvas(
     var canvasSize by remember { mutableStateOf(Size(1f, 1f)) }
     val preview = remember { androidx.compose.animation.core.Animatable(0f) }
     var lift by remember { mutableStateOf(0f) }
-    LaunchedEffect(adjustment?.move, adjustment?.target) {
+    var titlePhase by remember { mutableStateOf(0f) }
+    LaunchedEffect(
+        display.scrollFocusedTitle,
+        reduced,
+        input.layer,
+        input.focusV,
+        input.focusU,
+        geometry,
+        LocalDensity.current.fontScale,
+    ) {
+        titlePhase = 0f
+        if (display.scrollFocusedTitle && !reduced) {
+            val start = withFrameNanos { it }
+            while (isActive) {
+                titlePhase = ((withFrameNanos { it } - start) / 1_000_000_000f)
+            }
+        }
+    }
+    LaunchedEffect(adjustment?.move, adjustment?.target, reduced) {
         if (adjustment?.move != null)
             preview.animateTo(
                 adjustment.target.toFloat(),
-                androidx.compose.animation.core.tween(240),
+                androidx.compose.animation.core.tween(if (reduced) 0 else 240),
             )
     }
-    LaunchedEffect(adjustment?.dragging) {
+    LaunchedEffect(adjustment?.dragging, reduced, geometry, density) {
         val move = adjustment?.move
         if (adjustment != null && adjustment.dragging && move != null && browser != null) {
             preview.snapTo(move.source.toFloat())
@@ -921,7 +987,8 @@ fun RhineCanvas(
                 last = now
                 lift =
                     6f +
-                        3f *
+                        (if (reduced) 0f else 1f) *
+                            3f *
                             kotlin.math
                                 .sin((now - start) / 900_000_000.0 * 2 * kotlin.math.PI)
                                 .toFloat()
@@ -1101,6 +1168,8 @@ fun RhineCanvas(
             style,
             labels,
             measurer,
+            display,
+            titlePhase,
         )
     }
 }
@@ -1144,6 +1213,7 @@ private fun RhineHud(
     onOpenTasks: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    display: com.shub39.grit.core.settings.RhineDisplayConfig,
 ) {
     val t = HudText(FontFamily(Font(Res.font.montserrat)), style.ink)
     val focus = focusOverride ?: input.slot(input.focusU.roundToInt(), input.focusV)
@@ -1155,6 +1225,127 @@ private fun RhineHud(
     BoxWithConstraints(modifier) {
         val w = maxWidth
         val h = maxHeight
+
+        if (w < 700.dp || h < 340.dp || LocalDensity.current.fontScale > 1.35f) {
+            Column(Modifier.fillMaxSize().padding(10.dp)) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("GRIT RHINE", style = t.style(14.sp, true))
+                        Text(
+                            if (isCategories) "CATEGORY LAYER" else "SECTION LAYER",
+                            style = t.style(8.sp),
+                        )
+                        Text("MODE  ${mode.name.uppercase()}", style = t.style(9.sp))
+                    }
+                    HudButton("SEARCH", t, enabled, "搜索 Task 标题", 9.sp, onSearch)
+                    Spacer(Modifier.width(12.dp))
+                    HudButton(mode.name.uppercase(), t, enabled, "切换预览/详情模式", 9.sp, onMode)
+                    Spacer(Modifier.width(12.dp))
+                    HudButton("⇤", t, enabled && input.focusU > 0f, "回到开头", 12.sp, onStart)
+                }
+                Box(Modifier.weight(1f).fillMaxWidth()) {
+                    Column(
+                        Modifier.align(Alignment.CenterEnd)
+                            .width(w * 0.49f)
+                            .verticalScroll(androidx.compose.foundation.rememberScrollState())
+                            .background(style.floor.copy(alpha = 0.85f))
+                    ) {
+                        if (onBack != null) HudButton("← 返回类别层", t, enabled, "返回类别层", 10.sp, onBack)
+                        Text(
+                            (if (!isCategories) "${parentTitle.orEmpty()} / " else "") +
+                                (column?.title ?: "新建"),
+                            style = t.style(9.sp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            if (
+                                focus.kind == RhineBlockKind.Real &&
+                                    !display.itemNumbers(input.layer)
+                            )
+                                focus.item?.title ?: "载入中…"
+                            else focusTitle(focus, itemWord),
+                            style =
+                                t.style(12.sp, true)
+                                    .copy(
+                                        color = style.readable(focus.item?.titleColor, style.floor)
+                                    ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(focusStatus(focus), style = t.style(9.sp))
+                        if (mode != RhineMode.Preview) {
+                            val action =
+                                when {
+                                    mode == RhineMode.Adjust -> "移动到第 N 项"
+                                    focus.kind == RhineBlockKind.Zero -> "编辑 $parentWord"
+                                    focus.kind == RhineBlockKind.Real ->
+                                        if (isCategories) "进入 Section 层" else "编辑 Section"
+                                    focus.kind == RhineBlockKind.AddParent -> "新建 $parentWord"
+                                    else -> "尾部新增 $itemWord"
+                                }
+                            HudButton(
+                                action + " →",
+                                t,
+                                enabled &&
+                                    (mode != RhineMode.Adjust ||
+                                        canAdjustRhine(mode, true, input.focusV, focus)),
+                                action,
+                                10.sp,
+                                onAction,
+                            )
+                            if (mode == RhineMode.Detail && column != null)
+                                HudButton("删除焦点对象", t, enabled, "删除焦点对象", 9.sp, onDelete)
+                        }
+                    }
+                }
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "$itemWord ${if(display.itemNumbers(input.layer)) indexLabel(input.focusU.roundToInt()) else "•"}/${column?.itemCount ?: 0}",
+                        Modifier.weight(1f),
+                        style = t.style(10.sp),
+                    )
+                    HudButton("↑", t, enabled && input.focusU > 0, "沿列上一格", 12.sp, { onStepU(-1) })
+                    Spacer(Modifier.width(20.dp))
+                    HudButton(
+                        "↓",
+                        t,
+                        enabled && input.focusU < input.maxU,
+                        "沿列下一格",
+                        12.sp,
+                        { onStepU(1) },
+                    )
+                    Spacer(Modifier.width(20.dp))
+                    HudButton("←", t, enabled && input.focusV > 0, "上一列", 12.sp, { onStepV(-1) })
+                    Text(
+                        column?.title ?: "新建",
+                        Modifier.widthIn(max = w * 0.16f).padding(horizontal = 10.dp),
+                        style = t.style(9.sp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    HudButton(
+                        "→",
+                        t,
+                        enabled && input.focusV < input.maxV,
+                        "下一列",
+                        12.sp,
+                        { onStepV(1) },
+                    )
+                }
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "DONE ${column?.completedCount ?: 0}/${column?.itemCount ?: 0}",
+                        Modifier.weight(1f),
+                        style = t.style(9.sp),
+                    )
+                    HudButton("TASK ↗", t, enabled, onClick = onOpenTasks, size = 9.sp)
+                    Spacer(Modifier.width(16.dp))
+                    HudButton("SETTING ↗", t, enabled, onClick = onOpenSettings, size = 9.sp)
+                }
+            }
+            return@BoxWithConstraints
+        }
 
         // Brand block: product, layer, mode.
         Column(Modifier.offset(x = w * 0.03f, y = h * 0.10f)) {
@@ -1218,7 +1409,7 @@ private fun RhineHud(
                     )
                 HudReadout(
                     (if (!isCategories) "${parentTitle.orEmpty()}  /  " else "") +
-                        "$parentWord ${indexLabel(column?.index ?: input.columnCount + 1)}  /  " +
+                        "$parentWord ${if (display.parentNumbers(input.layer)) indexLabel(column?.index ?: input.columnCount + 1) else ""}  /  " +
                         (column?.title ?: "新建"),
                     style = t.style(9.sp, alpha = 0.6f),
                     maxLines = 1,
@@ -1228,7 +1419,9 @@ private fun RhineHud(
             }
             Spacer(Modifier.height(10.dp))
             HudReadout(
-                focusTitle(focus, itemWord),
+                if (!display.itemNumbers(input.layer) && focus.kind == RhineBlockKind.Real)
+                    focus.item?.title ?: "载入中…"
+                else focusTitle(focus, itemWord),
                 style =
                     t.style(15.sp, bold = true, tracking = 0.03f)
                         .copy(color = style.readable(focus.item?.titleColor, style.floor)),
@@ -1310,7 +1503,8 @@ private fun RhineHud(
             Text(itemWord, style = t.style(9.sp, alpha = 0.7f))
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    indexLabel(input.focusU.roundToInt()),
+                    if (display.itemNumbers(input.layer)) indexLabel(input.focusU.roundToInt())
+                    else "•",
                     style = t.style(30.sp, tracking = 0.02f).copy(fontWeight = FontWeight.Normal),
                 )
                 Spacer(Modifier.width(14.dp))
@@ -1377,8 +1571,9 @@ private fun RhineHud(
             Column(Modifier.padding(horizontal = 22.dp).widthIn(max = w * 0.14f)) {
                 Text(
                     if (column == null) "NEW $parentWord"
-                    else
-                        "$parentWord ${indexLabel(input.focusV + 1)}/${indexLabel(input.columnCount)}",
+                    else if (display.parentNumbers(input.layer))
+                        "$parentWord ${indexLabel(input.focusV + 1)}/${indexLabel(input.columnCount)}"
+                    else parentWord,
                     style = t.style(8.sp, alpha = 0.6f),
                     maxLines = 1,
                 )
@@ -1442,9 +1637,9 @@ private fun RhineHud(
                 style = t.style(8.sp, alpha = 0.6f),
             )
             Spacer(Modifier.weight(1f))
-            HudButton("TASK ↗", t, enabled = true, onClick = onOpenTasks, size = 9.sp)
+            HudButton("TASK ↗", t, enabled = enabled, onClick = onOpenTasks, size = 9.sp)
             Text("   /   ", style = t.style(9.sp, alpha = 0.5f))
-            HudButton("SETTING ↗", t, enabled = true, onClick = onOpenSettings, size = 9.sp)
+            HudButton("SETTING ↗", t, enabled = enabled, onClick = onOpenSettings, size = 9.sp)
         }
     }
 }

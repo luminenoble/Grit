@@ -36,7 +36,17 @@ class SettingsDatastoreImpl(
     private val datastore: DataStore<Preferences>,
 ) : SettingsDatastore {
 
+    override fun getRhineDisplay() =
+        datastore.data.map {
+            com.shub39.grit.core.settings.RhineDisplayConfig.decode(it[rhineDisplayKey])
+        }
+
+    override suspend fun setRhineDisplay(config: com.shub39.grit.core.settings.RhineDisplayConfig) {
+        datastore.edit { it[rhineDisplayKey] = config.encode() }
+    }
+
     companion object {
+        private val rhineDisplayKey = stringPreferencesKey("rhine_display_v1")
         private val startingSectionKey = stringPreferencesKey("starting_page")
         private val is24HrKey = booleanPreferencesKey("is_24Hr")
         private val notificationsKey = booleanPreferencesKey("notifications")

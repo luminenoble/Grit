@@ -1,0 +1,27 @@
+CHECKPOINT 01-empty-start-v1.png
+CHECKPOINT 02-category-form-v1.png
+CHECKPOINT 03-category-keyboard-v1.png
+CHECKPOINT 04-category-zero-v1.png
+CHECKPOINT 05-first-task-v1.png
+CHECKPOINT 06-u99-short-before-v1.png
+CHECKPOINT 07-create-failed-draft-v1.png
+CHECKPOINT 08-short-second-after-v1.png
+ERROR: null root node returned by UiTestAutomationBridge.
+ERROR: null root node returned by UiTestAutomationBridge.
+ERROR: null root node returned by UiTestAutomationBridge.
+ERROR: null root node returned by UiTestAutomationBridge.
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段04尾插删除回归.py", line 52, in <module>
+    if __name__=='__main__': run()
+                             ^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段04尾插删除回归.py", line 32, in run
+    c.start(1,0,dataset='section-uneven');c.click(desc='进入 Section 层');to_section_tail()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 58, in start
+    expect('GRIT RHINE')
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 50, in expect
+    t=tree()
+      ^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 28, in tree
+    raise AssertionError('Accessibility tree unavailable')
+AssertionError: Accessibility tree unavailable

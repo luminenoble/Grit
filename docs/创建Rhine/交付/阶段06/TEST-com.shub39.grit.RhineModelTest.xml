@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.shub39.grit.RhineModelTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-14T08:33:53.538Z" hostname="Lemonade" time="1.093">
+  <properties/>
+  <testcase name="sectionCompletionUsesDateAndDoesNotCompleteTask" classname="com.shub39.grit.RhineModelTest" time="0.039"/>
+  <testcase name="multipleRecordsOnSameDayAndDuplicateTitlesAreAllowed" classname="com.shub39.grit.RhineModelTest" time="0.09"/>
+  <testcase name="backupRoundTripPreservesWorkDatesAndIdentity" classname="com.shub39.grit.RhineModelTest" time="0.907"/>
+  <testcase name="futureCompletionDatesAreRejected" classname="com.shub39.grit.RhineModelTest" time="0.052"/>
+  <testcase name="movingAnItemInsertsAndShiftsIntermediateItems" classname="com.shub39.grit.RhineModelTest" time="0.001"/>
+  <testcase name="legacyFormatAndMissingRequiredFieldsAreRejected" classname="com.shub39.grit.RhineModelTest" time="0.003"/>
+  <testcase name="duplicateSectionsAcrossTasksAndOrphanCategoriesAreRejected" classname="com.shub39.grit.RhineModelTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

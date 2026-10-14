@@ -1,0 +1,12 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+09-placeholder-names-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+18-focused-long-title-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+27-section-hidden-numbers-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Configuration applied and captures passed

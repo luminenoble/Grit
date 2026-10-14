@@ -49,44 +49,70 @@ fun DrawScope.drawRhineScene(
     style: RhineStyle,
     labels: RhineLabels,
     measurer: TextMeasurer,
+    display: com.shub39.grit.core.settings.RhineDisplayConfig =
+        com.shub39.grit.core.settings.RhineDisplayConfig(),
+    titlePhase: Float = 0f,
 ) {
     drawRect(style.floor)
     val d = layout.projection.density
     val pad = 8f * d
     for (block in layout.blocks) {
         val center = centrality(block)
-        drawShadow(block, style, center)
+        if (display.shadow != com.shub39.grit.core.settings.RhineShadow.Off)
+            drawShadow(
+                block,
+                style,
+                center,
+                display.shadow == com.shub39.grit.core.settings.RhineShadow.Low,
+            )
         drawBlock(block, style, center)
         val slot = block.slot
         val focused = slot.v == input.focusV && slot.u.toFloat() == input.focusU
 
         // Side face: the column label.
         val column = slot.column
-        if (column != null && slot.showsSideLabel) {
+        if (
+            column != null &&
+                (slot.showsSideLabel ||
+                    (display.placeholderNames && slot.kind == RhineBlockKind.Placeholder))
+        ) {
             drawFaceText(
                 frame = block.frontFrame,
                 text = labels.sideLabel(column),
-                color = style.readableSide(column.titleColor, style.frontAt(center)),
+                color =
+                    style.readableFace(
+                        column.titleColor,
+                        style.frontAt(center),
+                        style.frontLowAt(center),
+                    ),
                 size = style.sideTextSize,
                 bold = false,
                 pad = pad,
                 measurer = measurer,
+                scrollSeconds = if (focused && display.scrollFocusedTitle) titlePhase else 0f,
             )
         }
 
         // Top face: item index and title.
         val top =
             when (slot.kind) {
-                RhineBlockKind.Real -> slot.item?.let { indexLabel(it.index) + "  " + it.title }
+                RhineBlockKind.Real ->
+                    slot.item?.let {
+                        (if (display.itemNumbers(input.layer)) indexLabel(it.index) + "  "
+                        else "") + it.title
+                    }
                 RhineBlockKind.Zero -> labels.zeroTop(slot)
                 RhineBlockKind.AddParent -> if (slot.u == 0) labels.addParentTop else null
+                RhineBlockKind.Placeholder -> if (display.placeholderNames) column?.title else null
                 else -> null
             }
         if (top != null) {
             val color =
                 when (slot.kind) {
-                    RhineBlockKind.Real -> style.readable(slot.item?.titleColor, style.top)
-                    RhineBlockKind.Zero -> style.readable(column?.titleColor, style.top)
+                    RhineBlockKind.Real ->
+                        style.readableFace(slot.item?.titleColor, style.top, style.topFar)
+                    RhineBlockKind.Zero ->
+                        style.readableFace(column?.titleColor, style.top, style.topFar)
                     else -> style.mutedText
                 }
             drawFaceText(
@@ -98,6 +124,7 @@ fun DrawScope.drawRhineScene(
                 pad = pad,
                 measurer = measurer,
                 trailingMark = slot.item?.isCompleted == true,
+                scrollSeconds = if (focused && display.scrollFocusedTitle) titlePhase else 0f,
             )
         }
         if (focused) drawPolygon(block.top, style.shadow.copy(alpha = 0.55f), stroke = 1.2f * d)
@@ -116,11 +143,17 @@ private fun DrawScope.centrality(block: RhineBlock): Float {
     return t * t * (3f - 2f * t)
 }
 
-private fun DrawScope.drawShadow(block: RhineBlock, style: RhineStyle, center: Float) {
+private fun DrawScope.drawShadow(
+    block: RhineBlock,
+    style: RhineStyle,
+    center: Float,
+    low: Boolean,
+) {
     // Two stacked translucent layers read as a soft contact shadow without a blur pass.
     val alpha = style.shadowAlphaAt(center)
     val path = block.shadow.toPath()
     drawPath(path, style.shadow.copy(alpha = alpha * 0.45f))
+    if (low) return
     val inner =
         block.shadow.mapIndexed { i, p ->
             if (i < 2) lerpOffset(p, block.shadow[3 - i], 0.45f) else p
@@ -173,15 +206,42 @@ private fun DrawScope.drawFaceText(
     pad: Float,
     measurer: TextMeasurer,
     trailingMark: Boolean = false,
+    scrollSeconds: Float = 0f,
 ) {
     val markSpace = if (trailingMark) 14f * density else 0f
     // Reserve equal space on both sides so a completion mark never shifts the title's centre.
     val maxWidth = (frame.width - pad * 2 - markSpace * 2).toInt()
     if (maxWidth <= 0) return
-    val result = measureRhineFaceText(measurer, text, color, size, bold, maxWidth)
+    var result = measureRhineFaceText(measurer, text, color, size, bold, maxWidth)
     // Faces shorter than the text line show nothing rather than a sliver of glyphs. Slats are thin,
     // so allow the line box to touch the face edges; the glyphs themselves sit inside it.
-    if (result.size.height * 0.8f > frame.height) return
+    if (result.size.height * 0.8f > frame.height) {
+        result =
+            measureRhineFaceText(
+                measurer,
+                text,
+                color,
+                size * (frame.height / (result.size.height * 0.8f)),
+                bold,
+                maxWidth,
+            )
+    }
+    val lineSize = result.layoutInput.style.fontSize
+    val natural =
+        if (scrollSeconds > 0f)
+            measurer.measure(
+                text,
+                TextStyle(
+                    color = color,
+                    fontSize = lineSize,
+                    fontWeight = if (bold) FontWeight.SemiBold else FontWeight.Normal,
+                ),
+                maxLines = 1,
+                softWrap = false,
+            )
+        else null
+    val scrolling = natural != null && natural.size.width > maxWidth
+    if (scrolling) result = natural!!
     val matrix =
         Matrix().apply {
             values[Matrix.ScaleX] = frame.xAxis.x
@@ -194,8 +254,23 @@ private fun DrawScope.drawFaceText(
     withTransform({ transform(matrix) }) {
         clipRect(pad * 0.5f, 0f, frame.width - pad * 0.5f, frame.height) {
             val y = (frame.height - result.size.height) / 2f
-            val x = (frame.width - result.size.width) / 2f
-            drawText(result, topLeft = Offset(x, y))
+            val overflow = (result.size.width - maxWidth).coerceAtLeast(0)
+            val travel = overflow / (28f * density)
+            val cycle = 2f * travel + 2f
+            val time = if (cycle > 0) scrollSeconds % cycle else 0f
+            val fraction =
+                when {
+                    time < 1f -> 0f
+                    time < 1f + travel -> (time - 1f) / travel
+                    time < 2f + travel -> 1f
+                    else -> 1f - (time - 2f - travel) / travel
+                }
+            val x =
+                if (scrolling) pad + markSpace - overflow * fraction
+                else (frame.width - result.size.width) / 2f
+            clipRect(pad + markSpace, 0f, frame.width - pad - markSpace, frame.height) {
+                drawText(result, topLeft = Offset(x, y))
+            }
             if (trailingMark) {
                 val r = 4f * density
                 val c = Offset(frame.width - pad - r, frame.height / 2f)

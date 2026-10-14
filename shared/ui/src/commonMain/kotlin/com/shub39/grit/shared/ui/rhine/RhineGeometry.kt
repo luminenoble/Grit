@@ -47,13 +47,17 @@ data class RhineGeometry(
     val peakLift: Float = 70f,
     /** Gaussian spread of the peak, in U slots; wide enough to read as one raised wall. */
     val peakSpread: Float = 4.5f,
-    /** Landscape basis matching the reference: long side rises ~29° to the right, a column runs
-     * ~17° towards the upper left, vertical faces stay vertical. */
+    /**
+     * Landscape basis matching the reference: long side rises ~29° to the right, a column runs ~17°
+     * towards the upper left, vertical faces stay vertical.
+     */
     val basisU: Offset = Offset(-0.959f, -0.282f),
     val basisV: Offset = Offset(0.875f, -0.485f),
     val basisZ: Offset = Offset(0f, -1f),
-    /** Where the focused block's floor centre lands, as a fraction of the scene size. Left of
-     * centre so the focus panel on the right does not cover the wall. */
+    /**
+     * Where the focused block's floor centre lands, as a fraction of the scene size. Left of centre
+     * so the focus panel on the right does not cover the wall.
+     */
     val anchor: Offset = Offset(0.34f, 0.60f),
 ) {
     init {
@@ -133,14 +137,14 @@ class RhineProjection(
      * Slots that may touch the screen, from the screen corners unprojected at the floor and at the
      * tallest block, plus [margin] slots for shadows. Grows with the viewport, never with data.
      */
-    fun visibleSlots(margin: Int = 1): SlotWindow {
+    fun visibleSlots(margin: Int = 1, extraHeight: Float = 9f): SlotWindow {
         var minU = Float.MAX_VALUE
         var maxU = -Float.MAX_VALUE
         var minV = Float.MAX_VALUE
         var maxV = -Float.MAX_VALUE
         val corners =
             listOf(Offset.Zero, Offset(size.width, 0f), Offset(0f, size.height), size.toOffset())
-        for (z in floatArrayOf(0f, geometry.maxHeight * density)) {
+        for (z in floatArrayOf(0f, (geometry.maxHeight + extraHeight) * density)) {
             for (corner in corners) {
                 val w = unproject(corner, z)
                 minU = minOf(minU, w.x / pitchU)
@@ -151,9 +155,11 @@ class RhineProjection(
         }
         return SlotWindow(
             floor(minU).toInt() - margin,
-            ceil(maxU).toInt() + margin,
+            ceil(maxU + (geometry.maxHeight + extraHeight) * density * 0.45f / pitchU).toInt() +
+                margin,
             floor(minV).toInt() - margin,
-            ceil(maxV).toInt() + margin,
+            ceil(maxV + (geometry.maxHeight + extraHeight) * density * 0.225f / pitchV).toInt() +
+                margin,
         )
     }
 

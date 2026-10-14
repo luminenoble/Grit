@@ -1,0 +1,44 @@
+{
+  "23-settings-save-restart-reset-v1.mp4": {
+    "stream": {
+      "ffmpeg_version": "7.0.2-static https://johnvansickle.com/ffmpeg/ built with gcc 8 (Debian 8.3.0-6)",
+      "codec": "h264",
+      "pix_fmt": "yuv420p(tv, bt709, progressive)",
+      "fps": 1.3,
+      "source_size": [
+        2400,
+        1080
+      ],
+      "size": [
+        2400,
+        1080
+      ],
+      "rotate": 0,
+      "duration": 55.54
+    },
+    "frames": 72,
+    "seconds": 55.51,
+    "review_samples": 222
+  },
+  "24-focused-scroll-and-reduced-v1.mp4": {
+    "stream": {
+      "ffmpeg_version": "7.0.2-static https://johnvansickle.com/ffmpeg/ built with gcc 8 (Debian 8.3.0-6)",
+      "codec": "h264",
+      "pix_fmt": "yuv420p(tv, bt709, progressive)",
+      "fps": 5.05,
+      "source_size": [
+        2400,
+        1080
+      ],
+      "size": [
+        2400,
+        1080
+      ],
+      "rotate": 0,
+      "duration": 19.79
+    },
+    "frames": 100,
+    "seconds": 19.71,
+    "review_samples": 79
+  }
+}

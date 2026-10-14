@@ -1,0 +1,26 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS configurations keep every business field and focus ID
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS cancel draft does not save
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS UI save and process restart persist
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS UI reset and save
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS lower configuration preserves upper return snapshot
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS configuration closes uncommitted position panel
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS configuration cancels search and stale input

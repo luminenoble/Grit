@@ -77,6 +77,19 @@ data class RhineStyle(
         return fallback
     }
 
+    /** Text must contrast with both ends of a shaded face, rather than just one sample. */
+    fun readableFace(value: String?, a: Color, b: Color): Color {
+        var color = readable(value, a)
+        val blackScore = minOf(contrast(Color.Black, a), contrast(Color.Black, b))
+        val whiteScore = minOf(contrast(Color.White, a), contrast(Color.White, b))
+        val towards = if (blackScore >= whiteScore) Color.Black else Color.White
+        repeat(32) {
+            if (minOf(contrast(color, a), contrast(color, b)) >= 4.5f) return color
+            color = lerp(color, towards, 0.08f)
+        }
+        return towards
+    }
+
     /** Side face colours for a block whose centrality is [center] (1 = screen centre, 0 = edge). */
     fun frontAt(center: Float): Color = lerp(frontEdge, front, center)
 

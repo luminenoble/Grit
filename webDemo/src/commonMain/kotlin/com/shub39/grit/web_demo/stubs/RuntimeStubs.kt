@@ -40,6 +40,14 @@ class ThemeDatastoreStub : ThemeDatastore {
 
 @Single(binds = [SettingsDatastore::class])
 class SettingsDatastoreStub : SettingsDatastore {
+    private val rhine = MutableStateFlow(com.shub39.grit.core.settings.RhineDisplayConfig())
+
+    override fun getRhineDisplay() = rhine.asStateFlow()
+
+    override suspend fun setRhineDisplay(config: com.shub39.grit.core.settings.RhineDisplayConfig) {
+        rhine.value = config.normalized()
+    }
+
     private val page = MutableStateFlow(Sections.Tasks)
     private val hours = MutableStateFlow(false)
     private val notifications = MutableStateFlow(false)

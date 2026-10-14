@@ -20,29 +20,39 @@ import android.os.Bundle
 import android.view.MotionEvent
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.room3.Room
 import androidx.room3.withWriteTransaction
+import com.shub39.grit.core.data.datastore.SettingsDatastoreImpl
 import com.shub39.grit.core.data.notification.GritNotificationManager
 import com.shub39.grit.core.interfaces.AlarmScheduler
+import com.shub39.grit.core.settings.*
 import com.shub39.grit.core.tasks.*
 import com.shub39.grit.shared.ui.rhine.*
+import com.shub39.grit.shared.ui.setting.ui.section.RhineDisplayPage
 import com.shub39.grit.shared.ui.theme.GritTheme
 import com.shub39.grit.tasks.data.database.*
 import com.shub39.grit.tasks.data.repository.TasksRepository
 import kotlin.time.Clock
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
@@ -52,6 +62,9 @@ import kotlinx.datetime.LocalDateTime
 class RhinePreviewActivity : FragmentActivity() {
     private lateinit var db: TaskDatabase
     private lateinit var repository: TaskRepo
+    private val fixtureModel by viewModels<RhineFixtureModel>()
+    private lateinit var displayStore: SettingsDatastoreImpl
+    private var display by mutableStateOf(RhineDisplayConfig())
     private var moveAttempts = 0
     private var moveCommits = 0
     private var traceTouch by mutableStateOf<Offset?>(null)
@@ -72,23 +85,48 @@ class RhinePreviewActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        db = Room.inMemoryDatabaseBuilder<TaskDatabase>(this).build()
+        displayStore =
+            fixtureModel.store
+                ?: SettingsDatastoreImpl(
+                        applicationContext,
+                        androidx.datastore.preferences.core.PreferenceDataStoreFactory.create(
+                            scope = fixtureModel.scope
+                        ) {
+                            preferencesDataStoreFile("rhine06-isolated")
+                        },
+                    )
+                    .also { fixtureModel.store = it }
+        db =
+            fixtureModel.db
+                ?: Room.inMemoryDatabaseBuilder<TaskDatabase>(applicationContext).build().also {
+                    fixtureModel.db = it
+                }
         val fixture = intent.getStringExtra("dataset") ?: "normal"
         lifecycleScope.launch {
-            withContext(Dispatchers.IO) { db.withWriteTransaction { seed(fixture) } }
+            if (fixtureModel.repository == null)
+                withContext(Dispatchers.IO) { db.withWriteTransaction { seed(fixture) } }
+            if (intent.getBooleanExtra("resetDisplay", false))
+                displayStore.setRhineDisplay(RhineDisplayConfig())
+            display =
+                (savedInstanceState?.getString("rhine06-display")
+                        ?: intent.getStringExtra("displayConfig"))
+                    ?.let { RhineDisplayConfig.decode(it) }
+                    ?: displayStore.getRhineDisplay().first()
             repository =
-                TasksRepository(
-                    this@RhinePreviewActivity,
-                    db,
-                    object : AlarmScheduler {
-                        override fun schedule(task: Task) {}
+                fixtureModel.repository
+                    ?: TasksRepository(
+                            applicationContext,
+                            db,
+                            object : AlarmScheduler {
+                                override fun schedule(task: Task) {}
 
-                        override fun cancel(task: Task) {}
+                                override fun cancel(task: Task) {}
 
-                        override fun cancelAll() {}
-                    },
-                    GritNotificationManager(this@RhinePreviewActivity),
-                )
+                                override fun cancelAll() {}
+                            },
+                            GritNotificationManager(applicationContext),
+                        )
+                        .also { fixtureModel.repository = it }
             var failDeleteOnce = intent.getBooleanExtra("failDeleteOnce", false)
             suspend fun checkDelete() {
                 kotlinx.coroutines.delay(intent.getLongExtra("submitDelayMs", 700L))
@@ -181,24 +219,64 @@ class RhinePreviewActivity : FragmentActivity() {
                     }
                 }
             val source = RepositoryRhineDataSource(repository)
+            val previewColumns =
+                source.window(source.catalog().first(), SlotWindow(0, 100, 0, 5)).first()
             setContent {
                 GritTheme {
+                    var showDisplay by rememberSaveable {
+                        mutableStateOf(intent.getBooleanExtra("settings", false))
+                    }
+                    var settingsSaving by remember { mutableStateOf(false) }
+                    var settingsMessage by remember { mutableStateOf<String?>(null) }
+                    val sceneHolder =
+                        androidx.compose.runtime.saveable.rememberSaveableStateHolder()
                     Box(Modifier.fillMaxSize()) {
-                        RhineScreen(
-                            onOpenTasks = { finish() },
-                            onOpenSettings = { finish() },
-                            dataSource = source,
-                            editRepository = editorRepo,
-                            initialMode =
-                                if (intent.getBooleanExtra("adjust", false)) RhineMode.Adjust
-                                else if (intent.getBooleanExtra("detail", false)) RhineMode.Detail
-                                else RhineMode.Preview,
-                            initialCamera =
-                                RhineCamera(
+                        if (showDisplay) {
+                            RhineWindowMode()
+                            val input =
+                                RhineSceneInput(
+                                    RhineLayer.Categories,
+                                    previewColumns,
+                                    intent.getFloatExtra("v", 0f).toInt(),
                                     intent.getFloatExtra("u", 0f),
-                                    intent.getFloatExtra("v", 0f),
-                                ),
-                        )
+                                )
+                            RhineDisplayPage(
+                                saved = display,
+                                saving = settingsSaving,
+                                message = settingsMessage,
+                                previewInput = input,
+                                onBack = { showDisplay = false },
+                                onSave = { config ->
+                                    settingsSaving = true
+                                    lifecycleScope.launch {
+                                        displayStore.setRhineDisplay(config)
+                                        display = displayStore.getRhineDisplay().first()
+                                        settingsMessage = "Rhine 显示配置已保存"
+                                        settingsSaving = false
+                                    }
+                                },
+                            )
+                        } else
+                            sceneHolder.SaveableStateProvider("rhine") {
+                                RhineScreen(
+                                    display = display,
+                                    onOpenTasks = { finish() },
+                                    onOpenSettings = { showDisplay = true },
+                                    dataSource = source,
+                                    editRepository = editorRepo,
+                                    initialMode =
+                                        if (intent.getBooleanExtra("adjust", false))
+                                            RhineMode.Adjust
+                                        else if (intent.getBooleanExtra("detail", false))
+                                            RhineMode.Detail
+                                        else RhineMode.Preview,
+                                    initialCamera =
+                                        RhineCamera(
+                                            intent.getFloatExtra("u", 0f),
+                                            intent.getFloatExtra("v", 0f),
+                                        ),
+                                )
+                            }
                         if (intent.getBooleanExtra("traceTouch", false)) {
                             // Pointer-free drawing overlay: it observes Android events, never
                             // consumes them.
@@ -308,6 +386,29 @@ class RhinePreviewActivity : FragmentActivity() {
         lifecycleScope.launch {
             val id = update.getLongExtra("taskId", 2001L)
             when (update.getStringExtra("mutation")) {
+                "display" -> {
+                    display = RhineDisplayConfig.decode(update.getStringExtra("displayConfig"))
+                }
+                "save-display" -> {
+                    displayStore.setRhineDisplay(
+                        RhineDisplayConfig.decode(update.getStringExtra("displayConfig"))
+                    )
+                    display = displayStore.getRhineDisplay().first()
+                }
+                "inspect-display" -> {
+                    val value =
+                        org.json
+                            .JSONObject()
+                            .put("display", display.encode())
+                            .put(
+                                "business",
+                                repository
+                                    .exportSnapshot()
+                                    .copy(exportedAt = kotlin.time.Instant.fromEpochMilliseconds(0))
+                                    .toString(),
+                            )
+                    java.io.File(cacheDir, "rhine06-state.json").writeText(value.toString())
+                }
                 "inspect" -> {
                     val state = org.json.JSONObject()
                     state.put("attempts", moveAttempts).put("commits", moveCommits)
@@ -351,6 +452,16 @@ class RhinePreviewActivity : FragmentActivity() {
                     java.io.File(cacheDir, "rhine05-state.json").writeText(state.toString())
                 }
                 "import-reused" -> repository.replaceData(repository.exportSnapshot())
+                "light-color" ->
+                    repository.getTaskById(id)?.let {
+                        repository.upsertTask(it.copy(titleColor = "#FFFFFF"))
+                    }
+                "long-title" ->
+                    repository.getTaskById(id)?.let {
+                        repository.upsertTask(
+                            it.copy(title = "聚焦长标题单行滚动：这是一段用于核对面内裁剪与完整标题浏览的中文示例文字")
+                        )
+                    }
                 "rename" ->
                     repository.getTaskById(id)?.let {
                         repository.upsertTask(it.copy(title = "外部修改", titleColor = "#97564A"))
@@ -378,8 +489,25 @@ class RhinePreviewActivity : FragmentActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        db.close()
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString("rhine06-display", display.encode())
+        super.onSaveInstanceState(outState)
+    }
+}
+
+/**
+ * Keeps only the isolated fixture through Activity recreation, like the production singleton
+ * repository.
+ */
+class RhineFixtureModel : androidx.lifecycle.ViewModel() {
+    var db: TaskDatabase? = null
+    var repository: TaskRepo? = null
+    var store: SettingsDatastoreImpl? = null
+    val scope =
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.IO)
+
+    override fun onCleared() {
+        db?.close()
+        scope.cancel()
     }
 }

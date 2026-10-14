@@ -1,0 +1,6 @@
+PASS rename/color update preserves stable move identity and current title
+PASS case-insensitive search, completed, pages, empty and literal-title results
+PASS search failure retries; rapid new input rejects delayed old results
+PASS selected stale result follows moved ID; deleted result leaves valid scene
+PASS second-layer search returns upper preview, clears parent; import/back discard pending query
+PASS edge scrolling clamps to last real item, never U101 placeholder

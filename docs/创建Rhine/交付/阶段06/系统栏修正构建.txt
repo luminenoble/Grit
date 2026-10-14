@@ -1,0 +1,101 @@
+Type-safe project accessors is an incubating feature.
+> Task :shared:core:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:core:compileKotlinJvm UP-TO-DATE
+> Task :shared:core:compileJvmMainJava NO-SOURCE
+> Task :shared:core:jvmProcessResources NO-SOURCE
+> Task :shared:core:processJvmMainResources SKIPPED
+> Task :shared:core:jvmMainClasses UP-TO-DATE
+> Task :shared:core:jvmJar UP-TO-DATE
+> Task :shared:ui:checkJvmMainComposeLibrariesCompatibility
+> Task :shared:ui:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:ui:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:ui:convertXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :shared:ui:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :shared:ui:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :shared:ui:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :shared:ui:convertXmlValueResourcesForJvmMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForJvmMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForJvmMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForJvmMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForJvmMain UP-TO-DATE
+> Task :shared:ui:generateComposeResClass UP-TO-DATE
+> Task :shared:ui:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :shared:ui:kspKotlinJvm SKIPPED
+> Task :shared:core:compileKotlinWasmJs UP-TO-DATE
+> Task :shared:ui:checkWasmJsMainComposeLibrariesCompatibility
+> Task :shared:ui:convertXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForWasmJsMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForWasmJsMain NO-SOURCE
+> Task :shared:ui:convertXmlValueResourcesForWebMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForWebMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForWebMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForWebMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForWasmJsMain UP-TO-DATE
+> Task :shared:ui:kspKotlinWasmJs SKIPPED
+> Task :shared:ui:compileKotlinJvm
+> Task :shared:ui:compileKotlinWasmJs
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineEditor.kt:23:43 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineEditor.kt:83:65 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineScreen.kt:38:43 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineScreen.kt:776:69 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineSearch.kt:7:43 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineSearch.kt:204:65 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/setting/ui/section/RhineDisplayPage.kt:7:43 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/setting/ui/section/RhineDisplayPage.kt:53:61 Unresolved reference 'systemBarsIgnoringVisibility'.
+
+> Task :shared:ui:compileKotlinWasmJs FAILED
+
+> Task :shared:ui:compileKotlinJvm
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineEditor.kt:23:43 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineEditor.kt:83:65 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineScreen.kt:38:43 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineScreen.kt:776:69 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineSearch.kt:7:43 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineSearch.kt:204:65 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/setting/ui/section/RhineDisplayPage.kt:7:43 Unresolved reference 'systemBarsIgnoringVisibility'.
+e: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/setting/ui/section/RhineDisplayPage.kt:53:61 Unresolved reference 'systemBarsIgnoringVisibility'.
+
+> Task :shared:ui:compileKotlinJvm FAILED
+
+[Incubating] Problems report is available at: file:///mnt/d/wsl-share/Grit/build/reports/problems/problems-report.html
+
+FAILURE: Build completed with 2 failures.
+
+1: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':shared:ui:compileKotlinWasmJs' (registered in build file 'shared/ui/build.gradle.kts').
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+2: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':shared:ui:compileKotlinJvm' (registered in build file 'shared/ui/build.gradle.kts').
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 1m 3s
+17 actionable tasks: 6 executed, 11 up-to-date

@@ -1,0 +1,27 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS live display change cancels picked source and auto-scroll without save
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS viewport change cancels drag without save
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+ERROR: null root node returned by UiTestAutomationBridge.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS reduced animations and shadow modes preserve sorting
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/补充交互.py", line 21, in <module>
+    click(desc='移动到第 N 项');replace_field(0,'2');back();click(label='确认移动');expect('02   Task 8')
+                                                                                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 51, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 02   Task 8

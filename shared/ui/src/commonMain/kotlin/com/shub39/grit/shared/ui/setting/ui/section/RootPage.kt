@@ -71,6 +71,7 @@ import org.jetbrains.compose.resources.vectorResource
 fun RootPage(
     state: SettingsState,
     onAction: (SettingsAction) -> Unit,
+    onNavigateToRhineDisplay: () -> Unit = {},
     onNavigateToLookAndFeel: () -> Unit,
     onNavigateToBackup: () -> Unit,
     onNavigateToPaywall: () -> Unit,
@@ -100,6 +101,15 @@ fun RootPage(
             contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 16.dp, bottom = 60.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            item {
+                ListItem(
+                    headlineContent = { Text("Rhine 显示") },
+                    supportingContent = { Text("字号、密度、块体与手机预览") },
+                    colors = listItemColors(),
+                    modifier =
+                        Modifier.clip(detachedItemShape()).clickable { onNavigateToRhineDisplay() },
+                )
+            }
             // Grit Plus
             item {
                 ListItem(

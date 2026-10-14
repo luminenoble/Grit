@@ -1,0 +1,13 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS rename/color update preserves stable move identity and current title
+PASS case-insensitive search, completed, pages, empty and literal-title results
+PASS search failure retries; rapid new input rejects delayed old results
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS selected stale result follows moved ID; deleted result leaves valid scene
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS second-layer search returns upper preview, clears parent; import/back discard pending query
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS edge scrolling clamps to last real item, never U101 placeholder
+6 passed, 0 failed

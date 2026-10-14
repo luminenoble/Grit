@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.shub39.grit.RhineHierarchyTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-14T08:33:52.297Z" hostname="Lemonade" time="1.23">
+  <properties/>
+  <testcase name="secondLayerHasFiniteSharedBoundsAndStableSectionHits" classname="com.shub39.grit.RhineHierarchyTest" time="0.098"/>
+  <testcase name="refreshedWindowCannotReplaceStableFocusAtTheSameSlot" classname="com.shub39.grit.RhineHierarchyTest" time="0.072"/>
+  <testcase name="sectionWindowOnlyLoadsVisibleSiblingsAndNeverBody" classname="com.shub39.grit.RhineHierarchyTest" time="1.034"/>
+  <testcase name="deletedItemAndParentFallBackToRealNeighbours" classname="com.shub39.grit.RhineHierarchyTest" time="0.001"/>
+  <testcase name="firstTapOnOtherColumnAndMovingCenterCannotEdit" classname="com.shub39.grit.RhineHierarchyTest" time="0.008"/>
+  <testcase name="placeholdersAndLoadingItemsCannotOperate" classname="com.shub39.grit.RhineHierarchyTest" time="0.0"/>
+  <testcase name="userNavigationCanReplaceFocusAndBoundsChangesKeepIdentity" classname="com.shub39.grit.RhineHierarchyTest" time="0.001"/>
+  <testcase name="emptyTaskReturnsToZero" classname="com.shub39.grit.RhineHierarchyTest" time="0.0"/>
+  <testcase name="sessionCacheRestoresPerTaskAndStaysBounded" classname="com.shub39.grit.RhineHierarchyTest" time="0.015"/>
+  <testcase name="returnRestoresIdentityAfterReorderAndMove" classname="com.shub39.grit.RhineHierarchyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

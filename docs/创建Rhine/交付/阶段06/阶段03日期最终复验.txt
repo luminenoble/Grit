@@ -1,0 +1,29 @@
+ERROR: null root node returned by UiTestAutomationBridge.
+PASS preview taps only position; mode switches to detail
+PASS other column first tap only positions; stable second tap enters scoped siblings
+PASS entering another U slot preserves the original parent Task and offsets
+PASS repeated entry clicks do not open nested forms
+PASS cancel leaves stored Section title unchanged
+30-section-date-keyboard-v1.png
+31-section-date-saved-v1.png
+PASS future date cannot save; past date saves and refreshes HUD
+PASS parent ID/U/V restore and per-Task Section position resume
+PASS Android back matches HUD return
+PASS back during entry cancels transition and restores parent
+PASS empty Task uses shared U and finite placeholder
+PASS viewport resize preserves Task/Section focus
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS external title/color refresh; return follows stable Task ID
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS moved Task leaves sibling directory; parent return follows new Category
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS live Section reorder keeps stable identity and follows its new index
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS cached Section position restores by ID after external reorder
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS deleted Task falls back to real neighbour in surviving Category
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS deleted focused Section resolves to the surviving item without stale ID
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS deleted parent Category exits second layer to surviving neighbour
+18 UI checks passed

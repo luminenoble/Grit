@@ -1,0 +1,42 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+01-standard-20x9-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+02-loose-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+03-compact-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+04-settings-density-v1.png
+05-settings-geometry-v1.png
+06-settings-effects-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+07-hidden-numbers-v1.png
+08-zero-hidden-numbers-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+09-placeholder-names-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+10-light-color-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+11-standard-16x9-v1.png
+12-small-640x360dp-v1.png
+13-small-large-font-v1.png
+14-large-font-20x9-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+15-position-keyboard-v1.png
+ERROR: null root node returned by UiTestAutomationBridge.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+16-reduced-shadow-off-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+17-shadow-low-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+18-focused-long-title-v1.png
+All Android capture assertions passed
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+19-notch-v1.png
+20-hole-v1.png
+21-transient-system-bars-v1.png
+22-settings-large-font-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+ERROR: null root node returned by UiTestAutomationBridge.
+25-settings-font-sliders-v1.png
+26-settings-shadow-controls-v1.png

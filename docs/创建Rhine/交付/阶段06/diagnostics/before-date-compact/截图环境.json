@@ -1,0 +1,234 @@
+{
+  "01-standard-20x9-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "02-loose-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "03-compact-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "04-settings-density-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "05-settings-geometry-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "06-settings-effects-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "07-hidden-numbers-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "08-zero-hidden-numbers-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "09-placeholder-names-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "10-light-color-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "11-standard-16x9-v1.png": {
+    "pixels": [
+      1920,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "12-small-640x360dp-v1.png": {
+    "pixels": [
+      1280,
+      720
+    ],
+    "density": "Physical density: 420\nOverride density: 320",
+    "fontScale": "1.0"
+  },
+  "13-small-large-font-v1.png": {
+    "pixels": [
+      1280,
+      720
+    ],
+    "density": "Physical density: 420\nOverride density: 320",
+    "fontScale": "1.6"
+  },
+  "14-large-font-20x9-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.6"
+  },
+  "15-position-keyboard-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "16-reduced-shadow-off-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "17-shadow-low-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "18-focused-long-title-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "19-notch-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "20-hole-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "21-transient-system-bars-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "22-settings-large-font-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.6"
+  },
+  "25-settings-font-sliders-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "26-settings-shadow-controls-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "diagnostics/section-date-back.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "diagnostics/date-scroll-margin.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "diagnostics/date-after-save.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "30-section-date-keyboard-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  },
+  "31-section-date-saved-v1.png": {
+    "pixels": [
+      2400,
+      1080
+    ],
+    "density": "Physical density: 420",
+    "fontScale": "1.0"
+  }
+}

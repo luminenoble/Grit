@@ -1,0 +1,28 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+ERROR: null root node returned by UiTestAutomationBridge.
+01-standard-20x9-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+02-loose-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+03-compact-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+04-settings-density-v1.png
+05-settings-geometry-v1.png
+06-settings-effects-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+07-hidden-numbers-v1.png
+08-zero-hidden-numbers-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+09-placeholder-names-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+10-light-color-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+11-standard-16x9-v1.png
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集证据.py", line 21, in <module>
+    adb('shell','wm','size','720x1280');adb('shell','wm','density',320);time.sleep(3);expect('08   Task 8');shot('12-small-640x360dp-v1.png')
+                                                                                      ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 51, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 08   Task 8

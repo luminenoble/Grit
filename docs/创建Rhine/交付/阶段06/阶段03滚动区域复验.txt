@@ -1,0 +1,13 @@
+PASS preview taps only position; mode switches to detail
+PASS other column first tap only positions; stable second tap enters scoped siblings
+PASS entering another U slot preserves the original parent Task and offsets
+PASS repeated entry clicks do not open nested forms
+PASS cancel leaves stored Section title unchanged
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段03交互回归.py", line 53, in <module>
+    c.replace_field(date_index,'2026-01-03');scroll_fields(240,290);c.expect('保存');c.expect('取消');c.shot('17-section-date-keyboard-v1.png');c.click(label='保存');c.expect('DATE 2026-01-03')
+                                                                                                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 51, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: DATE 2026-01-03

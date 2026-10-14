@@ -1,0 +1,134 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS Task 8→2, middle shift, reverse by ordinal, stable parent and one commit
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS original release, Android back and ordinal cancel never call move
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS preview/detail long press, placeholder, unique add column and decoration cannot sort
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS noncenter first tap only centers, never opens position form
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS Category zero moves whole column, excludes zero from content ordering
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS Section 8→2 and sibling Task zero along V; parent return follows ID
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS invalid ordinals rejected without call; failure retains retry context
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS rapid confirmation and back during commit submit exactly once
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS ordinal invalidates on reorder, external move/delete, parent deletion and reused import
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS active drag cancels on mutation/import/size change without a write
+FAIL rename/color update preserves stable move identity and current title
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段05回归.py", line 8, in check
+    fn();checks.append(name);print('PASS '+name,flush=True)
+    ^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段05回归.py", line 91, in rename_drag
+    start(8,1,dataset='adjust',adjust=True);click(desc='移动到第 N 项');mutate('rename',taskId=2007)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 58, in start
+    expect('GRIT RHINE')
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 51, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: GRIT RHINE
+
+FAIL case-insensitive search, completed, pages, empty and literal-title results
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段05回归.py", line 8, in check
+    fn();checks.append(name);print('PASS '+name,flush=True)
+    ^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段05回归.py", line 96, in search_basics
+    start(0,0,dataset='search');click(desc='搜索 Task 标题');replace_field(0,'aLpHa');back();expect('Alpha 设计评审 1');expect('已完成')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 58, in start
+    expect('GRIT RHINE')
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 51, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: GRIT RHINE
+
+FAIL search failure retries; rapid new input rejects delayed old results
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段05回归.py", line 8, in check
+    fn();checks.append(name);print('PASS '+name,flush=True)
+    ^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段05回归.py", line 103, in search_retry_latest
+    start(0,0,dataset='search',fail_search=True);click(desc='搜索 Task 标题');replace_field(0,'alpha');back();expect('搜索失败');click(label='重试搜索');expect('Alpha 设计评审 1')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 58, in start
+    expect('GRIT RHINE')
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 51, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: GRIT RHINE
+
+FAIL selected stale result follows moved ID; deleted result leaves valid scene
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段05回归.py", line 8, in check
+    fn();checks.append(name);print('PASS '+name,flush=True)
+    ^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段05回归.py", line 108, in search_stale
+    start(0,0,dataset='adjust');click(desc='搜索 Task 标题');replace_field(0,'Task%s8');back();mutate('move',taskId=1007)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 58, in start
+    expect('GRIT RHINE')
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 51, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: GRIT RHINE
+
+FAIL second-layer search returns upper preview, clears parent; import/back discard pending query
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段05回归.py", line 8, in check
+    fn();checks.append(name);print('PASS '+name,flush=True)
+    ^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段05回归.py", line 115, in search_section_import_back
+    start(1,0,dataset='adjust');click(desc='进入 Section 层');click(desc='搜索 Task 标题');replace_field(0,'Task%s8');back();click(label='Task 8');expect('CATEGORY LAYER');expect('MODE  PREVIEW');assert not nodes(desc='返回类别层')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 58, in start
+    expect('GRIT RHINE')
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 51, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: GRIT RHINE
+
+FAIL edge scrolling clamps to last real item, never U101 placeholder
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段05回归.py", line 8, in check
+    fn();checks.append(name);print('PASS '+name,flush=True)
+    ^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段05回归.py", line 121, in finite_edge
+    start(99,0,dataset='uneven',adjust=True);pickup();drag_to(20,126);time.sleep(3);release(20,126);state=inspect();assert task(state,1098)['order']==99;assert len(ids(state,1))==100;expect('100   A · Task 99')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 58, in start
+    expect('GRIT RHINE')
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 51, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: GRIT RHINE
+
+10 passed, 6 failed

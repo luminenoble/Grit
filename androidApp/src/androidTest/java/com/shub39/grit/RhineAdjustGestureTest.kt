@@ -42,6 +42,22 @@ class RhineAdjustGestureTest {
         ActivityScenario.launch<RhinePreviewActivity>(intent).use { scenario ->
             awaitText("ADJUST")
             SystemClock.sleep(500)
+            fun find(node: AccessibilityNodeInfo?, description: String): AccessibilityNodeInfo? {
+                if (node == null) return null
+                if (node.contentDescription?.toString() == description) return node
+                for (i in 0 until node.childCount) {
+                    find(node.getChild(i), description)?.let {
+                        return it
+                    }
+                }
+                return null
+            }
+            val modeBounds = android.graphics.Rect()
+            val modeNode = find(automation.rootInActiveWindow, "切换预览/详情模式")
+            assertNotNull("Mode control must be accessible", modeNode)
+            modeNode!!.getBoundsInScreen(modeBounds)
+            assertFalse(modeBounds.isEmpty)
+            val modePoint = modeBounds.exactCenterX() to modeBounds.exactCenterY()
             val downTime = SystemClock.uptimeMillis()
             fun event(action: Int, points: List<Pair<Float, Float>>) {
                 val properties =
@@ -90,12 +106,12 @@ class RhineAdjustGestureTest {
             awaitText("8 → 2")
             event(
                 MotionEvent.ACTION_POINTER_DOWN or (1 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT),
-                listOf(1330f to 511f, 2010f to 135f),
+                listOf(1330f to 511f, modePoint),
             )
             SystemClock.sleep(100)
             event(
                 MotionEvent.ACTION_POINTER_UP or (1 shl MotionEvent.ACTION_POINTER_INDEX_SHIFT),
-                listOf(1330f to 511f, 2010f to 135f),
+                listOf(1330f to 511f, modePoint),
             )
             event(MotionEvent.ACTION_UP, listOf(1330f to 511f))
             awaitText("PREVIEW")

@@ -38,6 +38,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass.Companion.Compact
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,13 +86,24 @@ fun MainApp(state: MainAppState, onNavigateToPaywall: () -> Unit) {
         appBackStack.add(route)
     }
 
+    val rhineStateHolder = androidx.compose.runtime.saveable.rememberSaveableStateHolder()
+
     // Rhine is landscape-only and immersive; it replaces the navigation chrome entirely, so a
     // landscape phone (no longer Compact) never shows the rail beside it.
     if (appBackStack.last() == AppSections.RhinePages) {
-        RhineScreen(
-            onOpenTasks = { navigate(AppSections.TaskPages) },
-            onOpenSettings = { navigate(AppSections.SettingsPages) },
-        )
+        val displayStore =
+            org.koin.compose.koinInject<com.shub39.grit.core.interfaces.SettingsDatastore>()
+        val display by
+            displayStore
+                .getRhineDisplay()
+                .collectAsState(initial = com.shub39.grit.core.settings.RhineDisplayConfig())
+        rhineStateHolder.SaveableStateProvider("rhine") {
+            RhineScreen(
+                display = display,
+                onOpenTasks = { navigate(AppSections.TaskPages) },
+                onOpenSettings = { navigate(AppSections.SettingsPages) },
+            )
+        }
         return
     }
 
@@ -142,7 +154,6 @@ fun MainApp(state: MainAppState, onNavigateToPaywall: () -> Unit) {
                                     )
                                 }
                             }
-
                         },
                 )
             }
@@ -185,7 +196,6 @@ fun MainApp(state: MainAppState, onNavigateToPaywall: () -> Unit) {
                                     onNavigateToPaywall = onNavigateToPaywall,
                                 )
                             }
-
                         },
                 )
             }

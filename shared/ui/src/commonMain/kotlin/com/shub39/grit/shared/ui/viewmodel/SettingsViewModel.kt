@@ -74,6 +74,21 @@ class SettingsViewModel(
     fun onAction(action: SettingsAction) =
         viewModelScope.launch {
             when (action) {
+                is SettingsAction.SaveRhineDisplay -> {
+                    if (_state.value.rhineSaving) return@launch
+                    _state.update { it.copy(rhineSaving = true, rhineMessage = null) }
+                    try {
+                        settingsDatastore.setRhineDisplay(action.config)
+                        _state.update { it.copy(rhineMessage = "Rhine 显示配置已保存") }
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        _state.update { it.copy(rhineMessage = "保存失败，请重试") }
+                    } finally {
+                        _state.update { it.copy(rhineSaving = false) }
+                    }
+                }
+
                 is ChangeIs24Hr -> settingsDatastore.setIs24Hr(action.pref)
 
                 is ChangeStartingPage -> settingsDatastore.setStartingPage(action.page)
@@ -242,6 +257,11 @@ class SettingsViewModel(
         viewModelScope.launch {
             observeJob?.cancel()
             observeJob = launch {
+                settingsDatastore
+                    .getRhineDisplay()
+                    .onEach { config -> _state.update { it.copy(rhineDisplay = config) } }
+                    .launchIn(this)
+
                 settingsDatastore
                     .getTaskReorderPref()
                     .onEach { pref -> _state.update { it.copy(reorderTasks = pref) } }

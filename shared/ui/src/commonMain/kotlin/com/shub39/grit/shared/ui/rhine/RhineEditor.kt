@@ -18,6 +18,7 @@ package com.shub39.grit.shared.ui.rhine
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -72,7 +73,11 @@ fun RhineEditor(
                 dismissOnClickOutside = !saving,
             ),
     ) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterEnd) {
+        Box(
+            Modifier.fillMaxSize()
+                .windowInsetsPadding(com.shub39.grit.shared.ui.rhine.rhineSafeDrawingInsets()),
+            contentAlignment = Alignment.CenterEnd,
+        ) {
             Column(
                 Modifier.fillMaxHeight()
                     .fillMaxWidth(0.68f)

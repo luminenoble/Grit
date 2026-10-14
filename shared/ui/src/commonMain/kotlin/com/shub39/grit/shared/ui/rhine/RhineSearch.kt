@@ -2,6 +2,8 @@ package com.shub39.grit.shared.ui.rhine
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -145,9 +147,16 @@ fun RhinePositionPanel(
 ) {
     var text by remember(move) { mutableStateOf((initialPosition + 1).toString()) }
     val position = movePosition(text, move.count)
+    val keyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     RhinePanel(onClose) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("移动到第 N 项", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "移动到第 N 项",
+                Modifier.weight(1f),
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            )
             Row {
                 TextButton(
                     enabled = !submitting,
@@ -169,8 +178,10 @@ fun RhinePositionPanel(
             Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(move.label)
-            Text(if (move.parent) "整列顺序 · 同级真实父对象" else "只调整当前父对象内的顺序")
+            if (!keyboardVisible) {
+                Text(move.label)
+                Text(if (move.parent) "整列顺序 · 同级真实父对象" else "只调整当前父对象内的顺序")
+            }
             OutlinedTextField(
                 text,
                 { text = it },
@@ -178,7 +189,7 @@ fun RhinePositionPanel(
                 singleLine = true,
                 label = { Text("目标序号（1–${move.count}）") },
                 isError = position == null,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
             )
             if (position == null)
                 Text("请输入 1–${move.count} 的整数", color = MaterialTheme.colorScheme.error)
@@ -190,20 +201,22 @@ fun RhinePositionPanel(
 /** Fixed actions above a separately scrolling body, including with the landscape IME open. */
 @Composable
 private fun RhinePanel(onClose: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
+    val keyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     Dialog(
         onDismissRequest = onClose,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Surface(
-            Modifier.imePadding()
-                .padding(8.dp)
+            Modifier.windowInsetsPadding(com.shub39.grit.shared.ui.rhine.rhineSafeDrawingInsets())
+                .imePadding()
+                .padding(if (keyboardVisible) 4.dp else 8.dp)
                 .widthIn(max = 660.dp)
                 .fillMaxWidth()
                 .fillMaxHeight(),
             shape = MaterialTheme.shapes.large,
         ) {
             Column(
-                Modifier.padding(12.dp),
+                Modifier.padding(if (keyboardVisible) 4.dp else 12.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 content = content,
             )

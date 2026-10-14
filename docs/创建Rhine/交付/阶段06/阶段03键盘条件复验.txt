@@ -1,0 +1,13 @@
+PASS preview taps only position; mode switches to detail
+PASS other column first tap only positions; stable second tap enters scoped siblings
+PASS entering another U slot preserves the original parent Task and offsets
+PASS repeated entry clicks do not open nested forms
+PASS cancel leaves stored Section title unchanged
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/阶段03交互回归.py", line 46, in <module>
+    c.replace_field(date_index,'2099-01-01');c.back();c.click(label='保存');c.expect('编辑 Section');c.expect('不能晚于今天')
+                                                      ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段06/采集工具.py", line 44, in click
+    if not ns: raise AssertionError(f'Control missing: {label or desc}')
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Control missing: 保存

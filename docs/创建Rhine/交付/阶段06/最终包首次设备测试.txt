@@ -1,0 +1,26 @@
+
+com.shub39.grit.RhineAdjustGestureTest:
+Error in modeSwitchCancelsHeldDragWithoutSubmitting(com.shub39.grit.RhineAdjustGestureTest):
+java.lang.AssertionError: Missing: PREVIEW; actual:         GRIT RHINE CATEGORY LAYER MODE  ADJUST   ⌕  SEARCH    +  ADJUST    ⇤  CATEGORY 01  /  学习 08   Task 8   ○ 未完成 DATE —   移动到第 N 项  →  TASK 08 /  12   ↑    ↓  调整 · 长按沿 U 排内容 / 0 号沿 V 排整列 · 点按序号   ←  CATEGORY 01/05 学习   →  DONE  03 / 12   05 CATEGORIES  ·  30 TASKS  TASK ↗     /     SETTING ↗
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.shub39.grit.RhineAdjustGestureTest.modeSwitchCancelsHeldDragWithoutSubmitting$awaitText(RhineAdjustGestureTest.kt:34)
+	at com.shub39.grit.RhineAdjustGestureTest.modeSwitchCancelsHeldDragWithoutSubmitting(RhineAdjustGestureTest.kt:101)
+
+com.shub39.grit.RhineAdjustRepositoryTest:.....
+com.shub39.grit.RhineBrowseRepositoryTest:...
+com.shub39.grit.RhineDetailRepositoryTest:...
+com.shub39.grit.RhineDisplayPersistenceTest:...
+com.shub39.grit.RhineMutationRepositoryTest:....
+com.shub39.grit.RhineTextLayoutTest:..
+com.shub39.grit.TaskRepositoryTest:....
+
+Time: 16.419
+There was 1 failure:
+1) modeSwitchCancelsHeldDragWithoutSubmitting(com.shub39.grit.RhineAdjustGestureTest)
+java.lang.AssertionError: Missing: PREVIEW; actual:         GRIT RHINE CATEGORY LAYER MODE  ADJUST   ⌕  SEARCH    +  ADJUST    ⇤  CATEGORY 01  /  学习 08   Task 8   ○ 未完成 DATE —   移动到第 N 项  →  TASK 08 /  12   ↑    ↓  调整 · 长按沿 U 排内容 / 0 号沿 V 排整列 · 点按序号   ←  CATEGORY 01/05 学习   →  DONE  03 / 12   05 CATEGORIES  ·  30 TASKS  TASK ↗     /     SETTING ↗
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.shub39.grit.RhineAdjustGestureTest.modeSwitchCancelsHeldDragWithoutSubmitting$awaitText(RhineAdjustGestureTest.kt:34)
+	at com.shub39.grit.RhineAdjustGestureTest.modeSwitchCancelsHeldDragWithoutSubmitting(RhineAdjustGestureTest.kt:101)
+
+FAILURES!!!
+Tests run: 25,  Failures: 1
