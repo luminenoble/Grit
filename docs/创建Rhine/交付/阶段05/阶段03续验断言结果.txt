@@ -1,0 +1,6 @@
+PASS moved Task leaves sibling directory; parent return follows new Category
+PASS live Section reorder keeps stable identity and follows its new index
+PASS cached Section position restores by ID after external reorder
+PASS deleted Task falls back to real neighbour in surviving Category
+PASS deleted focused Section resolves to the surviving item without stale ID
+PASS deleted parent Category exits second layer to surviving neighbour

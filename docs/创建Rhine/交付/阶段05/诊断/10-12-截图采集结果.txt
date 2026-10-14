@@ -1,0 +1,30 @@
+01-preview-v1.png
+02-detail-v1.png
+03-adjust-v1.png
+04-task-picked-v1.png
+05-task-target-two-v1.png
+06-task-moved-two-v1.png
+07-position-form-v1.png
+08-position-keyboard-v1.png
+09-position-invalid-v1.png
+10-position-cancel-v1.png
+11-position-failure-v1.png
+12-category-picked-v1.png
+13-category-target-v1.png
+14-category-moved-v1.png
+15-section-picked-v1.png
+16-section-target-two-v1.png
+17-section-moved-two-v1.png
+18-sibling-picked-v1.png
+19-sibling-moved-v1.png
+20-search-duplicates-completed-v1.png
+21-search-empty-v1.png
+22-search-from-sections-v1.png
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/采集证据.py", line 29, in <module>
+    replace_field(0,'Task%s8');back();shot('22-search-from-sections-v1.png');click(label='Task 8');expect('CATEGORY LAYER');expect('MODE  PREVIEW');shot('23-search-located-preview-v1.png')
+                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/采集工具.py", line 37, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CATEGORY LAYER

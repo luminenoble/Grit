@@ -1,0 +1,21 @@
+01-preview-v1.png
+02-detail-v1.png
+03-adjust-v1.png
+04-task-picked-v1.png
+05-task-target-two-v1.png
+06-task-moved-two-v1.png
+07-position-form-v1.png
+08-position-keyboard-v1.png
+09-position-invalid-v1.png
+10-position-cancel-v1.png
+11-position-failure-v1.png
+12-category-picked-v1.png
+13-category-target-v1.png
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/采集证据.py", line 18, in <module>
+    expect('CATEGORY 02');shot('14-category-moved-v1.png')
+    ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/采集工具.py", line 37, in expect
+    assert any(text in (n.get('text','')+' '+n.get('content-desc','')) for n in t.iter('node')),text
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: CATEGORY 02

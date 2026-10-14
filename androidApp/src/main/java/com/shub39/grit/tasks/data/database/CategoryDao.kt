@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CategoryDao {
+    @Query("SELECT id FROM categories ORDER BY orderIndex") suspend fun orderedIds(): List<Long>
+
     @Query("SELECT * FROM categories ORDER BY orderIndex")
     fun getCategoriesFlow(): Flow<List<CategoryEntity>>
 

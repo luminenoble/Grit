@@ -1,0 +1,7 @@
+ERROR: null root node returned by UiTestAutomationBridge.
+ERROR: null root node returned by UiTestAutomationBridge.
+PASS case-insensitive search, completed, pages, empty and literal-title results
+ERROR: null root node returned by UiTestAutomationBridge.
+ERROR: null root node returned by UiTestAutomationBridge.
+PASS search failure retries; rapid new input rejects delayed old results
+2 passed, 0 failed

@@ -51,6 +51,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -85,6 +86,7 @@ import com.shub39.grit.shared.ui.task.ui.component.DraftBackHandler
 import grit.shared.ui.generated.resources.Res
 import grit.shared.ui.generated.resources.montserrat
 import kotlin.math.roundToInt
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.Font
@@ -132,15 +134,242 @@ fun RhineScreen(
     var error by remember { mutableStateOf<String?>(null) }
     var notice by remember { mutableStateOf<String?>(null) }
     var deleting by remember { mutableStateOf(false) }
-    val blocked = transition || loading || saving || edit != null
+    LaunchedEffect(notice) {
+        if (notice != null) {
+            delay(3000)
+            notice = null
+        }
+    }
+    val adjustment = remember { RhineAdjustment() }
+    var contentScope by remember { mutableStateOf<MoveScope?>(null) }
+    var parentScope by remember { mutableStateOf<MoveScope?>(null) }
+    var search by remember { mutableStateOf<RhineSearchState?>(null) }
+    var selectionJob by remember { mutableStateOf<Job?>(null) }
+    var selecting by remember { mutableStateOf(false) }
+    val blocked =
+        transition ||
+            loading ||
+            saving ||
+            edit != null ||
+            adjustment.submitting ||
+            (adjustment.move != null && !adjustment.dragging) ||
+            search != null
     val activeSource = if (session.showingSections) sectionSource!! else source
 
+    fun cancelAdjustment() {
+        if (adjustment.submitting) return
+        val previous = adjustment.move
+        adjustment.clear()
+        browser.reconciling = false
+        browser.transientSnapshot = null
+        if (previous != null)
+            browser.restore(
+                previous.before.copy(camera = browser.bounds.clamp(previous.before.camera))
+            )
+    }
+    LaunchedEffect(
+        repo,
+        session.mode,
+        input.layer,
+        input.columns.getOrNull(browser.center)?.id,
+        session.generation,
+    ) {
+        contentScope = null
+        parentScope = null
+        if (repo != null && session.mode == RhineMode.Adjust) {
+            while (isActive) {
+                try {
+                    val column = input.columns.getOrNull(browser.center)
+                    if (column != null) {
+                        contentScope =
+                            repo.readMoveScope(
+                                if (input.layer == RhineLayer.Categories) MoveKind.Task
+                                else MoveKind.Section,
+                                column.id,
+                            )
+                        parentScope =
+                            repo.readMoveScope(
+                                if (input.layer == RhineLayer.Categories) MoveKind.Category
+                                else MoveKind.Task,
+                                if (input.layer == RhineLayer.Categories) null
+                                else session.categoryId,
+                            )
+                    }
+                } catch (_: IllegalArgumentException) {
+                    contentScope = null
+                    parentScope = null
+                }
+                delay(200)
+            }
+        }
+    }
+    LaunchedEffect(adjustment.move, adjustment.submitting) {
+        val move = adjustment.move
+        if (move != null && !adjustment.submitting && repo != null) {
+            while (isActive) {
+                try {
+                    move.scope.validate(repo.readMoveScope(move.scope.kind, move.scope.parentId))
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    cancelAdjustment()
+                    notice = "对象、归属或顺序已变化，已取消移动"
+                    break
+                }
+                delay(150)
+            }
+        }
+    }
+    LaunchedEffect(viewport) { if (adjustment.dragging) cancelAdjustment() }
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose {
+            adjustment.clear()
+            upper.reconciling = false
+            lower.reconciling = false
+        }
+    }
+    fun beginAdjustment(
+        slot: RhineSlot,
+        stable: Boolean,
+        drag: Boolean,
+        point: Offset = Offset.Zero,
+    ): Boolean {
+        if (
+            blocked ||
+                repo == null ||
+                adjustment.move != null ||
+                !canAdjustRhine(session.mode, stable, browser.center, slot)
+        )
+            return false
+        val parent = slot.kind == RhineBlockKind.Zero
+        val state = (if (parent) parentScope else contentScope) ?: return false
+        val id = if (parent) slot.column!!.id else slot.item!!.id
+        if (
+            state.generation != session.generation ||
+                state.ids.indexOf(id) != (if (parent) slot.v else slot.u - 1)
+        )
+            return false
+        browser.stop()
+        val before = browser.snapshot()
+        browser.reconciling = true
+        browser.transientSnapshot = before
+        adjustment.move = RhineMove(id, parent, input.layer, slot.column!!.id, state, before, slot)
+        adjustment.target = state.ids.indexOf(id)
+        adjustment.positionDialog = !drag
+        adjustment.dragging = drag
+        adjustment.error = null
+        adjustment.origin = point
+        adjustment.pointer = point
+        adjustment.cameraStart = browser.camera
+        notice = null
+        return true
+    }
+    fun commitAdjustment(target: Int) {
+        val move = adjustment.move ?: return
+        if (adjustment.submitting || repo == null) return
+        if (target == move.source) {
+            cancelAdjustment()
+            return
+        }
+        if (target !in move.scope.ids.indices) return
+        adjustment.target = target
+        adjustment.frozenInput = input
+        adjustment.submitting = true
+        adjustment.dragging = false
+        val targetBrowser = browser
+        val targetSource = activeSource
+        val token = adjustment.token
+        scope.launch {
+            var committed = false
+            try {
+                move.scope.validate(repo.readMoveScope(move.scope.kind, move.scope.parentId))
+                when (move.scope.kind) {
+                    MoveKind.Category -> repo.moveCategory(move.id, target, move.scope)
+                    MoveKind.Task -> repo.moveTask(move.id, target, move.scope)
+                    MoveKind.Section -> repo.moveSection(move.id, target, move.scope)
+                }
+                committed = true
+                if (token != adjustment.token || session.generation != move.scope.generation)
+                    return@launch
+                val result =
+                    withTimeoutOrNull(5000) { targetSource.createdSnapshot(move.id, move.parent) }
+                        ?: error("已提交，但对象已变化")
+                if (token != adjustment.token || session.generation != move.scope.generation)
+                    return@launch
+                targetBrowser.updateBounds(result.first.bounds)
+                targetBrowser.animateTo(result.second.camera)
+                targetBrowser.restore(result.second)
+                adjustment.clear()
+                notice = "已移动到第 ${target + 1} 项"
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (token == adjustment.token) {
+                    if (committed) {
+                        adjustment.clear()
+                        notice = "排序已保存，位置已变化，请重新选择"
+                    } else {
+                        adjustment.positionDialog = true
+                        adjustment.error = e.message ?: "移动失败，请重试"
+                    }
+                }
+            } finally {
+                targetBrowser.reconciling = false
+                targetBrowser.transientSnapshot = null
+                adjustment.submitting = false
+            }
+        }
+    }
+    fun closeSearch() {
+        selectionJob?.cancel()
+        selecting = false
+        search = null
+    }
+    fun selectResult(id: Long) {
+        val state = search ?: return
+        if (selecting || repo == null) return
+        selecting = true
+        val generation = session.generation
+        val version = state.version
+        selectionJob =
+            scope.launch {
+                try {
+                    val (catalog, snapshot) =
+                        withTimeoutOrNull(5000) { source.createdSnapshot(id, false) }
+                            ?: error("结果已不存在")
+                    ensureActive()
+                    require(
+                        generation == session.generation &&
+                            search === state &&
+                            state.version == version
+                    )
+                    upper.stop()
+                    lower.stop()
+                    session.invalidate()
+                    session.mode = RhineMode.Preview
+                    upper.updateBounds(catalog.bounds)
+                    upper.restore(snapshot)
+                    search = null
+                    notice = "已定位到搜索结果"
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    state.error = "结果已删除或位置已变化，请重试搜索"
+                } finally {
+                    selecting = false
+                }
+            }
+    }
     fun navigate(u: Float = browser.camera.u, v: Float = browser.camera.v) {
-        if (blocked) return
+        if (blocked || adjustment.dragging) return
         browser.begin()
         browser.motion = scope.launch { browser.animateTo(RhineCamera(u, v)) }
     }
     fun returnToParent() {
+        if (adjustment.move != null) {
+            cancelAdjustment()
+            return
+        }
         val snapshot = session.parent ?: return
         if (saving || edit != null || loading) return
         transitionJob?.cancel()
@@ -166,10 +395,15 @@ fun RhineScreen(
             }
     }
     DraftBackHandler(enabled = edit == null && !loading) {
-        if (session.parent != null) returnToParent() else if (!transition) onOpenTasks()
+        if (adjustment.submitting) return@DraftBackHandler
+        if (adjustment.move != null) cancelAdjustment()
+        else if (search != null) closeSearch()
+        else if (session.parent != null) returnToParent() else if (!transition) onOpenTasks()
     }
     LaunchedEffect(lowerInput, lower.interacting, session.showingSections) {
-        if (session.showingSections && !lower.interacting && !transition) {
+        if (
+            session.showingSections && !lower.interacting && !transition && adjustment.move == null
+        ) {
             lowerInput?.columns?.getOrNull(lower.center)?.let {
                 session.rememberPosition(it.id, lower.snapshot())
             }
@@ -177,7 +411,7 @@ fun RhineScreen(
     }
     // Missing Category invalidates the entire second layer. A moved/deleted sibling stays within
     // the surviving parent and its finite bounds, rather than leaking into another Category.
-    LaunchedEffect(session.categoryId, repo, edit, saving) {
+    LaunchedEffect(session.categoryId, repo, edit, saving, adjustment.move) {
         val id = session.categoryId
         if (id != null && repo != null)
             repo.getCategoriesFlow().collect { categories ->
@@ -193,6 +427,12 @@ fun RhineScreen(
                 phase.snapTo(0f)
                 edit = null
                 deleting = false
+                adjustment.clear()
+                upper.transientSnapshot = null
+                lower.transientSnapshot = null
+                upper.reconciling = false
+                lower.reconciling = false
+                closeSearch()
                 session.invalidate()
                 val start = RhineSnapshot(RhineCamera(0f, 0f), RhineFocus(null, null, 0, 0))
                 upper.restore(start)
@@ -203,6 +443,7 @@ fun RhineScreen(
         }
     }
     fun activate(slot: RhineSlot, stable: Boolean): Boolean {
+        if (session.mode == RhineMode.Adjust) return beginAdjustment(slot, stable, false)
         if (
             blocked ||
                 !(canOpenRhineDetail(session.mode, stable, browser.center, slot) ||
@@ -313,7 +554,8 @@ fun RhineScreen(
         return true
     }
     fun requestDelete() {
-        if (blocked || browser.interacting || repo == null) return
+        if (session.mode != RhineMode.Detail || blocked || browser.interacting || repo == null)
+            return
         val slot = input.slot(input.focusU.roundToInt(), input.focusV)
         if (slot.column == null) return
         loading = true
@@ -424,6 +666,10 @@ fun RhineScreen(
             browser = browser,
             enabled = !blocked,
             onTap = ::activate,
+            adjustment = adjustment,
+            onPickup = { slot, stable, point -> beginAdjustment(slot, stable, true, point) },
+            onDrop = { commitAdjustment(adjustment.target) },
+            onCancel = ::cancelAdjustment,
         )
         Box(
             Modifier.fillMaxSize()
@@ -442,26 +688,101 @@ fun RhineScreen(
             input = input,
             style = style,
             mode = session.mode,
+            focusOverride = adjustment.move?.takeIf { !adjustment.positionDialog }?.slot,
             enabled = !blocked,
             parentTitle = upperInput.columns.firstOrNull { it.id == session.categoryId }?.title,
             onBack = if (session.parent != null) ::returnToParent else null,
             onMode = {
-                if (!blocked)
+                if (!blocked) {
+                    cancelAdjustment()
                     session.mode =
-                        if (session.mode == RhineMode.Preview) RhineMode.Detail
-                        else RhineMode.Preview
+                        RhineMode.entries[(session.mode.ordinal + 1) % RhineMode.entries.size]
+                    notice =
+                        when (session.mode) {
+                            RhineMode.Preview -> "预览 · 点按定位，滑动浏览"
+                            RhineMode.Detail -> "详情 · 编辑、新增或删除"
+                            RhineMode.Adjust -> "调整 · 长按拾起，点按输入序号"
+                        }
+                }
             },
             onAction = {
                 activate(input.slot(input.focusU.roundToInt(), input.focusV), !browser.interacting)
             },
             onDelete = ::requestDelete,
+            onSearch = {
+                if (!blocked && !adjustment.dragging) {
+                    browser.stop()
+                    search = RhineSearchState()
+                }
+            },
             onStart = { navigate(u = 0f) },
             onStepU = { navigate(u = browser.camera.u.roundToInt() + it.toFloat()) },
             onStepV = { navigate(v = browser.center + it.toFloat()) },
-            onOpenTasks = { if (!blocked) onOpenTasks() },
-            onOpenSettings = { if (!blocked) onOpenSettings() },
+            onOpenTasks = {
+                if (!blocked) {
+                    cancelAdjustment()
+                    onOpenTasks()
+                }
+            },
+            onOpenSettings = {
+                if (!blocked) {
+                    cancelAdjustment()
+                    onOpenSettings()
+                }
+            },
             modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.displayCutout),
         )
+        if (adjustment.dragging) {
+            val m = adjustment.move!!
+            Row(
+                Modifier.align(Alignment.TopCenter)
+                    .padding(top = 12.dp)
+                    .widthIn(max = 540.dp)
+                    .background(style.floor),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "${if (m.parent) "整列" else "内容"} · ${m.label}",
+                    Modifier.weight(1f).padding(8.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text("${m.source + 1} → ${adjustment.target + 1}")
+                TextButton(onClick = ::cancelAdjustment) { Text("取消移动") }
+            }
+        }
+        adjustment.move
+            ?.takeIf { adjustment.positionDialog }
+            ?.let {
+                RhinePositionPanel(
+                    it,
+                    adjustment.submitting,
+                    adjustment.error,
+                    ::cancelAdjustment,
+                    ::commitAdjustment,
+                    initialPosition = adjustment.target,
+                )
+            }
+        search?.let { state ->
+            repo?.let {
+                RhineSearchPanel(
+                    it,
+                    state,
+                    session.generation,
+                    selecting,
+                    ::closeSearch,
+                    ::selectResult,
+                )
+            }
+        }
+        if (adjustment.submitting && !adjustment.positionDialog)
+            Text(
+                "正在保存排序…",
+                Modifier.align(Alignment.TopCenter)
+                    .padding(12.dp)
+                    .background(style.floor)
+                    .padding(8.dp),
+            )
         if (loading || notice != null)
             Text(
                 if (loading) "载入详情…" else notice!!,
@@ -554,6 +875,10 @@ fun RhineCanvas(
     browser: RhineBrowser? = null,
     enabled: Boolean = true,
     onTap: (RhineSlot, Boolean) -> Boolean = { _, _ -> false },
+    adjustment: RhineAdjustment? = null,
+    onPickup: (RhineSlot, Boolean, Offset) -> Boolean = { _, _, _ -> false },
+    onDrop: () -> Unit = {},
+    onCancel: () -> Unit = {},
 ) {
     val measurer = rememberTextMeasurer(cacheSize = 128)
     val density = LocalDensity.current.density
@@ -571,6 +896,70 @@ fun RhineCanvas(
         }
     val currentInput by rememberUpdatedState(input)
     val currentTap by rememberUpdatedState(onTap)
+    val currentPickup by rememberUpdatedState(onPickup)
+    val currentDrop by rememberUpdatedState(onDrop)
+    val currentCancel by rememberUpdatedState(onCancel)
+    var canvasSize by remember { mutableStateOf(Size(1f, 1f)) }
+    val preview = remember { androidx.compose.animation.core.Animatable(0f) }
+    var lift by remember { mutableStateOf(0f) }
+    LaunchedEffect(adjustment?.move, adjustment?.target) {
+        if (adjustment?.move != null)
+            preview.animateTo(
+                adjustment.target.toFloat(),
+                androidx.compose.animation.core.tween(240),
+            )
+    }
+    LaunchedEffect(adjustment?.dragging) {
+        val move = adjustment?.move
+        if (adjustment != null && adjustment.dragging && move != null && browser != null) {
+            preview.snapTo(move.source.toFloat())
+            var last = withFrameNanos { it }
+            val start = last
+            while (isActive && adjustment.dragging) {
+                val now = withFrameNanos { it }
+                val dt = ((now - last) / 1_000_000_000f).coerceAtMost(.05f)
+                last = now
+                lift =
+                    6f +
+                        3f *
+                            kotlin.math
+                                .sin((now - start) / 900_000_000.0 * 2 * kotlin.math.PI)
+                                .toFloat()
+                val edge = 48f * density
+                val x = adjustment.pointer.x
+                val amount =
+                    when {
+                        x < edge -> -(1f - x / edge).coerceIn(0f, 1f)
+                        x > canvasSize.width - edge ->
+                            ((x - canvasSize.width + edge) / edge).coerceIn(0f, 1f)
+                        else -> 0f
+                    }
+                if (amount != 0f) {
+                    val camera = browser.camera
+                    browser.move(
+                        if (move.parent)
+                            camera.copy(
+                                v =
+                                    (camera.v + amount * .65f * dt).coerceIn(
+                                        0f,
+                                        (move.count - 1).toFloat(),
+                                    )
+                            )
+                        else
+                            camera.copy(
+                                u = (camera.u - amount * 4f * dt).coerceIn(1f, move.count.toFloat())
+                            )
+                    )
+                }
+                adjustment.update(
+                    RhineProjection(geometry, density, canvasSize, browser.camera),
+                    browser.camera,
+                    currentInput,
+                )
+            }
+        }
+        lift = 0f
+    }
     val scope = rememberCoroutineScope()
     val gestureModifier =
         if (browser == null || !enabled) Modifier
@@ -593,49 +982,96 @@ fun RhineCanvas(
                     val gesture = RhineGestureController(projection, viewConfiguration.touchSlop)
                     val velocity = VelocityTracker()
                     velocity.addPosition(down.uptimeMillis, down.position)
+                    var elapsed = 0L
                     var cancelled = false
-                    do {
-                        val event = awaitPointerEvent()
-                        val change = event.changes.firstOrNull { it.id == down.id }
-                        if (
-                            change == null ||
-                                event.changes.count { it.pressed } > 1 ||
-                                change.isConsumed
+                    var picked = false
+                    var longPressed = false
+                    try {
+                        do {
+                            val event =
+                                if (!longPressed && gesture.axis == null) {
+                                    withTimeoutOrNull(
+                                        (viewConfiguration.longPressTimeoutMillis - (elapsed))
+                                            .coerceAtLeast(1L)
+                                    ) {
+                                        awaitPointerEvent()
+                                    }
+                                } else awaitPointerEvent()
+                            if (event == null) {
+                                longPressed = true
+                                picked = hit != null && currentPickup(hit, wasStable, down.position)
+                                continue
+                            }
+                            val change = event.changes.firstOrNull { it.id == down.id }
+                            if (
+                                change == null ||
+                                    event.changes.count { it.pressed } > 1 ||
+                                    change.isConsumed
+                            ) {
+                                cancelled = true
+                                break
+                            }
+                            velocity.addPosition(change.uptimeMillis, change.position)
+                            elapsed = change.uptimeMillis - down.uptimeMillis
+                            if (!change.pressed) break
+                            if (picked) {
+                                change.consume()
+                                if (adjustment?.dragging != true) {
+                                    cancelled = true
+                                    break
+                                }
+                                adjustment.pointer = change.position
+                                adjustment.update(projection, browser.camera, currentInput)
+                            } else {
+                                val delta = gesture.delta(change.positionChange())
+                                if (gesture.axis != null) {
+                                    change.consume()
+                                    browser.move(
+                                        RhineCamera(
+                                            browser.camera.u + delta.u,
+                                            browser.camera.v + delta.v,
+                                        )
+                                    )
+                                }
+                            }
+                        } while (true)
+                        if (picked) {
+                            if (cancelled) currentCancel()
+                            else if (adjustment?.dragging == true) currentDrop()
+                        } else if (cancelled || (longPressed && gesture.axis == null))
+                            browser.stop()
+                        else if (
+                            gesture.axis == null &&
+                                hit != null &&
+                                hit.kind != RhineBlockKind.Decoration
                         ) {
-                            cancelled = true
-                            break
-                        }
-                        velocity.addPosition(change.uptimeMillis, change.position)
-                        if (!change.pressed) break
-                        val delta = gesture.delta(change.positionChange())
-                        if (gesture.axis != null) {
-                            change.consume()
-                            browser.move(
-                                RhineCamera(browser.camera.u + delta.u, browser.camera.v + delta.v)
-                            )
-                        }
-                    } while (true)
-                    if (cancelled) browser.stop()
-                    else if (
-                        gesture.axis == null && hit != null && hit.kind != RhineBlockKind.Decoration
-                    ) {
-                        browser.stop()
-                        if (!currentTap(hit, wasStable))
+                            browser.stop()
+                            if (!currentTap(hit, wasStable))
+                                browser.motion =
+                                    scope.launch {
+                                        browser.animateTo(
+                                            RhineCamera(hit.u.toFloat(), hit.v.toFloat())
+                                        )
+                                        browser.select(hit)
+                                    }
+                        } else {
+                            val speed = velocity.calculateVelocity()
                             browser.motion =
                                 scope.launch {
-                                    browser.animateTo(RhineCamera(hit.u.toFloat(), hit.v.toFloat()))
-                                    browser.select(hit)
+                                    browser.settle(gesture.velocity(Offset(speed.x, speed.y)))
                                 }
-                    } else {
-                        val speed = velocity.calculateVelocity()
-                        browser.motion =
-                            scope.launch {
-                                browser.settle(gesture.velocity(Offset(speed.x, speed.y)))
-                            }
+                        }
+                    } finally {
+                        if (picked && adjustment?.dragging == true) currentCancel()
                     }
                 }
             }
-    Canvas(modifier.then(gestureModifier).semantics { contentDescription = "Rhine 场景" }) {
+    Canvas(
+        modifier
+            .onSizeChanged { canvasSize = Size(it.width.toFloat(), it.height.toFloat()) }
+            .then(gestureModifier)
+            .semantics { contentDescription = "Rhine 场景" }
+    ) {
         val projection =
             RhineProjection(
                 geometry,
@@ -643,7 +1079,29 @@ fun RhineCanvas(
                 Size(size.width, size.height),
                 RhineCamera(input.focusU, input.cameraV),
             )
-        drawRhineScene(layoutScene(input, projection), input, style, labels, measurer)
+        val drawing =
+            if (adjustment?.submitting == true && !adjustment.positionDialog)
+                adjustment.frozenInput?.copy(
+                    focusU = input.focusU,
+                    focusV = input.focusV,
+                    cameraV = input.cameraV,
+                ) ?: input
+            else input
+        drawRhineScene(
+            layoutScene(
+                drawing,
+                projection,
+                adjustment?.move?.takeIf {
+                    adjustment.dragging || (adjustment.submitting && !adjustment.positionDialog)
+                },
+                preview.value,
+                if (adjustment?.submitting == true) 6f else lift,
+            ),
+            drawing,
+            style,
+            labels,
+            measurer,
+        )
     }
 }
 
@@ -672,12 +1130,14 @@ private fun RhineHud(
     input: RhineSceneInput,
     style: RhineStyle,
     mode: RhineMode,
+    focusOverride: RhineSlot?,
     enabled: Boolean,
     parentTitle: String?,
     onBack: (() -> Unit)?,
     onMode: () -> Unit,
     onAction: () -> Unit,
     onDelete: () -> Unit,
+    onSearch: () -> Unit,
     onStart: () -> Unit,
     onStepU: (Int) -> Unit,
     onStepV: (Int) -> Unit,
@@ -686,7 +1146,7 @@ private fun RhineHud(
     modifier: Modifier = Modifier,
 ) {
     val t = HudText(FontFamily(Font(Res.font.montserrat)), style.ink)
-    val focus = input.slot(input.focusU.roundToInt(), input.focusV)
+    val focus = focusOverride ?: input.slot(input.focusU.roundToInt(), input.focusV)
     val column = focus.column
     val isCategories = input.layer == RhineLayer.Categories
     val itemWord = if (isCategories) "TASK" else "SECTION"
@@ -707,7 +1167,7 @@ private fun RhineHud(
                 buildAnnotatedString {
                     append("MODE  ")
                     withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append(if (mode == RhineMode.Preview) "PREVIEW" else "DETAIL")
+                        append(mode.name.uppercase())
                     }
                 },
                 style = t.style(16.sp, alpha = 0.85f, tracking = 0.06f),
@@ -720,9 +1180,15 @@ private fun RhineHud(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            HudButton("⌕  SEARCH", t, enabled = false, description = "搜索，阶段 05 接入")
             HudButton(
-                if (mode == RhineMode.Preview) "+  PREVIEW" else "+  DETAIL",
+                "⌕  SEARCH",
+                t,
+                enabled = enabled,
+                description = "搜索 Task 标题",
+                onClick = onSearch,
+            )
+            HudButton(
+                "+  ${mode.name.uppercase()}",
                 t,
                 enabled = enabled,
                 description = "切换预览/详情模式",
@@ -789,7 +1255,15 @@ private fun RhineHud(
             Row(Modifier.padding(start = 22.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (mode == RhineMode.Preview)
                     HudReadout("预览模式 · 沿列滑动 / 跨列切换", style = t.style(9.sp, alpha = 0.7f))
-                else if (focus.kind == RhineBlockKind.Real || focus.kind == RhineBlockKind.Zero)
+                else if (mode == RhineMode.Adjust) {
+                    HudButton(
+                        "移动到第 N 项  →",
+                        t,
+                        enabled = enabled && canAdjustRhine(mode, true, input.focusV, focus),
+                        description = "移动到第 N 项",
+                        onClick = onAction,
+                    )
+                } else if (focus.kind == RhineBlockKind.Real || focus.kind == RhineBlockKind.Zero)
                     HudButton(
                         if (focus.kind == RhineBlockKind.Zero) "编辑 $parentWord  →"
                         else if (isCategories) "进入 Section 层  →" else "编辑 Section  →",
@@ -877,7 +1351,11 @@ private fun RhineHud(
             )
         }
         Text(
-            if (mode == RhineMode.Preview) "拖动浏览 · 点按定位 · 预览" else "详情 · 非中心列先定位 · 只尾插一项",
+            when (mode) {
+                RhineMode.Preview -> "拖动浏览 · 点按定位 · 预览"
+                RhineMode.Detail -> "详情 · 非中心列先定位 · 只尾插一项"
+                RhineMode.Adjust -> "调整 · 长按沿 U 排内容 / 0 号沿 V 排整列 · 点按序号"
+            },
             style = t.style(8.sp, alpha = 0.55f),
             modifier =
                 Modifier.align(Alignment.BottomStart).padding(start = w * 0.26f, bottom = h * 0.05f),

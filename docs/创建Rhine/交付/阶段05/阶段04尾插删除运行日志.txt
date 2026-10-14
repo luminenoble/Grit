@@ -1,0 +1,38 @@
+ERROR: null root node returned by UiTestAutomationBridge.
+CHECKPOINT 01-empty-start-v1.png
+CHECKPOINT 02-category-form-v1.png
+ERROR: null root node returned by UiTestAutomationBridge.
+CHECKPOINT 03-category-keyboard-v1.png
+CHECKPOINT 04-category-zero-v1.png
+CHECKPOINT 05-first-task-v1.png
+ERROR: null root node returned by UiTestAutomationBridge.
+CHECKPOINT 06-u99-short-before-v1.png
+ERROR: null root node returned by UiTestAutomationBridge.
+CHECKPOINT 07-create-failed-draft-v1.png
+CHECKPOINT 08-short-second-after-v1.png
+ERROR: null root node returned by UiTestAutomationBridge.
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/阶段04尾插删除回归.py", line 52, in <module>
+    if __name__=='__main__': run()
+                             ^^^^^
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/阶段04尾插删除回归.py", line 32, in run
+    c.start(1,0,dataset='section-uneven');c.click(desc='进入 Section 层');to_section_tail()
+                                                                          ^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/阶段04尾插删除回归.py", line 13, in to_section_tail
+    if c.nodes(label="101"): break
+       ^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/采集工具.py", line 31, in nodes
+    return [n for n in tree().iter('node') if (label is None or n.get('text')==label) and (desc is None or n.get('content-desc')==desc) and (klass is None or n.get('class')==klass)]
+                       ^^^^^^
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/采集工具.py", line 24, in tree
+    dumped=adb('shell','uiautomator','dump','/sdcard/rhine03.xml')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/采集工具.py", line 16, in adb
+    return subprocess.check_output([ADB,*map(str,args)],text=not binary,timeout=25)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/mnt/d/professionalTools/AndroidStorage/sdk/platform-tools/adb.exe', 'shell', 'uiautomator', 'dump', '/sdcard/rhine03.xml']' returned non-zero exit status 1.

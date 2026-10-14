@@ -1,0 +1,30 @@
+ERROR: null root node returned by UiTestAutomationBridge.
+01-preview-v1.png
+02-detail-v1.png
+03-adjust-v1.png
+04-task-picked-v1.png
+05-task-target-two-v1.png
+06-task-moved-two-v1.png
+07-position-form-v1.png
+08-position-keyboard-v1.png
+09-position-invalid-v1.png
+10-position-cancel-v1.png
+ERROR: null root node returned by UiTestAutomationBridge.
+11-position-failure-v1.png
+ERROR: null root node returned by UiTestAutomationBridge.
+12-category-picked-v1.png
+13-category-target-v1.png
+14-category-moved-v1.png
+ERROR: null root node returned by UiTestAutomationBridge.
+15-section-picked-v1.png
+16-section-target-two-v1.png
+17-section-moved-two-v1.png
+18-sibling-picked-v1.png
+19-sibling-moved-v1.png
+20-search-duplicates-completed-v1.png
+21-search-empty-v1.png
+22-search-from-sections-v1.png
+23-search-located-preview-v1.png
+24-edge-real-limit-v1.png
+25-edge-committed-v1.png
+All capture assertions passed

@@ -62,6 +62,7 @@ data class RhineColumn(
     /** Loaded items keyed by their 1-based index. */
     val items: Map<Int, RhineItem>,
     val completedCount: Int = items.values.count { it.isCompleted },
+    val loaded: Boolean = true,
 )
 
 /** Everything the scene needs; independent of repositories and of drawing. */
@@ -169,22 +170,82 @@ class RhineLayout(val projection: RhineProjection, val blocks: List<RhineBlock>)
     fun hitTest(point: Offset): RhineBlock? = blocks.lastOrNull { it.contains(point) }
 }
 
-fun layoutScene(input: RhineSceneInput, projection: RhineProjection): RhineLayout {
+fun layoutScene(
+    input: RhineSceneInput,
+    projection: RhineProjection,
+    move: RhineMove? = null,
+    target: Float = 0f,
+    lift: Float = 0f,
+): RhineLayout {
     val g = projection.geometry
     val d = projection.density
-    val window = projection.visibleSlots(margin = 2)
+    val window =
+        if (move == null) projection.visibleSlots(margin = 2)
+        else
+            RhineProjection(
+                    g.copy(peakLift = g.peakLift + 9f),
+                    d,
+                    projection.size,
+                    RhineCamera(input.focusU, input.cameraV),
+                )
+                .visibleSlots(margin = 3)
     val blocks = ArrayList<RhineBlock>(window.count)
     // A block can only hide blocks with larger u or larger v (the view ray runs +U, +V, -Z), so
     // descending u, then descending v, is a valid back-to-front order whatever the heights are.
     for (u in window.maxU downTo window.minU) {
-        for (v in window.maxV downTo window.minV) {
-            val weight = columnLiftWeight(v, input.cameraV)
-            fun height(at: Int) =
-                (g.baseHeight + (g.heightOf(at, v, v, input.focusU) - g.baseHeight) * weight) * d
-            val h = height(u)
-            val hFront = height(u - 1)
+        val vs = (window.maxV downTo window.minV).toMutableList()
+        if (move?.parent == true && move.slot.v !in vs) vs.add(move.slot.v)
+        for (v in vs) {
+            val slot =
+                when {
+                    move != null && !move.parent && u == move.slot.u && v == move.slot.v ->
+                        move.slot
+                    move?.parent == true &&
+                        v == move.slot.v &&
+                        input.columns.getOrNull(v)?.items.isNullOrEmpty() -> {
+                        val c = move.slot.column!!
+                        RhineSlot(
+                            u,
+                            v,
+                            when {
+                                u < 0 || u > input.maxU -> RhineBlockKind.Decoration
+                                u == 0 -> RhineBlockKind.Zero
+                                u <= c.itemCount -> RhineBlockKind.Real
+                                else -> RhineBlockKind.Placeholder
+                            },
+                            if (u in 0..input.maxU) c else null,
+                            c.items[u],
+                        )
+                    }
+                    else -> input.slot(u, v)
+                }
+            val previewU =
+                if (
+                    move != null &&
+                        !move.parent &&
+                        slot.column?.id == move.columnId &&
+                        slot.kind == RhineBlockKind.Real
+                )
+                    previewPosition(u - 1, move.source, target) + 1
+                else u.toFloat()
+            val previewV =
+                if (move != null && move.parent && slot.column != null)
+                    previewPosition(v, move.source, target)
+                else v.toFloat()
+            val picked =
+                move != null &&
+                    if (move.parent) slot.column?.id == move.id
+                    else slot.item?.id == move.id && slot.column?.id == move.columnId
+            // Heights follow the temporary positions too, so committing the permutation cannot
+            // transfer the peak to the object that used to occupy the destination.
+            val weight = columnLiftWeight(0, input.cameraV - previewV)
+            fun height(at: Float) =
+                (g.baseHeight + (g.heightOf(0, 0, 0, input.focusU - at) - g.baseHeight) * weight) *
+                    d
+            val h = height(previewU) + if (picked) lift * d else 0f
+            val hFront = height(previewU - 1f)
             val visible = h - hFront + g.gapU * d / projection.slopeU
-            val block = projection.block(input.slot(u, v), h, visible.coerceIn(0f, h))
+            val block = projection.block(slot, h, visible.coerceIn(0f, h), previewU, previewV)
             // The inverse window is conservative; discard off-screen faces/shadows before draw.
             val extent = block.top + block.front + block.cap + block.shadow
             if (
@@ -197,13 +258,47 @@ fun layoutScene(input: RhineSceneInput, projection: RhineProjection): RhineLayou
             }
         }
     }
+    // Keep the picked content in the bounded layout even after its original slot leaves the
+    // viewport.
+    if (
+        move != null &&
+            !move.parent &&
+            blocks.none { it.slot.item?.id == move.id && it.slot.column?.id == move.columnId }
+    ) {
+        val u = target + 1
+        val h = g.heightOf(0, 0, 0, input.focusU - u) * d + lift * d
+        blocks += projection.block(move.slot, h, h, u, move.slot.v.toFloat())
+    }
+    if (move != null)
+        blocks.sortWith(
+            compareByDescending<RhineBlock> { b ->
+                    if (
+                        !move.parent &&
+                            b.slot.column?.id == move.columnId &&
+                            b.slot.kind == RhineBlockKind.Real
+                    )
+                        previewPosition(b.slot.u - 1, move.source, target) + 1
+                    else b.slot.u.toFloat()
+                }
+                .thenByDescending { b ->
+                    if (move.parent && b.slot.column != null)
+                        previewPosition(b.slot.v, move.source, target)
+                    else b.slot.v.toFloat()
+                }
+        )
     return RhineLayout(projection, blocks)
 }
 
-fun RhineProjection.block(slot: RhineSlot, h: Float, frontVisible: Float = h): RhineBlock {
-    val u0 = slot.u * pitchU
+fun RhineProjection.block(
+    slot: RhineSlot,
+    h: Float,
+    frontVisible: Float = h,
+    positionU: Float = slot.u.toFloat(),
+    positionV: Float = slot.v.toFloat(),
+): RhineBlock {
+    val u0 = positionU * pitchU
     val u1 = u0 + depth
-    val v0 = slot.v * pitchV
+    val v0 = positionV * pitchV
     val v1 = v0 + length
     val eV = project(0f, 1f, 0f) - project(0f, 0f, 0f)
     val eU = project(1f, 0f, 0f) - project(0f, 0f, 0f)

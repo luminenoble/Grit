@@ -1,0 +1,221 @@
+ M README.md
+ M androidApp/build.gradle.kts
+ D androidApp/schemas/com.shub39.grit.habits.data.database.HabitDatabase/4.json
+ D androidApp/schemas/com.shub39.grit.habits.data.database.HabitDatabase/5.json
+ D androidApp/schemas/com.shub39.grit.habits.data.database.HabitDatabase/6.json
+ D androidApp/schemas/com.shub39.grit.habits.data.database.HabitDatabase/7.json
+ D androidApp/schemas/com.shub39.grit.habits.data.database.HabitDatabase/8.json
+ D androidApp/schemas/com.shub39.grit.tasks.data.database.TaskDatabase/4.json
+ D androidApp/schemas/com.shub39.grit.tasks.data.database.TaskDatabase/5.json
+ D androidApp/schemas/com.shub39.grit.tasks.data.database.TaskDatabase/6.json
+ D androidApp/schemas/com.shub39.grit.tasks.data.database.TaskDatabase/7.json
+ D androidApp/src/androidTest/java/HabitDBMigrationTest.kt
+ D androidApp/src/androidTest/java/TaskDBMigrationTest.kt
+ M androidApp/src/main/AndroidManifest.xml
+ M androidApp/src/main/java/com/shub39/grit/app/GritApplication.kt
+ M androidApp/src/main/java/com/shub39/grit/core/data/BootReceiver.kt
+ M androidApp/src/main/java/com/shub39/grit/core/data/Converters.kt
+ M androidApp/src/main/java/com/shub39/grit/core/data/GritIntentReceiver.kt
+ D androidApp/src/main/java/com/shub39/grit/core/data/backup/ExportSchema.kt
+ D androidApp/src/main/java/com/shub39/grit/core/data/backup/Mappers.kt
+ M androidApp/src/main/java/com/shub39/grit/core/data/backup/export/ExportImpl.kt
+ M androidApp/src/main/java/com/shub39/grit/core/data/backup/restore/RestoreImpl.kt
+ M androidApp/src/main/java/com/shub39/grit/core/data/datastore/SettingsDatastoreImpl.kt
+ M androidApp/src/main/java/com/shub39/grit/core/data/datastore/ThemeDatastoreImpl.kt
+ M androidApp/src/main/java/com/shub39/grit/core/data/notification/GritNotificationManager.kt
+ M androidApp/src/main/java/com/shub39/grit/core/data/notification/NotificationAlarmScheduler.kt
+ M androidApp/src/main/java/com/shub39/grit/di/GritModules.kt
+ D androidApp/src/main/java/com/shub39/grit/habits/data/Mappers.kt
+ D androidApp/src/main/java/com/shub39/grit/habits/data/database/HabitDatabase.kt
+ D androidApp/src/main/java/com/shub39/grit/habits/data/database/HabitDbFactory.kt
+ D androidApp/src/main/java/com/shub39/grit/habits/data/database/HabitEntity.kt
+ D androidApp/src/main/java/com/shub39/grit/habits/data/database/HabitStatusDao.kt
+ D androidApp/src/main/java/com/shub39/grit/habits/data/database/HabitStatusEntity.kt
+ D androidApp/src/main/java/com/shub39/grit/habits/data/database/HabitsDao.kt
+ D androidApp/src/main/java/com/shub39/grit/habits/data/repository/HabitRepository.kt
+ D androidApp/src/main/java/com/shub39/grit/habits/data/repository/Util.kt
+ M androidApp/src/main/java/com/shub39/grit/tasks/data/Mappers.kt
+ M androidApp/src/main/java/com/shub39/grit/tasks/data/database/CategoryDao.kt
+ M androidApp/src/main/java/com/shub39/grit/tasks/data/database/CategoryEntity.kt
+ M androidApp/src/main/java/com/shub39/grit/tasks/data/database/TaskDatabase.kt
+ M androidApp/src/main/java/com/shub39/grit/tasks/data/database/TaskEntity.kt
+ M androidApp/src/main/java/com/shub39/grit/tasks/data/database/TasksDao.kt
+ M androidApp/src/main/java/com/shub39/grit/tasks/data/repository/TasksRepository.kt
+ M androidApp/src/main/java/com/shub39/grit/widgets/WidgetDateReceiver.kt
+ M androidApp/src/main/java/com/shub39/grit/widgets/WidgetTextScale.kt
+ M androidApp/src/main/java/com/shub39/grit/widgets/WidgetUpdates.kt
+ M androidApp/src/main/java/com/shub39/grit/widgets/all_tasks_widget/AllTasksWidget.kt
+ D androidApp/src/main/java/com/shub39/grit/widgets/habit_overview_widget/HabitOverviewWidget.kt
+ D androidApp/src/main/java/com/shub39/grit/widgets/habit_overview_widget/HabitOverviewWidgetReceiver.kt
+ D androidApp/src/main/java/com/shub39/grit/widgets/habit_streak_widget/HabitStreakWidget.kt
+ D androidApp/src/main/java/com/shub39/grit/widgets/habit_streak_widget/HabitStreakWidgetReceiver.kt
+ D androidApp/src/main/java/com/shub39/grit/widgets/habit_week_chart_widget/HabitWeekChartWidget.kt
+ D androidApp/src/main/java/com/shub39/grit/widgets/habit_week_chart_widget/HabitWeekChartWidgetReceiver.kt
+ D androidApp/src/main/res/drawable/habit_stats_widget.png
+ D androidApp/src/main/res/drawable/habit_weekly_breakdown_widget.png
+ D androidApp/src/main/res/drawable/habits_overview_widget.png
+ D androidApp/src/main/res/drawable/widget_glass_bg.xml
+ D androidApp/src/main/res/drawable/widget_glass_item.xml
+ D androidApp/src/main/res/drawable/widget_glass_item_done.xml
+ M androidApp/src/main/res/xml/backup_rules.xml
+ M androidApp/src/main/res/xml/data_extraction_rules.xml
+ D androidApp/src/main/res/xml/habit_overview_widget.xml
+ D androidApp/src/main/res/xml/habit_streak_widget.xml
+ D androidApp/src/main/res/xml/habit_week_chart_widget.xml
+ D androidApp/src/test/java/com/shub39/grit/SectionsMigrationTest.kt
+ M gradle/libs.versions.toml
+ D shared/core/src/commonMain/kotlin/com/shub39/grit/core/habits/CalendarType.kt
+ D shared/core/src/commonMain/kotlin/com/shub39/grit/core/habits/Habit.kt
+ D shared/core/src/commonMain/kotlin/com/shub39/grit/core/habits/HabitRepo.kt
+ D shared/core/src/commonMain/kotlin/com/shub39/grit/core/habits/HabitStatus.kt
+ D shared/core/src/commonMain/kotlin/com/shub39/grit/core/habits/HabitWithAnalytics.kt
+ D shared/core/src/commonMain/kotlin/com/shub39/grit/core/habits/OverallAnalytics.kt
+ D shared/core/src/commonMain/kotlin/com/shub39/grit/core/habits/StreakPosition.kt
+ D shared/core/src/commonMain/kotlin/com/shub39/grit/core/habits/WeeklyTimePeriod.kt
+ M shared/core/src/commonMain/kotlin/com/shub39/grit/core/interfaces/AlarmScheduler.kt
+ M shared/core/src/commonMain/kotlin/com/shub39/grit/core/interfaces/IntentActions.kt
+ M shared/core/src/commonMain/kotlin/com/shub39/grit/core/interfaces/SettingsDatastore.kt
+ M shared/core/src/commonMain/kotlin/com/shub39/grit/core/interfaces/ThemeDatastore.kt
+ M shared/core/src/commonMain/kotlin/com/shub39/grit/core/settings/Sections.kt
+ M shared/core/src/commonMain/kotlin/com/shub39/grit/core/settings/backup/ExportRepo.kt
+ M shared/core/src/commonMain/kotlin/com/shub39/grit/core/settings/backup/RestoreRepo.kt
+ M shared/core/src/commonMain/kotlin/com/shub39/grit/core/tasks/Category.kt
+ D shared/core/src/commonMain/kotlin/com/shub39/grit/core/tasks/CategoryColors.kt
+ M shared/core/src/commonMain/kotlin/com/shub39/grit/core/tasks/Section.kt
+ M shared/core/src/commonMain/kotlin/com/shub39/grit/core/tasks/Task.kt
+ M shared/core/src/commonMain/kotlin/com/shub39/grit/core/tasks/TaskRepo.kt
+ D shared/core/src/commonMain/kotlin/com/shub39/grit/core/theme/AppTheme.kt
+ D shared/core/src/commonMain/kotlin/com/shub39/grit/core/theme/PaletteStyle.kt
+ M shared/core/src/commonMain/kotlin/com/shub39/grit/core/theme/Theme.kt
+ M shared/ui/build.gradle.kts
+ D shared/ui/src/androidMain/kotlin/com/shub39/grit/shared/ui/ai/TaskPlanner.android.kt
+ D shared/ui/src/androidMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/HabitUpsertSheet.android.kt
+ D shared/ui/src/androidMain/kotlin/com/shub39/grit/shared/ui/setting/ui/section/LookAndFeelPage.android.kt
+ M shared/ui/src/androidMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.android.kt
+ D shared/ui/src/androidMain/kotlin/com/shub39/grit/shared/ui/theme/GritTheme.android.kt
+ M shared/ui/src/commonMain/composeResources/values-ar/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-ba/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-be/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-bg/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-ca/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-ckb/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-de/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-el/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-es/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-et/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-fr/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-he/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-hu/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-hy/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-in/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-it/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-ja/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-lv/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-nl/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-pl/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-pt-rBR/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-pt/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-ru/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-sk/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-sl/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-tr/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-uk/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-vi/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-zh-rCN/strings.xml
+ M shared/ui/src/commonMain/composeResources/values-zh-rTW/strings.xml
+ M shared/ui/src/commonMain/composeResources/values/strings.xml
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/EnumExt.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/ai/AiTasksViewModel.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/ai/TaskPlanner.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/app/AppSections.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/app/MainApp.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/components/ChangelogSheet.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/components/GritBottomSheet.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/components/GritDialog.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/HabitState.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/HabitsAction.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/Util.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/HabitsGraph.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/AnalyticsCard.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/CalendarCommon.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/CardArrows.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/HabitCard.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/HabitListFABs.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/HabitUpsertSheet.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/NotEnoughData.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/stats/CalendarMap.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/stats/HabitHeatMap.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/stats/StartStats.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/stats/WeekDayBreakdown.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/stats/WeeklyActivity.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/stats/WeeklyBooleanHeatMap.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/sections/AnalyticsPage.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/sections/Calendar.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/sections/CalendarHeatMap.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/sections/HabitsList.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/habit/ui/sections/OverallAnalytics.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/setting/SettingsAction.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/setting/SettingsState.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/setting/ui/SettingsGraph.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/setting/ui/section/About.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/setting/ui/section/BackupPage.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/setting/ui/section/LookAndFeelPage.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/setting/ui/section/RootPage.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/stats/StatsPage.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/TaskAction.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/TaskState.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/TasksPage.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/AiDecomposeSheet.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/CategoryUpsertSheet.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/SectionEditor.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskCard.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/section/TaskList.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/theme/AccentColor.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/theme/GritTheme.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/theme/GritTokens.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/theme/LiquidGlass.kt
+ D shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/viewmodel/HabitViewModel.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/viewmodel/MainViewModel.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/viewmodel/SettingsViewModel.kt
+ M shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/viewmodel/TasksViewModel.kt
+ D shared/ui/src/jvmMain/kotlin/com/shub39/grit/shared/ui/ai/TaskPlanner.jvm.kt
+ D shared/ui/src/jvmMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/HabitUpsertSheet.jvm.kt
+ D shared/ui/src/jvmMain/kotlin/com/shub39/grit/shared/ui/setting/ui/section/LookAndFeelPage.jvm.kt
+ M shared/ui/src/jvmMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.jvm.kt
+ D shared/ui/src/jvmMain/kotlin/com/shub39/grit/shared/ui/theme/GritTheme.jvm.kt
+ D shared/ui/src/wasmJsMain/kotlin/com/shub39/grit/shared/ui/ai/TaskPlanner.wasmJs.kt
+ D shared/ui/src/wasmJsMain/kotlin/com/shub39/grit/shared/ui/habit/ui/component/HabitUpsertSheet.wasmJs.kt
+ D shared/ui/src/wasmJsMain/kotlin/com/shub39/grit/shared/ui/setting/ui/section/LookAndFeelPage.wasmJs.kt
+ M shared/ui/src/wasmJsMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/TaskUpsertSheet.wasmJs.kt
+ D shared/ui/src/wasmJsMain/kotlin/com/shub39/grit/shared/ui/theme/GritTheme.wasmJs.kt
+ M webDemo/src/commonMain/kotlin/com/shub39/grit/web_demo/stubs/RuntimeStubs.kt
+ M webDemo/src/commonMain/kotlin/com/shub39/grit/web_demo/stubs/StubDependencies.kt
+?? Grit.apk
+?? Grit.apk.idsig
+?? androidApp/schemas/com.shub39.grit.tasks.data.database.TaskDatabase/1.json
+?? androidApp/src/androidTest/java/com/
+?? androidApp/src/debug/
+?? androidApp/src/main/java/com/shub39/grit/tasks/data/database/SectionDao.kt
+?? androidApp/src/main/java/com/shub39/grit/tasks/data/database/SectionEntity.kt
+?? androidApp/src/main/res/drawable/widget_matte_bg.xml
+?? androidApp/src/main/res/drawable/widget_matte_item.xml
+?? androidApp/src/main/res/drawable/widget_matte_item_done.xml
+?? androidApp/src/test/java/com/shub39/grit/RhineGeometryTest.kt
+?? androidApp/src/test/java/com/shub39/grit/RhineHierarchyTest.kt
+?? androidApp/src/test/java/com/shub39/grit/RhineModelTest.kt
+?? androidApp/src/test/java/com/shub39/grit/RhineMutationTest.kt
+?? androidApp/src/test/java/com/shub39/grit/RhineNavigationTest.kt
+?? docs/
+?? shared/core/src/commonMain/kotlin/com/shub39/grit/core/settings/backup/RhineBackup.kt
+?? shared/core/src/commonMain/kotlin/com/shub39/grit/core/tasks/TaskSummary.kt
+?? shared/ui/src/androidMain/kotlin/com/shub39/grit/shared/ui/rhine/
+?? shared/ui/src/androidMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/DraftBackHandler.android.kt
+?? shared/ui/src/commonMain/composeResources/drawable/search.xml
+?? shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/
+?? shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/DraftBackHandler.kt
+?? shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/theme/MatteSurface.kt
+?? shared/ui/src/jvmMain/kotlin/com/shub39/grit/shared/ui/rhine/
+?? shared/ui/src/jvmMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/DraftBackHandler.jvm.kt
+?? shared/ui/src/wasmJsMain/kotlin/com/shub39/grit/shared/ui/rhine/
+?? shared/ui/src/wasmJsMain/kotlin/com/shub39/grit/shared/ui/task/ui/component/DraftBackHandler.wasmJs.kt

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.shub39.grit.RhineAdjustTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-13T01:39:07.472Z" hostname="Lemonade" time="0.642">
+  <properties/>
+  <testcase name="loadingFlagIsIndependentOfUserTitle" classname="com.shub39.grit.RhineAdjustTest" time="0.082"/>
+  <testcase name="latestSearchInputClearsOldPageImmediately" classname="com.shub39.grit.RhineAdjustTest" time="0.274"/>
+  <testcase name="positionValidationAndZeroBasedConversion" classname="com.shub39.grit.RhineAdjustTest" time="0.031"/>
+  <testcase name="insertionBothDirectionsAndIdentityPermutation" classname="com.shub39.grit.RhineAdjustTest" time="0.04"/>
+  <testcase name="previewPeakFollowsDestinationBeforeCommitForContentAndColumns" classname="com.shub39.grit.RhineAdjustTest" time="0.187"/>
+  <testcase name="onlyStableCenterRealObjectsCanBePicked" classname="com.shub39.grit.RhineAdjustTest" time="0.001"/>
+  <testcase name="generationParentOrderAndAncestorInvalidateEvenReusedIds" classname="com.shub39.grit.RhineAdjustTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

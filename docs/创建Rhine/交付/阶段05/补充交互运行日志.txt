@@ -1,0 +1,22 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS failed drag retains target 2 and retry commits once
+PASS real second finger switches mode and cancels held drag without writing
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS replacement during pending move rejects old transaction including reused IDs
+ERROR: null root node returned by UiTestAutomationBridge.
+PASS search query survives viewport resize and lands on stable ID
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS empty Category zero can reorder among real siblings
+ERROR: null root node returned by UiTestAutomationBridge.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS empty Task zero reorders sibling Tasks without creating a Section
+PASS ordinal dialog survives resize with fixed action controls
+7 supplemental checks passed
+ERROR: null root node returned by UiTestAutomationBridge.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS drag across another screen column stays bound to original Task and Category
+ERROR: null root node returned by UiTestAutomationBridge.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS cancel Section pickup then HUD return preserves original parent snapshot
+9 total supplemental checks passed

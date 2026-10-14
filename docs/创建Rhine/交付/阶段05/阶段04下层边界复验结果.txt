@@ -1,0 +1,4 @@
+ERROR: null root node returned by UiTestAutomationBridge.
+ERROR: null root node returned by UiTestAutomationBridge.
+PASS Section longest column deletion shrinks U101 to U2
+PASS Section layer delete-all returns unique empty start; cancel creates nothing

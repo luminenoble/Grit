@@ -1,0 +1,2 @@
+PASS case-insensitive search, completed, pages, empty and literal-title results
+PASS search failure retries; rapid new input rejects delayed old results

@@ -1,0 +1,24 @@
+ERROR: null root node returned by UiTestAutomationBridge.
+CHECKPOINT 09-section-u99-short-before-v1.png
+CHECKPOINT 10-section-create-v1.png
+CHECKPOINT 11-section-second-after-v1.png
+CHECKPOINT 12-sibling-form-v1.png
+CHECKPOINT 13-sibling-zero-v1.png
+CHECKPOINT 14-section-delete-confirm-v1.png
+CHECKPOINT 15-section-deleted-zero-v1.png
+CHECKPOINT 16-longest-before-v1.png
+ERROR: null root node returned by UiTestAutomationBridge.
+CHECKPOINT 17-category-cascade-confirm-v1.png
+CHECKPOINT 18-delete-failed-context-v1.png
+CHECKPOINT 19-longest-removed-v1.png
+CHECKPOINT 20-shrunk-tail-v1.png
+ERROR: null root node returned by UiTestAutomationBridge.
+CHECKPOINT 21-deleted-all-empty-v1.png
+All screenshot assertions passed
+ERROR: null root node returned by UiTestAutomationBridge.
+ERROR: null root node returned by UiTestAutomationBridge.
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/阶段04后半回归.py", line 47, in <module>
+    c.adb('shell','input','swipe',650,420,2100,846,65);time.sleep(2);assert c.nodes(label='02')
+                                                                            ^^^^^^^^^^^^^^^^^^^
+AssertionError

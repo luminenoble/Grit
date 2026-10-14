@@ -52,6 +52,8 @@ import kotlinx.datetime.LocalDateTime
 class RhinePreviewActivity : FragmentActivity() {
     private lateinit var db: TaskDatabase
     private lateinit var repository: TaskRepo
+    private var moveAttempts = 0
+    private var moveCommits = 0
     private var traceTouch by mutableStateOf<Offset?>(null)
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
@@ -102,8 +104,49 @@ class RhinePreviewActivity : FragmentActivity() {
                     error("隔离测试：模拟保存失败，草稿已保留，请重试")
                 }
             }
+            var failMoveOnce = intent.getBooleanExtra("failMoveOnce", false)
+            var failSearchOnce = intent.getBooleanExtra("failSearchOnce", false)
+            suspend fun checkMove() {
+                moveAttempts++
+                kotlinx.coroutines.delay(intent.getLongExtra("submitDelayMs", 500L))
+                if (failMoveOnce) {
+                    failMoveOnce = false
+                    error("隔离测试：模拟移动失败，请重试")
+                }
+            }
             val editorRepo =
                 object : TaskRepo by repository {
+                    override suspend fun moveTask(id: Long, target: Int, expected: MoveScope?) {
+                        checkMove()
+                        repository.moveTask(id, target, expected)
+                        moveCommits++
+                    }
+
+                    override suspend fun moveCategory(id: Long, target: Int, expected: MoveScope?) {
+                        checkMove()
+                        repository.moveCategory(id, target, expected)
+                        moveCommits++
+                    }
+
+                    override suspend fun moveSection(id: Long, target: Int, expected: MoveScope?) {
+                        checkMove()
+                        repository.moveSection(id, target, expected)
+                        moveCommits++
+                    }
+
+                    override suspend fun searchTasks(
+                        query: String,
+                        offset: Int,
+                        limit: Int,
+                    ): List<TaskSearchResult> {
+                        kotlinx.coroutines.delay(intent.getLongExtra("searchDelayMs", 0L))
+                        if (failSearchOnce) {
+                            failSearchOnce = false
+                            error("隔离测试：搜索失败")
+                        }
+                        return repository.searchTasks(query, offset, limit)
+                    }
+
                     override suspend fun deleteCategory(category: Category) {
                         checkDelete()
                         repository.deleteCategory(category)
@@ -147,7 +190,8 @@ class RhinePreviewActivity : FragmentActivity() {
                             dataSource = source,
                             editRepository = editorRepo,
                             initialMode =
-                                if (intent.getBooleanExtra("detail", false)) RhineMode.Detail
+                                if (intent.getBooleanExtra("adjust", false)) RhineMode.Adjust
+                                else if (intent.getBooleanExtra("detail", false)) RhineMode.Detail
                                 else RhineMode.Preview,
                             initialCamera =
                                 RhineCamera(
@@ -177,6 +221,8 @@ class RhinePreviewActivity : FragmentActivity() {
                 "empty" -> emptyList()
                 "one-empty" -> listOf(0)
                 "uneven" -> listOf(100, 1, 1)
+                "adjust" -> listOf(12, 8, 1, 0, 9)
+                "search" -> listOf(60, 2, 1)
                 "detail" -> listOf(2, 5, 2)
                 "section-uneven" -> listOf(2)
                 else -> listOf(12, 18, 6, 0, 9)
@@ -202,7 +248,11 @@ class RhinePreviewActivity : FragmentActivity() {
                 )
             repeat(count) { i ->
                 val title =
-                    if (fixture == "detail") listOf("需求梳理", "设计评审", "空任务", "完成发布", "阅读记录")[i % 5]
+                    if (fixture == "adjust") "Task ${i + 1}"
+                    else if (fixture == "search")
+                        if (i == 2) "literal %_\\" else "Alpha 设计评审 ${i + 1}"
+                    else if (fixture == "detail")
+                        listOf("需求梳理", "设计评审", "空任务", "完成发布", "阅读记录")[i % 5]
                     else if (fixture == "uneven") "${('A'.code + v).toChar()} · Task ${i + 1}"
                     else listOf("学习协程", "设计评审", "阅读与记录", "整理资料", "计划下一步", "完成练习")[i % 6]
                 db.taskDao()
@@ -221,9 +271,10 @@ class RhinePreviewActivity : FragmentActivity() {
                             updatedAt = now,
                         )
                     )
-                if (fixture == "detail" || fixture == "section-uneven") {
+                if (fixture == "detail" || fixture == "section-uneven" || fixture == "adjust") {
                     val n =
-                        if (fixture == "section-uneven") listOf(100, 1)[i]
+                        if (fixture == "adjust") if (i == 2) 0 else 12
+                        else if (fixture == "section-uneven") listOf(100, 1)[i]
                         else listOf(6, 12, 0, 1, 3)[i % 5]
                     repeat(n) { j ->
                         db.sectionDao()
@@ -232,7 +283,10 @@ class RhinePreviewActivity : FragmentActivity() {
                                     id = (id * 1000 + i) * 100 + j + 1,
                                     taskId = id * 1000 + i,
                                     title =
-                                        listOf("需求与范围", "草图评审", "记录讨论结果", "完善细节", "验证与回顾")[j % 5],
+                                        if (fixture == "adjust") "Section ${j + 1}"
+                                        else
+                                            listOf("需求与范围", "草图评审", "记录讨论结果", "完善细节", "验证与回顾")[
+                                                j % 5],
                                     content =
                                         "Section 正文 ${j + 1} · 长内容必须保留，不从摘要生成草稿。\n".repeat(35),
                                     orderIndex = j,
@@ -254,6 +308,48 @@ class RhinePreviewActivity : FragmentActivity() {
         lifecycleScope.launch {
             val id = update.getLongExtra("taskId", 2001L)
             when (update.getStringExtra("mutation")) {
+                "inspect" -> {
+                    val state = org.json.JSONObject()
+                    state.put("attempts", moveAttempts).put("commits", moveCommits)
+                    state.put(
+                        "categories",
+                        org.json.JSONArray(
+                            repository.getCategories().map { c ->
+                                org.json
+                                    .JSONObject()
+                                    .put("id", c.id)
+                                    .put("order", c.orderIndex)
+                                    .put("title", c.name)
+                            }
+                        ),
+                    )
+                    state.put(
+                        "tasks",
+                        org.json.JSONArray(
+                            repository.getTasks().map { t ->
+                                org.json
+                                    .JSONObject()
+                                    .put("id", t.id)
+                                    .put("parent", t.categoryId)
+                                    .put("order", t.orderIndex)
+                                    .put("title", t.title)
+                                    .put(
+                                        "sections",
+                                        org.json.JSONArray(
+                                            t.sections.map { x ->
+                                                org.json
+                                                    .JSONObject()
+                                                    .put("id", x.id)
+                                                    .put("order", x.orderIndex)
+                                                    .put("title", x.title)
+                                            }
+                                        ),
+                                    )
+                            }
+                        ),
+                    )
+                    java.io.File(cacheDir, "rhine05-state.json").writeText(state.toString())
+                }
                 "import-reused" -> repository.replaceData(repository.exportSnapshot())
                 "rename" ->
                     repository.getTaskById(id)?.let {
@@ -269,6 +365,9 @@ class RhinePreviewActivity : FragmentActivity() {
                         .getCategories()
                         .firstOrNull { it.id == 2L }
                         ?.let { repository.deleteCategory(it) }
+                "reorder-task" -> repository.moveTask(id, 3)
+                "reorder-category" ->
+                    repository.moveCategory(update.getLongExtra("categoryId", 1L), 2)
                 "reorder-section" ->
                     repository.moveSection(update.getLongExtra("sectionId", 200101L), 3)
                 "delete-section" ->

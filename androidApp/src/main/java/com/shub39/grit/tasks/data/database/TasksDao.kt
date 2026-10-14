@@ -23,6 +23,14 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TasksDao {
+    @Query(
+        "SELECT id, categoryId, title, orderIndex, titleColor, isCompleted FROM tasks WHERE id = :id"
+    )
+    suspend fun summaryById(id: Long): TaskSummary?
+
+    @Query("SELECT id FROM tasks WHERE categoryId = :parentId ORDER BY orderIndex")
+    suspend fun orderedIds(parentId: Long): List<Long>
+
     @Transaction
     @Query("SELECT * FROM tasks ORDER BY categoryId, orderIndex")
     fun getTasksFlow(): Flow<List<TaskWithSections>>
@@ -55,7 +63,9 @@ interface TasksDao {
     )
     fun summaries(categoryId: Long, offset: Int, limit: Int): Flow<List<TaskSummary>>
 
-    @Query("SELECT id, categoryId, title, orderIndex, titleColor, isCompleted FROM tasks WHERE id = :id")
+    @Query(
+        "SELECT id, categoryId, title, orderIndex, titleColor, isCompleted FROM tasks WHERE id = :id"
+    )
     fun summary(id: Long): Flow<TaskSummary?>
 
     @Query(

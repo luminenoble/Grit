@@ -53,11 +53,13 @@ interface TaskRepo {
 
     suspend fun reorderCategories(ids: List<Long>)
 
-    suspend fun moveTask(id: Long, target: Int)
+    suspend fun readMoveScope(kind: MoveKind, parentId: Long?): MoveScope
 
-    suspend fun moveCategory(id: Long, target: Int)
+    suspend fun moveTask(id: Long, target: Int, expected: MoveScope? = null)
 
-    suspend fun moveSection(id: Long, target: Int)
+    suspend fun moveCategory(id: Long, target: Int, expected: MoveScope? = null)
+
+    suspend fun moveSection(id: Long, target: Int, expected: MoveScope? = null)
 
     suspend fun upsertSection(section: Section): Long
 

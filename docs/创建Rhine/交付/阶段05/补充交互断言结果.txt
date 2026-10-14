@@ -1,0 +1,9 @@
+PASS failed drag retains target 2 and retry commits once
+PASS real second finger switches mode and cancels held drag without writing
+PASS replacement during pending move rejects old transaction including reused IDs
+PASS search query survives viewport resize and lands on stable ID
+PASS empty Category zero can reorder among real siblings
+PASS empty Task zero reorders sibling Tasks without creating a Section
+PASS ordinal dialog survives resize with fixed action controls
+PASS drag across another screen column stays bound to original Task and Category
+PASS cancel Section pickup then HUD return preserves original parent snapshot

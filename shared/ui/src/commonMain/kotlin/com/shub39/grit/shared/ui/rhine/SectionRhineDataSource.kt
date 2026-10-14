@@ -104,6 +104,7 @@ class SectionRhineDataSource(private val repo: TaskRepo, val categoryId: Long) :
                             )
                     },
                     counts[c.id]?.completedCount ?: 0,
+                    loaded = task != null,
                 )
             }
         }

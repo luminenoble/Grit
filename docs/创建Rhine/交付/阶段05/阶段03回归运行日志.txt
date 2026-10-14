@@ -1,0 +1,28 @@
+ERROR: null root node returned by UiTestAutomationBridge.
+PASS preview taps only position; mode switches to detail
+PASS other column first tap only positions; stable second tap enters scoped siblings
+ERROR: null root node returned by UiTestAutomationBridge.
+PASS entering another U slot preserves the original parent Task and offsets
+PASS repeated entry clicks do not open nested forms
+PASS cancel leaves stored Section title unchanged
+PASS future date cannot save; past date saves and refreshes HUD
+PASS parent ID/U/V restore and per-Task Section position resume
+PASS Android back matches HUD return
+ERROR: null root node returned by UiTestAutomationBridge.
+PASS back during entry cancels transition and restores parent
+ERROR: null root node returned by UiTestAutomationBridge.
+PASS empty Task uses shared U and finite placeholder
+PASS viewport resize preserves Task/Section focus
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS external title/color refresh; return follows stable Task ID
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/阶段03交互回归.py", line 62, in <module>
+    c.start();c.enter();mutate('move');c.expect('SECTION LAYER');absent('载入中…')
+              ^^^^^^^^^
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/采集工具.py", line 74, in enter
+    click(desc='进入 Section 层');expect('SECTION LAYER');expect('TASK 02')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/grit/docs/创建Rhine/交付/阶段05/采集工具.py", line 41, in click
+    if not ns: raise AssertionError(f'Control missing: {label or desc}')
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Control missing: 进入 Section 层

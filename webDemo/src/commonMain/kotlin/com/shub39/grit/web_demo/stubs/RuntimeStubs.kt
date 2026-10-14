@@ -248,23 +248,53 @@ class TaskRepoStub : TaskRepo {
         }
     }
 
-    override suspend fun moveTask(id: Long, target: Int) {
-        val task = requireNotNull(getTaskById(id))
-        reorderTasks(
-            task.categoryId,
-            movedIds(
-                getTasks()
-                    .filter { it.categoryId == task.categoryId }
-                    .sortedBy { it.orderIndex }
-                    .map { it.id },
-                id,
-                target,
-            ),
-        )
+    private fun moveScope(d: DemoData, kind: MoveKind, parentId: Long?): MoveScope {
+        val parent =
+            if (kind == MoveKind.Section) requireNotNull(d.tasks.firstOrNull { it.id == parentId })
+            else null
+        val ids =
+            when (kind) {
+                MoveKind.Category -> d.categories.sortedBy { it.orderIndex }.map { it.id }
+                MoveKind.Task -> {
+                    require(d.categories.any { it.id == parentId })
+                    d.tasks
+                        .filter { it.categoryId == parentId }
+                        .sortedBy { it.orderIndex }
+                        .map { it.id }
+                }
+                MoveKind.Section -> parent!!.sections.sortedBy { it.orderIndex }.map { it.id }
+            }
+        return MoveScope(kind, parentId, parent?.categoryId, ids, generation.value.toString())
     }
 
-    override suspend fun moveCategory(id: Long, target: Int) {
-        reorderCategories(movedIds(getCategories().map { it.id }, id, target))
+    override suspend fun readMoveScope(kind: MoveKind, parentId: Long?): MoveScope =
+        mutex.withLock { moveScope(data.value, kind, parentId) }
+
+    override suspend fun moveTask(id: Long, target: Int, expected: MoveScope?) = write { d ->
+        val task = requireNotNull(d.tasks.firstOrNull { it.id == id })
+        val current = moveScope(d, MoveKind.Task, task.categoryId)
+        expected?.validate(current)
+        val ids = movedIds(current.ids, id, target)
+        d.copy(
+            tasks =
+                d.tasks.map {
+                    if (it.categoryId == task.categoryId)
+                        it.copy(orderIndex = ids.indexOf(it.id), updatedAt = Clock.System.now())
+                    else it
+                }
+        ) to Unit
+    }
+
+    override suspend fun moveCategory(id: Long, target: Int, expected: MoveScope?) = write { d ->
+        val current = moveScope(d, MoveKind.Category, null)
+        expected?.validate(current)
+        val ids = movedIds(current.ids, id, target)
+        d.copy(
+            categories =
+                d.categories.map {
+                    it.copy(orderIndex = ids.indexOf(it.id), updatedAt = Clock.System.now())
+                }
+        ) to Unit
     }
 
     override suspend fun upsertSection(section: Section): Long = write { d ->
@@ -309,10 +339,11 @@ class TaskRepoStub : TaskRepo {
         }
     }
 
-    override suspend fun moveSection(id: Long, target: Int) {
+    override suspend fun moveSection(id: Long, target: Int, expected: MoveScope?) {
         write { d ->
             val task = requireNotNull(d.tasks.firstOrNull { t -> t.sections.any { it.id == id } })
-            val ids = movedIds(task.sections.map { it.id }, id, target)
+            expected?.validate(moveScope(d, MoveKind.Section, task.id))
+            val ids = movedIds(task.sections.sortedBy { it.orderIndex }.map { it.id }, id, target)
             val updated =
                 task.copy(
                     sections =

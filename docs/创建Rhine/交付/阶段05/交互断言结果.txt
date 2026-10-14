@@ -1,0 +1,16 @@
+PASS Task 8→2, middle shift, reverse by ordinal, stable parent and one commit
+PASS original release, Android back and ordinal cancel never call move
+PASS preview/detail long press, placeholder, unique add column and decoration cannot sort
+PASS noncenter first tap only centers, never opens position form
+PASS Category zero moves whole column, excludes zero from content ordering
+PASS Section 8→2 and sibling Task zero along V; parent return follows ID
+PASS invalid ordinals rejected without call; failure retains retry context
+PASS rapid confirmation and back during commit submit exactly once
+PASS ordinal invalidates on reorder, external move/delete, parent deletion and reused import
+PASS active drag cancels on mutation/import/size change without a write
+PASS rename/color update preserves stable move identity and current title
+PASS selected stale result follows moved ID; deleted result leaves valid scene
+PASS second-layer search returns upper preview, clears parent; import/back discard pending query
+PASS edge scrolling clamps to last real item, never U101 placeholder
+FAIL case-insensitive search, completed, pages, empty and literal-title results
+FAIL search failure retries; rapid new input rejects delayed old results

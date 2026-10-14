@@ -1,0 +1,15 @@
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+Final APK and all screenshots: Grit_Rhine-stage05-v1-7e8342d3.apk
+ERROR: null root node returned by UiTestAutomationBridge.
+26-task-eight-to-two-v1.mp4
+ERROR: null root node returned by UiTestAutomationBridge.
+27-category-column-v1.mp4
+ERROR: null root node returned by UiTestAutomationBridge.
+28-section-and-sibling-v1.mp4
+29-finite-edge-scroll-v1.mp4
+ERROR: null root node returned by UiTestAutomationBridge.
+30-search-from-sections-v1.mp4
+All recording assertions passed

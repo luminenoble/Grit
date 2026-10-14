@@ -52,6 +52,8 @@ class RhineBrowser(initial: RhineCamera = RhineCamera(0f, 0f)) {
         private set
 
     var reconciling by mutableStateOf(false)
+    /** Uncommitted drag camera must never become a process-restoration checkpoint. */
+    var transientSnapshot: RhineSnapshot? = null
     var motion: Job? = null
     var restoreEpoch by mutableIntStateOf(0)
         private set
@@ -172,11 +174,12 @@ class RhineBrowser(initial: RhineCamera = RhineCamera(0f, 0f)) {
         val saver =
             Saver<RhineBrowser, List<String>>(
                 save = {
+                    val checkpoint = it.transientSnapshot ?: it.snapshot()
                     listOf(
-                        it.camera.u.toString(),
-                        it.camera.v.toString(),
-                        it.focus.categoryId?.toString() ?: "",
-                        it.focus.itemId?.toString() ?: "",
+                        checkpoint.camera.u.toString(),
+                        checkpoint.camera.v.toString(),
+                        checkpoint.focus.categoryId?.toString() ?: "",
+                        checkpoint.focus.itemId?.toString() ?: "",
                     )
                 },
                 restore = { values ->

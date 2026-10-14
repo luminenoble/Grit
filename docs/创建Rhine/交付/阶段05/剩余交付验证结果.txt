@@ -1,0 +1,5 @@
+ERROR: null root node returned by UiTestAutomationBridge.
+08-position-keyboard-v1.png
+Final keyboard recapture passed
+START 阶段04后半回归.py
+END 阶段04后半回归.py exit=1

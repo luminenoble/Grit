@@ -23,6 +23,12 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SectionDao {
+    @Query("SELECT id, taskId, title, orderIndex, completedOn FROM sections WHERE id = :id")
+    suspend fun summaryById(id: Long): SectionSummary?
+
+    @Query("SELECT id FROM sections WHERE taskId = :parentId ORDER BY orderIndex")
+    suspend fun orderedIds(parentId: Long): List<Long>
+
     @Query("SELECT * FROM sections WHERE taskId = :taskId ORDER BY orderIndex")
     suspend fun getInTask(taskId: Long): List<SectionEntity>
 

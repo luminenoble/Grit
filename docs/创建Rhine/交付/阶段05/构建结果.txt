@@ -1,0 +1,606 @@
+Type-safe project accessors is an incubating feature.
+> Task :shared:core:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:core:compileKotlinJvm UP-TO-DATE
+> Task :shared:core:compileJvmMainJava NO-SOURCE
+> Task :shared:core:jvmProcessResources NO-SOURCE
+> Task :shared:core:processJvmMainResources SKIPPED
+> Task :shared:core:jvmMainClasses UP-TO-DATE
+> Task :shared:core:jvmJar UP-TO-DATE
+> Task :shared:ui:checkJvmMainComposeLibrariesCompatibility
+> Task :shared:ui:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:ui:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:ui:convertXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :shared:ui:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :shared:ui:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :shared:ui:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :shared:ui:convertXmlValueResourcesForJvmMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForJvmMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForJvmMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForJvmMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForJvmMain UP-TO-DATE
+> Task :shared:ui:generateComposeResClass UP-TO-DATE
+> Task :shared:ui:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :shared:ui:kspKotlinJvm SKIPPED
+> Task :shared:core:compileKotlinWasmJs UP-TO-DATE
+> Task :shared:ui:checkWasmJsMainComposeLibrariesCompatibility
+> Task :shared:ui:convertXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForWasmJsMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForWasmJsMain NO-SOURCE
+> Task :shared:ui:convertXmlValueResourcesForWebMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForWebMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForWebMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForWebMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForWasmJsMain UP-TO-DATE
+> Task :shared:ui:kspKotlinWasmJs SKIPPED
+> Task :shared:ui:compileKotlinJvm
+> Task :shared:ui:compileKotlinWasmJs
+w: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/components/GritBottomSheet.kt:79:62 'val windowInsets: WindowInsets' is deprecated. Renamed as modalWindowInsets.
+
+> Task :webDemo:checkJvmMainComposeLibrariesCompatibility
+> Task :webDemo:kmpPartiallyResolvedDependenciesChecker
+> Task :webDemo:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webDemo:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :webDemo:copyNonXmlValueResourcesForCommonMain NO-SOURCE
+> Task :webDemo:prepareComposeResourcesTaskForCommonMain NO-SOURCE
+> Task :webDemo:generateResourceAccessorsForCommonMain NO-SOURCE
+> Task :webDemo:convertXmlValueResourcesForJvmMain NO-SOURCE
+> Task :webDemo:copyNonXmlValueResourcesForJvmMain NO-SOURCE
+> Task :webDemo:prepareComposeResourcesTaskForJvmMain NO-SOURCE
+> Task :webDemo:generateResourceAccessorsForJvmMain NO-SOURCE
+> Task :webDemo:generateActualResourceCollectorsForJvmMain UP-TO-DATE
+> Task :webDemo:generateComposeResClass UP-TO-DATE
+> Task :webDemo:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :shared:ui:assembleJvmMainResources
+
+> Task :shared:ui:compileKotlinJvm
+w: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/components/GritBottomSheet.kt:79:62 'val windowInsets: WindowInsets' is deprecated. Renamed as modalWindowInsets.
+
+> Task :shared:ui:jvmProcessResources
+> Task :shared:ui:processJvmMainResources SKIPPED
+> Task :webDemo:checkWasmJsMainComposeLibrariesCompatibility
+> Task :webDemo:convertXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :webDemo:copyNonXmlValueResourcesForWasmJsMain NO-SOURCE
+> Task :webDemo:prepareComposeResourcesTaskForWasmJsMain NO-SOURCE
+> Task :webDemo:generateResourceAccessorsForWasmJsMain NO-SOURCE
+> Task :webDemo:convertXmlValueResourcesForWebMain NO-SOURCE
+> Task :webDemo:copyNonXmlValueResourcesForWebMain NO-SOURCE
+> Task :webDemo:prepareComposeResourcesTaskForWebMain NO-SOURCE
+> Task :webDemo:generateResourceAccessorsForWebMain NO-SOURCE
+> Task :webDemo:generateActualResourceCollectorsForWasmJsMain UP-TO-DATE
+
+> Task :webDemo:compileKotlinWasmJs
+[Koin] Auto-enabling strictSafety on :webDemo (detected startKoin / @KoinApplication / koinApplication). Set `strictSafety = false` in koinCompiler { } to override.
+
+> Task :shared:ui:compileJvmMainJava NO-SOURCE
+> Task :shared:ui:jvmMainClasses
+> Task :shared:ui:jvmJar
+> Task :androidApp:generateChangelog
+> Task :androidApp:preBuild
+> Task :androidApp:preFossDebugBuild
+
+> Task :webDemo:compileKotlinJvm
+[Koin] Auto-enabling strictSafety on :webDemo (detected startKoin / @KoinApplication / koinApplication). Set `strictSafety = false` in koinCompiler { } to override.
+
+> Task :androidApp:generateFossDebugBuildConfig
+> Task :androidApp:generateFossDebugResValues
+> Task :androidApp:extractFossDebugSupportedLocales
+> Task :androidApp:mapFossDebugSourceSetPaths
+> Task :androidApp:generateFossDebugLocaleConfig
+> Task :androidApp:generateFossDebugResources
+> Task :androidApp:packageFossDebugResources
+> Task :shared:core:androidPreBuild UP-TO-DATE
+> Task :shared:core:preAndroidMainBuild UP-TO-DATE
+> Task :shared:core:generateAndroidMainEmptyResourceFiles UP-TO-DATE
+> Task :shared:ui:androidPreBuild UP-TO-DATE
+> Task :shared:ui:preAndroidMainBuild UP-TO-DATE
+> Task :shared:ui:generateAndroidMainEmptyResourceFiles
+> Task :androidApp:processFossDebugNavigationResources
+> Task :androidApp:parseFossDebugLocalResources
+> Task :androidApp:generateFossDebugRFile
+> Task :shared:core:packageAndroidMainResources UP-TO-DATE
+> Task :shared:core:parseAndroidMainLocalResources UP-TO-DATE
+> Task :shared:core:generateAndroidMainRFile UP-TO-DATE
+> Task :shared:ui:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:ui:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:ui:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :shared:ui:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :shared:ui:generateActualResourceCollectorsForAndroidMain
+> Task :shared:ui:copyAndroidMainComposeResourcesToAndroidAssets
+> Task :shared:ui:packageAndroidMainResources
+> Task :shared:core:compileAndroidMain
+> Task :shared:core:bundleAndroidMainClassesToCompileJar
+> Task :shared:ui:parseAndroidMainLocalResources
+> Task :androidApp:javaPreCompileFossDebug
+> Task :shared:core:writeAndroidMainAarMetadata UP-TO-DATE
+> Task :shared:ui:writeAndroidMainAarMetadata
+> Task :shared:ui:generateAndroidMainRFile
+> Task :shared:ui:kspAndroidMain SKIPPED
+> Task :androidApp:checkFossDebugAarMetadata
+> Task :androidApp:compileFossDebugNavigationResources
+> Task :androidApp:mergeFossDebugResources
+> Task :androidApp:createFossDebugCompatibleScreenManifests
+> Task :androidApp:extractDeepLinksFossDebug
+> Task :shared:core:processAndroidMainManifest UP-TO-DATE
+> Task :shared:ui:processAndroidMainManifest
+
+> Task :androidApp:processFossDebugMainManifest
+/mnt/d/wsl-share/Grit/androidApp/src/debug/AndroidManifest.xml Warning:
+	uses-permission#android.permission.READ_PHONE_STATE was tagged at AndroidManifest.xml:0 to remove other declarations but no other declaration present
+/mnt/d/wsl-share/Grit/androidApp/src/debug/AndroidManifest.xml Warning:
+	uses-permission#android.permission.READ_EXTERNAL_STORAGE was tagged at AndroidManifest.xml:0 to remove other declarations but no other declaration present
+
+> Task :androidApp:processFossDebugManifest
+> Task :androidApp:processFossDebugManifestForPackage
+> Task :shared:core:mapAndroidMainSourceSetPaths
+> Task :shared:core:compileAndroidMainLibraryResources UP-TO-DATE
+> Task :shared:ui:mapAndroidMainSourceSetPaths
+> Task :shared:ui:compileAndroidMainLibraryResources
+> Task :shared:ui:compileAndroidMain
+> Task :androidApp:processFossDebugResources
+> Task :androidApp:preFossDebugAndroidTestBuild SKIPPED
+> Task :androidApp:processFossDebugAndroidTestManifest
+> Task :androidApp:generateFossDebugAndroidTestBuildConfig
+> Task :androidApp:generateFossDebugAndroidTestResValues
+> Task :androidApp:generateFossDebugAndroidTestResources
+> Task :androidApp:packageFossDebugAndroidTestResources
+> Task :androidApp:processFossDebugAndroidTestNavigationResources
+> Task :androidApp:parseFossDebugAndroidTestLocalResources
+> Task :androidApp:generateFossDebugAndroidTestRFile
+> Task :androidApp:javaPreCompileFossDebugAndroidTest
+> Task :androidApp:preFossDebugUnitTestBuild
+> Task :androidApp:javaPreCompileFossDebugUnitTest
+> Task :shared:core:bundleAndroidMainClassesToRuntimeJar
+> Task :shared:core:processAndroidMainJavaRes UP-TO-DATE
+> Task :androidApp:mergeFossDebugNativeDebugMetadata NO-SOURCE
+> Task :androidApp:generateFossDebugAssets UP-TO-DATE
+> Task :shared:core:generateAndroidMainAssets UP-TO-DATE
+> Task :shared:core:mergeAndroidMainAssets UP-TO-DATE
+> Task :shared:ui:generateAndroidMainAssets UP-TO-DATE
+
+> Task :shared:ui:compileAndroidMain
+w: file:///mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/components/GritBottomSheet.kt:79:62 'val windowInsets: WindowInsets' is deprecated. Renamed as modalWindowInsets.
+
+> Task :shared:ui:mergeAndroidMainAssets
+> Task :androidApp:mergeFossDebugAssets
+> Task :androidApp:compressFossDebugAssets
+> Task :shared:ui:bundleAndroidMainClassesToCompileJar
+> Task :shared:ui:bundleAndroidMainClassesToRuntimeJar
+> Task :shared:ui:processAndroidMainJavaRes
+> Task :androidApp:generateFossDebugGlobalSynthetics
+> Task :androidApp:checkFossDebugDuplicateClasses
+> Task :androidApp:desugarFossDebugFileDependencies
+
+> Task :androidApp:kspFossDebugKotlin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+> Task :androidApp:mergeExtDexFossDebug
+
+> Task :androidApp:compileFossDebugKotlin
+w: file:///mnt/d/wsl-share/Grit/androidApp/src/debug/java/com/shub39/grit/rhine/RhinePreviewActivity.kt:272:30 The corresponding parameter in the supertype 'ComponentActivity' is named 'intent'. This may cause problems when calling this function with named arguments.
+w: file:///mnt/d/wsl-share/Grit/androidApp/src/main/java/com/shub39/grit/tasks/data/repository/TasksRepository.kt:154:72 Unnecessary non-null assertion (!!) on a non-null receiver of type 'Section'.
+w: file:///mnt/d/wsl-share/Grit/androidApp/src/main/java/com/shub39/grit/tasks/data/repository/TasksRepository.kt:160:33 Unnecessary non-null assertion (!!) on a non-null receiver of type 'Task'.
+
+> Task :shared:ui:bundleLibRuntimeToDirAndroidMain
+> Task :androidApp:compileFossDebugJavaWithJavac
+> Task :androidApp:bundleFossDebugClassesToRuntimeJar
+> Task :androidApp:bundleFossDebugClassesToCompileJar
+> Task :androidApp:processFossDebugJavaRes
+> Task :androidApp:kspFossDebugAndroidTestKotlin
+> Task :androidApp:compileFossDebugAndroidTestKotlin
+> Task :androidApp:compileFossDebugAndroidTestJavaWithJavac
+> Task :androidApp:kspFossDebugUnitTestKotlin
+> Task :androidApp:compileFossDebugUnitTestKotlin
+> Task :androidApp:compileFossDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :androidApp:copyRoomSchemas NO-SOURCE
+> Task :androidApp:processFossDebugUnitTestJavaRes
+> Task :androidApp:testFossDebugUnitTest
+> Task :androidApp:mergeFossDebugJavaResource
+> Task :shared:core:bundleLibRuntimeToDirAndroidMain
+> Task :androidApp:dexBuilderFossDebug
+> Task :androidApp:mergeProjectDexFossDebug
+> Task :androidApp:mergeFossDebugJniLibFolders
+> Task :shared:core:mergeAndroidMainJniLibFolders UP-TO-DATE
+> Task :shared:core:mergeAndroidMainNativeLibs NO-SOURCE
+> Task :shared:core:copyAndroidMainJniLibsProjectOnly UP-TO-DATE
+> Task :shared:ui:mergeAndroidMainJniLibFolders
+> Task :shared:ui:mergeAndroidMainNativeLibs NO-SOURCE
+> Task :shared:ui:copyAndroidMainJniLibsProjectOnly
+> Task :androidApp:mergeLibDexFossDebug
+> Task :androidApp:validateSigningFossDebug
+> Task :androidApp:writeFossDebugAppMetadata
+> Task :androidApp:mergeFossDebugNativeLibs
+> Task :androidApp:writeFossDebugSigningConfigVersions
+> Task :androidApp:copyRoomSchemasToAndroidTestAssetsFossDebugAndroidTest
+> Task :androidApp:generateFossDebugAndroidTestAssets UP-TO-DATE
+> Task :androidApp:mergeFossDebugAndroidTestAssets
+> Task :androidApp:stripFossDebugDebugSymbols
+> Task :androidApp:compressFossDebugAndroidTestAssets
+> Task :androidApp:generateFossDebugAndroidTestGlobalSynthetics
+> Task :androidApp:checkFossDebugAndroidTestDuplicateClasses
+> Task :androidApp:desugarFossDebugAndroidTestFileDependencies
+> Task :androidApp:mergeExtDexFossDebugAndroidTest
+> Task :androidApp:processFossDebugAndroidTestJavaRes
+> Task :androidApp:mergeFossDebugAndroidTestJavaResource
+> Task :androidApp:mergeLibDexFossDebugAndroidTest
+> Task :androidApp:checkFossDebugAndroidTestAarMetadata
+> Task :androidApp:mapFossDebugAndroidTestSourceSetPaths
+> Task :androidApp:compileFossDebugAndroidTestNavigationResources
+> Task :androidApp:mergeFossDebugAndroidTestResources
+> Task :androidApp:processFossDebugAndroidTestResources
+> Task :androidApp:dexBuilderFossDebugAndroidTest
+> Task :androidApp:mergeProjectDexFossDebugAndroidTest
+> Task :androidApp:packageFossDebug
+> Task :androidApp:createFossDebugApkListingFileRedirect
+> Task :androidApp:assembleFossDebug
+> Task :androidApp:copyRhineDebugApk
+> Task :androidApp:mergeFossDebugAndroidTestJniLibFolders
+> Task :androidApp:mergeFossDebugAndroidTestNativeLibs NO-SOURCE
+> Task :androidApp:stripFossDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :androidApp:validateSigningFossDebugAndroidTest
+> Task :androidApp:writeFossDebugAndroidTestSigningConfigVersions
+> Task :androidApp:packageFossDebugAndroidTest
+> Task :androidApp:createFossDebugAndroidTestApkListingFileRedirect
+> Task :androidApp:assembleFossDebugAndroidTest
+
+[Incubating] Problems report is available at: file:///mnt/d/wsl-share/Grit/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 4m 14s
+148 actionable tasks: 122 executed, 26 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.6.0/userguide/configuration_cache_enabling.html

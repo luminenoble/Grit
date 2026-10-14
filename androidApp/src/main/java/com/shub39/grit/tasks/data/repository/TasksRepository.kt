@@ -30,6 +30,8 @@ import com.shub39.grit.widgets.WidgetUpdates
 import kotlin.time.Clock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Single
 
 @Single(binds = [TaskRepo::class])
@@ -39,6 +41,7 @@ class TasksRepository(
     private val scheduler: AlarmScheduler,
     private val notifications: GritNotificationManager,
 ) : TaskRepo {
+    private val replacementMutex = Mutex()
     private val generation = MutableStateFlow(java.util.UUID.randomUUID().toString())
 
     override fun dataGeneration(): Flow<String> = generation
@@ -95,7 +98,7 @@ class TasksRepository(
     }
 
     private suspend fun orderTasks(categoryId: Long, ids: List<Long>) {
-        validateReorder(tasks.getInCategory(categoryId).map { it.id }, ids)
+        validateReorder(tasks.orderedIds(categoryId), ids)
         val now = Clock.System.now()
         ids.forEachIndexed { i, id -> tasks.setOrder(id, i, now) }
     }
@@ -264,23 +267,44 @@ class TasksRepository(
         refresh()
     }
 
-    override suspend fun moveTask(id: Long, target: Int) {
-        db.withWriteTransaction {
-            val task = requireNotNull(tasks.getTaskById(id)).task
-            orderTasks(
-                task.categoryId,
-                movedIds(tasks.getInCategory(task.categoryId).map { it.id }, id, target),
-            )
-        }
-        refresh()
+    override suspend fun readMoveScope(kind: MoveKind, parentId: Long?): MoveScope =
+        replacementMutex.withLock { db.withReadTransaction { moveScope(kind, parentId) } }
+
+    private suspend fun moveScope(kind: MoveKind, parentId: Long?): MoveScope {
+        val ancestor =
+            if (kind == MoveKind.Section) {
+                requireNotNull(tasks.summaryById(requireNotNull(parentId))) { "父任务已不存在" }.categoryId
+            } else null
+        val ids =
+            when (kind) {
+                MoveKind.Category -> categories.orderedIds()
+                MoveKind.Task -> {
+                    require(categories.getById(requireNotNull(parentId)) != null) { "父类别已不存在" }
+                    tasks.orderedIds(parentId)
+                }
+                MoveKind.Section -> sections.orderedIds(requireNotNull(parentId))
+            }
+        return MoveScope(kind, parentId, ancestor, ids, generation.value)
     }
 
-    override suspend fun moveCategory(id: Long, target: Int) {
-        db.withWriteTransaction {
-            orderCategories(movedIds(categories.getCategories().map { it.id }, id, target))
+    override suspend fun moveTask(id: Long, target: Int, expected: MoveScope?) =
+        replacementMutex.withLock {
+            db.withWriteTransaction {
+                val task = requireNotNull(tasks.summaryById(id))
+                expected?.validate(moveScope(MoveKind.Task, task.categoryId))
+                orderTasks(task.categoryId, movedIds(tasks.orderedIds(task.categoryId), id, target))
+            }
+            refresh()
         }
-        refresh()
-    }
+
+    override suspend fun moveCategory(id: Long, target: Int, expected: MoveScope?) =
+        replacementMutex.withLock {
+            db.withWriteTransaction {
+                expected?.validate(moveScope(MoveKind.Category, null))
+                orderCategories(movedIds(categories.orderedIds(), id, target))
+            }
+            refresh()
+        }
 
     override suspend fun upsertSection(section: Section): Long {
         val id =
@@ -323,19 +347,19 @@ class TasksRepository(
         refresh()
     }
 
-    override suspend fun moveSection(id: Long, target: Int) {
-        db.withWriteTransaction {
-            val old = requireNotNull(sections.getById(id))
-            val now = Clock.System.now()
-            movedIds(sections.getInTask(old.taskId).map { it.id }, id, target).forEachIndexed {
-                i,
-                sid ->
-                sections.setOrder(sid, i, now)
+    override suspend fun moveSection(id: Long, target: Int, expected: MoveScope?) =
+        replacementMutex.withLock {
+            db.withWriteTransaction {
+                val old = requireNotNull(sections.summaryById(id))
+                expected?.validate(moveScope(MoveKind.Section, old.taskId))
+                val now = Clock.System.now()
+                movedIds(sections.orderedIds(old.taskId), id, target).forEachIndexed { i, sid ->
+                    sections.setOrder(sid, i, now)
+                }
+                tasks.touch(old.taskId, now)
             }
-            tasks.touch(old.taskId, now)
+            refresh()
         }
-        refresh()
-    }
 
     private fun window(offset: Int, limit: Int) {
         require(offset >= 0 && limit in 1..500)
@@ -391,22 +415,23 @@ class TasksRepository(
             )
         }
 
-    override suspend fun replaceData(backup: RhineBackup) {
-        val valid = backup.validated()
-        val removed =
-            db.withWriteTransaction {
-                val previous = getTasks()
-                categories.deleteAll()
-                valid.categories.forEach { categories.upsert(it.toCategoryEntity()) }
-                valid.tasks.forEach { task ->
-                    tasks.upsert(task.toTaskEntity())
-                    task.sections.forEach {
-                        sections.upsert(it.copy(taskId = task.id).toSectionEntity())
+    override suspend fun replaceData(backup: RhineBackup) =
+        replacementMutex.withLock {
+            val valid = backup.validated()
+            val removed =
+                db.withWriteTransaction {
+                    val previous = getTasks()
+                    categories.deleteAll()
+                    valid.categories.forEach { categories.upsert(it.toCategoryEntity()) }
+                    valid.tasks.forEach { task ->
+                        tasks.upsert(task.toTaskEntity())
+                        task.sections.forEach {
+                            sections.upsert(it.copy(taskId = task.id).toSectionEntity())
+                        }
                     }
+                    previous
                 }
-                previous
-            }
-        generation.value = java.util.UUID.randomUUID().toString()
-        refresh(removed, valid.tasks)
-    }
+            generation.value = java.util.UUID.randomUUID().toString()
+            refresh(removed, valid.tasks)
+        }
 }

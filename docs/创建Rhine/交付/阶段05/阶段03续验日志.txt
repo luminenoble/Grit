@@ -1,0 +1,20 @@
+ERROR: null root node returned by UiTestAutomationBridge.
+ERROR: null root node returned by UiTestAutomationBridge.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS moved Task leaves sibling directory; parent return follows new Category
+ERROR: null root node returned by UiTestAutomationBridge.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS live Section reorder keeps stable identity and follows its new index
+ERROR: null root node returned by UiTestAutomationBridge.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS cached Section position restores by ID after external reorder
+ERROR: null root node returned by UiTestAutomationBridge.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS deleted Task falls back to real neighbour in surviving Category
+ERROR: null root node returned by UiTestAutomationBridge.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS deleted focused Section resolves to the surviving item without stale ID
+ERROR: null root node returned by UiTestAutomationBridge.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS deleted parent Category exits second layer to surviving neighbour
+6 UI checks passed

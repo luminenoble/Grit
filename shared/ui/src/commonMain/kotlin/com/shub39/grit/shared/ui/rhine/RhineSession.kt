@@ -23,6 +23,7 @@ import com.shub39.grit.core.tasks.TaskSummary
 enum class RhineMode {
     Preview,
     Detail,
+    Adjust,
 }
 
 data class RhineSnapshot(val camera: RhineCamera, val focus: RhineFocus) {
