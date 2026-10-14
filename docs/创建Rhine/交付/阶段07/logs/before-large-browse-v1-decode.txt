@@ -1,0 +1,62 @@
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x34585d80] All samples in data stream index:id [1:2] have zero duration, stream set to be discarded by default. Override using AVStream->discard or -discard for ffmpeg command.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x34585d80] All samples in data stream index:id [2:3] have zero duration, stream set to be discarded by default. Override using AVStream->discard or -discard for ffmpeg command.
+Input #0, mov,mp4,m4a,3gp,3g2,mj2, from '/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段07/before-large-browse-v1.mp4':
+  Metadata:
+    major_brand     : mp42
+    minor_version   : 0
+    compatible_brands: isommp42
+    creation_time   : 2026-10-14T10:52:06.000000Z
+    com.android.version: 16
+  Duration: 00:00:15.24, start: 0.000000, bitrate: 1719 kb/s
+  Stream #0:0[0x1](eng): Video: h264 (Constrained Baseline) (avc1 / 0x31637661), yuv420p(tv, bt709, progressive), 2400x1080, 1717 kb/s, 3.61 fps, 90k tbr, 90k tbn (default)
+      Metadata:
+        creation_time   : 2026-10-14T10:52:06.000000Z
+        handler_name    : VideoHandle
+        vendor_id       : [0][0][0][0]
+  Stream #0:1[0x2](eng): Data: none (mett / 0x7474656D) (default)
+      Metadata:
+        creation_time   : 2026-10-14T10:52:06.000000Z
+        handler_name    : MetadHandle
+  Stream #0:2[0x3](eng): Data: none (mett / 0x7474656D) (default)
+      Metadata:
+        creation_time   : 2026-10-14T10:52:06.000000Z
+        handler_name    : MetadHandle
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> wrapped_avframe (native))
+Press [q] to stop, [?] for help
+Output #0, null, to 'pipe:':
+  Metadata:
+    major_brand     : mp42
+    minor_version   : 0
+    compatible_brands: isommp42
+    com.android.version: 16
+    encoder         : Lavf61.1.100
+  Stream #0:0(eng): Video: wrapped_avframe, yuv420p(tv, bt709, progressive), 2400x1080, q=2-31, 200 kb/s, 3.61 fps, 3.61 tbn (default)
+      Metadata:
+        creation_time   : 2026-10-14T10:52:06.000000Z
+        handler_name    : VideoHandle
+        vendor_id       : [0][0][0][0]
+        encoder         : Lavc61.3.100 wrapped_avframe
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 11 >= 11
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 14 >= 14
+    Last message repeated 1 times
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 17 >= 17
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 18 >= 18
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 19 >= 19
+    Last message repeated 1 times
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 20 >= 20
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 23 >= 23
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 25 >= 25
+    Last message repeated 2 times
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 26 >= 26
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 30 >= 30
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 31 >= 31
+    Last message repeated 1 times
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 32 >= 32
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 36 >= 36
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 42 >= 42
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 43 >= 43
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 48 >= 48
+[null @ 0x345be880] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 54 >= 54
+[out#0/null @ 0x345bf600] video:24KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+frame=   55 fps=0.0 q=-0.0 Lsize=N/A time=00:00:15.24 bitrate=N/A speed= 174x    

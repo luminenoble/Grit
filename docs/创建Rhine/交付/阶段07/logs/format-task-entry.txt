@@ -1,0 +1,7 @@
+Done formatting /mnt/d/wsl-share/Grit/androidApp/src/test/java/com/shub39/grit/RhinePerformanceTest.kt
+Done formatting /mnt/d/wsl-share/Grit/androidApp/src/androidTest/java/com/shub39/grit/RhineIntegrationRepositoryTest.kt
+Done formatting /mnt/d/wsl-share/Grit/androidApp/src/debug/java/com/shub39/grit/rhine/RhineMetrics.kt
+Done formatting /mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineRenderer.kt
+Done formatting /mnt/d/wsl-share/Grit/androidApp/src/debug/java/com/shub39/grit/rhine/RhinePreviewActivity.kt
+Done formatting /mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineScene.kt
+Done formatting /mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineScreen.kt

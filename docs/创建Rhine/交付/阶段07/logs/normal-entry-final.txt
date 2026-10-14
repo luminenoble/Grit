@@ -1,0 +1,5 @@
+Initial accessible labels ['Tasks', '0 completed', '请新增类别，或从设置导入 Grit_Rhine 新格式备份。旧版数据需先在应用外转换。', 'Today', 'Task']
+35-normal-rhine-entry-v1.png
+PASS normal MainActivity Rhine→Task restores portrait
+PASS normal MainActivity Rhine→Setting restores portrait
+PASS normal Task/Setting/Rhine entry graph

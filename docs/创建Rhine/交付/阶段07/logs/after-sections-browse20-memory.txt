@@ -1,0 +1,73 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 1000955 Realtime: 1000955
+
+** MEMINFO in pid 5626 [com.shub39.grit.debug] **
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap   111858   111832       16       35   112864   126836   117023     5820
+  Dalvik Heap     6774     6748        0       98     8288    13556     6778     6778
+ Dalvik Other    11951     5460        0        0    18852                           
+        Stack     1380     1380        0        0     1388                           
+       Ashmem       11        0        0        0      616                           
+    Other dev       18        0       12        0      324                           
+     .so mmap     4871      284     1220       15    36976                           
+    .jar mmap     3383        0     1040        0    44888                           
+    .apk mmap    44512        0    44028        0    46308                           
+    .ttf mmap      541        0      288        0     1384                           
+    .dex mmap       11        0        0        0      856                           
+    .oat mmap       28        0        0        0     1928                           
+    .art mmap     9182     8752      120       84    26436                           
+   Other mmap     7511        4     4156        0    11960                           
+      Unknown      635      632        0        0     1120                           
+        TOTAL   202898   135092    50880      232   314188   140392   123801    12598
+ 
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:    15620                          34724
+         Native Heap:   111832                         112864
+                Code:    46984                         145444
+               Stack:     1380                           1388
+            Graphics:        0                              0
+       Private Other:    10156
+              System:    16926
+             Unknown:                                   19768
+ 
+           TOTAL PSS:   202898            TOTAL RSS:   314188       TOTAL SWAP PSS:      232
+ 
+ Objects
+               Views:       11         ViewRootImpl:        1
+         AppContexts:        5           Activities:        1
+              Assets:       20        AssetManagers:        0
+       Local Binders:       23        Proxy Binders:       52
+       Parcel memory:        8         Parcel count:       34
+    Death Recipients:        0             WebViews:        0
+ 
+ Native Allocations
+                         Count                       Total(kB)
+                        ------                         ------
+    Other (malloced):     1594                            151
+ Other (nonmalloced):       77                             56
+ 
+ SQL
+         MEMORY_USED:     5010
+  PAGECACHE_OVERFLOW:     4513          MALLOC_SIZE:       46
+ 
+ DATABASES
+      pgsz     dbsz   Lookaside(b) cache hits cache misses cache size  Dbname
+PER CONNECTION STATS
+         4       44             17     0    23     1  /data/user/0/com.shub39.grit.debug/databases/grit_rhine_database
+         4        8                    0     0     0    (attached) temp
+         4       44             44     3    16     2  /data/user/0/com.shub39.grit.debug/databases/grit_rhine_database (3)
+         4       44             57     5    24     4  /data/user/0/com.shub39.grit.debug/databases/grit_rhine_database (2)
+         4     4080            123  6576   115    23  :memory:
+         4        8                    0     0     0    (attached) temp
+         4       96            123     7    38     9  /data/user/0/com.shub39.grit.debug/no_backup/androidx.work.workdb
+         4        8                    0     0     0    (attached) temp
+         4       96             32     2    15     3  /data/user/0/com.shub39.grit.debug/no_backup/androidx.work.workdb (2)
+POOL STATS
+     cache hits  cache misses    cache size  Dbname
+              8            85            93  /data/user/0/com.shub39.grit.debug/databases/grit_rhine_database
+           6576           118          6694  :memory:
+             11            75            86  /data/user/0/com.shub39.grit.debug/no_backup/androidx.work.workdb

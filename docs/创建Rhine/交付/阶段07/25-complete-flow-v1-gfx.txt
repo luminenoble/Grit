@@ -1,0 +1,76 @@
+Applications Graphics Acceleration Info:
+Uptime: 2608026 Realtime: 2608026
+
+** Graphics info for pid 11039 [com.shub39.grit.debug] **
+
+Stats since: 2500783513300ns
+Total frames rendered: 1363
+Janky frames: 543 (39.84%)
+Janky frames (legacy): 1228 (90.10%)
+50th percentile: 32ms
+90th percentile: 93ms
+95th percentile: 150ms
+99th percentile: 200ms
+Number Missed Vsync: 127
+Number High input latency: 1623
+Number Slow UI thread: 289
+Number Slow bitmap uploads: 9
+Number Slow issue draw commands: 495
+Number Frame deadline missed: 543
+Number Frame deadline missed (legacy): 483
+HISTOGRAM: 5ms=4 6ms=0 7ms=2 8ms=2 9ms=0 10ms=0 11ms=2 12ms=4 13ms=6 14ms=14 15ms=23 16ms=19 17ms=71 18ms=32 19ms=24 20ms=17 21ms=19 22ms=15 23ms=28 24ms=40 25ms=35 26ms=34 27ms=26 28ms=29 29ms=52 30ms=57 31ms=54 32ms=139 34ms=223 36ms=37 38ms=29 40ms=16 42ms=10 44ms=20 46ms=21 48ms=39 53ms=10 57ms=12 61ms=15 65ms=8 69ms=5 73ms=4 77ms=4 81ms=7 85ms=7 89ms=9 93ms=9 97ms=9 101ms=10 105ms=7 109ms=4 113ms=5 117ms=8 121ms=5 125ms=4 129ms=6 133ms=3 150ms=51 200ms=12 250ms=2 300ms=0 350ms=0 400ms=0 450ms=0 500ms=0 550ms=0 600ms=3 650ms=0 700ms=0 750ms=0 800ms=0 850ms=0 900ms=0 950ms=0 1000ms=0 1050ms=0 1100ms=0 1150ms=0 1200ms=0 1250ms=0 1300ms=0 1350ms=0 1400ms=0 1450ms=0 1500ms=0 1550ms=1 1600ms=0 1650ms=0 1700ms=0 1750ms=0 1800ms=0 1850ms=0 1900ms=0 1950ms=0 2000ms=0 2050ms=0 2100ms=0 2150ms=0 2200ms=0 2250ms=0 2300ms=0 2350ms=0 2400ms=0 2450ms=0 2500ms=0 2550ms=0 2600ms=0 2650ms=0 2700ms=0 2750ms=0 2800ms=0 2850ms=0 2900ms=0 2950ms=0 3000ms=0 3050ms=0 3100ms=0 3150ms=0 3200ms=0 3250ms=0 3300ms=0 3350ms=0 3400ms=0 3450ms=0 3500ms=0 3550ms=0 3600ms=0 3650ms=0 3700ms=0 3750ms=0 3800ms=0 3850ms=0 3900ms=0 3950ms=0 4000ms=0 4050ms=0 4100ms=0 4150ms=0 4200ms=0 4250ms=0 4300ms=0 4350ms=0 4400ms=0 4450ms=0 4500ms=0 4550ms=0 4600ms=0 4650ms=0 4700ms=0 4750ms=0 4800ms=0 4850ms=0 4900ms=0 4950ms=0
+50th gpu percentile: 7ms
+90th gpu percentile: 19ms
+95th gpu percentile: 22ms
+99th gpu percentile: 4950ms
+GPU HISTOGRAM: 1ms=29 2ms=164 3ms=145 4ms=107 5ms=70 6ms=94 7ms=73 8ms=68 9ms=59 10ms=46 11ms=42 12ms=52 13ms=55 14ms=56 15ms=49 16ms=38 17ms=30 18ms=38 19ms=40 20ms=18 21ms=17 22ms=21 23ms=7 24ms=7 25ms=13 4950ms=25
+
+Pipeline=Skia (OpenGL)
+Memory policy:
+  Max surface area: 3045120
+  Max resource usage: 146.17MB (x48)
+  Background retention: 50% (altUiHidden = true)
+  GPU Context timeout: 10
+Contexts: 1 (stopped = 0)
+CPU Caches:
+  Glyph Cache: 1.30 MB (1 entry)
+  Glyph Count: 883 
+Total CPU memory usage:
+  1359453 bytes, 1.30 MB (0.00 bytes is purgeable)
+GPU Caches:
+  Other:
+    Other: 69.59 KB (1 entry)
+    Buffer Object: 2.05 KB (2 entries)
+  Image:
+    Texture: 2.91 KB (2 entries)
+  Scratch:
+    Texture: 2.00 MB (1 entry)
+    Buffer Object: 2.86 MB (91 entries)
+Total GPU memory usage:
+  5169720 bytes, 4.93 MB (2.79 MB is purgeable)
+
+GraphicBufferAllocator buffers:
+            Handle |         Size |     W (Stride) x H | Layers |   Format |      Usage | Requestor
+    0x79dd75690640 |      unknown | 2400 (   0) x 1080 |      1 |        1 | 0x     b00 | VRI[RhinePreviewActivity]#0(BLAST Consumer)0
+    0x79dd75690f00 |      unknown | 2400 (   0) x 1080 |      1 |        1 | 0x     b00 | VRI[RhinePreviewActivity]#0(BLAST Consumer)0
+    0x79dd7569b4d0 |      unknown | 2400 (   0) x 1080 |      1 |        1 | 0x     b00 | VRI[RhinePreviewActivity]#0(BLAST Consumer)0
+Total allocated by GraphicBufferAllocator (estimate): 0.00 KB
+Imported gralloc buffers:
++ name:VRI[RhinePreviewActivity]#0(BLAST Consumer)0, id:734, size:10125.31KiB, w/h:2400x1080, usage: 0xb00, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x8810000, compressed: false
++ name:VRI[RhinePreviewActivity]#0(BLAST Consumer)0, id:735, size:10125.31KiB, w/h:2400x1080, usage: 0xb00, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x8810000, compressed: false
++ name:VRI[RhinePreviewActivity]#0(BLAST Consumer)0, id:733, size:10125.31KiB, w/h:2400x1080, usage: 0xb00, req fmt:1, fourcc/mod:875708993/0, dataspace: 0x8810000, compressed: false
+Total imported by gralloc: 30375.94KiB
+
+Profile data in ms:
+
+	com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity/android.view.ViewRootImpl@af0b8c4 (visibility=0)
+View hierarchy:
+
+  com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity/android.view.ViewRootImpl@af0b8c4
+  14 views, 26.09 kB of render nodes
+
+
+Total ViewRootImpl   : 1
+Total attached Views : 14
+Total RenderNode     : 26.09 kB (used) / 57.93 kB (capacity)
+

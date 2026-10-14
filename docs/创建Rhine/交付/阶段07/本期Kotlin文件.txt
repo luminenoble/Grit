@@ -1,0 +1,8 @@
+/mnt/d/wsl-share/Grit/androidApp/src/debug/java/com/shub39/grit/rhine/RhinePreviewActivity.kt
+/mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineRenderer.kt
+/mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineScene.kt
+/mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/rhine/RhineScreen.kt
+/mnt/d/wsl-share/Grit/shared/ui/src/commonMain/kotlin/com/shub39/grit/shared/ui/viewmodel/TasksViewModel.kt
+/mnt/d/wsl-share/Grit/androidApp/src/androidTest/java/com/shub39/grit/RhineIntegrationRepositoryTest.kt
+/mnt/d/wsl-share/Grit/androidApp/src/debug/java/com/shub39/grit/rhine/RhineMetrics.kt
+/mnt/d/wsl-share/Grit/androidApp/src/test/java/com/shub39/grit/RhinePerformanceTest.kt

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.shub39.grit.RhineMutationTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-14T11:52:09.512Z" hostname="Lemonade" time="0.148">
+  <properties/>
+  <testcase name="committedIdentityWaitsForCountsAndIgnoresOldWindow" classname="com.shub39.grit.RhineMutationTest" time="0.143"/>
+  <testcase name="deletionUsesSuccessorThenPredecessorThenZeroInBothLayers" classname="com.shub39.grit.RhineMutationTest" time="0.001"/>
+  <testcase name="savedStage03SessionAndGenerationSessionBothRestore" classname="com.shub39.grit.RhineMutationTest" time="0.004"/>
+  <testcase name="longestColumnRemovalClampsCameraAndPendingMovement" classname="com.shub39.grit.RhineMutationTest" time="0.0"/>
+  <testcase name="importClearsParentAndEveryCachedTaskEvenWithReusedIds" classname="com.shub39.grit.RhineMutationTest" time="0.0"/>
+  <testcase name="creationRequiresStableCenterAndRealParentOrUniqueStart" classname="com.shub39.grit.RhineMutationTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

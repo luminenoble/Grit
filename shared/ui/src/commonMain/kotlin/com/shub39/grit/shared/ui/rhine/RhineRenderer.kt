@@ -52,6 +52,7 @@ fun DrawScope.drawRhineScene(
     display: com.shub39.grit.core.settings.RhineDisplayConfig =
         com.shub39.grit.core.settings.RhineDisplayConfig(),
     titlePhase: Float = 0f,
+    facePath: Path = Path(),
 ) {
     drawRect(style.floor)
     val d = layout.projection.density
@@ -64,8 +65,9 @@ fun DrawScope.drawRhineScene(
                 style,
                 center,
                 display.shadow == com.shub39.grit.core.settings.RhineShadow.Low,
+                facePath,
             )
-        drawBlock(block, style, center)
+        drawBlock(block, style, center, facePath)
         val slot = block.slot
         val focused = slot.v == input.focusV && slot.u.toFloat() == input.focusU
 
@@ -127,7 +129,13 @@ fun DrawScope.drawRhineScene(
                 scrollSeconds = if (focused && display.scrollFocusedTitle) titlePhase else 0f,
             )
         }
-        if (focused) drawPolygon(block.top, style.shadow.copy(alpha = 0.55f), stroke = 1.2f * d)
+        if (focused)
+            drawPolygon(
+                block.top,
+                style.shadow.copy(alpha = 0.55f),
+                stroke = 1.2f * d,
+                path = facePath,
+            )
     }
 }
 
@@ -148,24 +156,25 @@ private fun DrawScope.drawShadow(
     style: RhineStyle,
     center: Float,
     low: Boolean,
+    path: Path,
 ) {
     // Two stacked translucent layers read as a soft contact shadow without a blur pass.
     val alpha = style.shadowAlphaAt(center)
-    val path = block.shadow.toPath()
+    block.shadow.toPath(path)
     drawPath(path, style.shadow.copy(alpha = alpha * 0.45f))
     if (low) return
     val inner =
         block.shadow.mapIndexed { i, p ->
             if (i < 2) lerpOffset(p, block.shadow[3 - i], 0.45f) else p
         }
-    drawPath(inner.toPath(), style.shadow.copy(alpha = alpha * 0.55f))
+    drawPath(inner.toPath(path), style.shadow.copy(alpha = alpha * 0.55f))
 }
 
-private fun DrawScope.drawBlock(block: RhineBlock, style: RhineStyle, center: Float) {
+private fun DrawScope.drawBlock(block: RhineBlock, style: RhineStyle, center: Float, path: Path) {
     val d = density
     val front = block.front
     drawPath(
-        front.toPath(),
+        front.toPath(path),
         Brush.linearGradient(
             listOf(style.frontAt(center), style.frontLowAt(center)),
             start = front[3],
@@ -173,7 +182,7 @@ private fun DrawScope.drawBlock(block: RhineBlock, style: RhineStyle, center: Fl
         ),
     )
     val cap = block.cap
-    drawPath(block.cap.toPath(), style.cap)
+    drawPath(block.cap.toPath(path), style.cap)
     // Round fitting on the end face, a fixed distance below the top edge.
     val r = 1.8f * d
     if (block.height > r * 5f) {
@@ -182,15 +191,15 @@ private fun DrawScope.drawBlock(block: RhineBlock, style: RhineStyle, center: Fl
     }
     val top = block.top
     drawPath(
-        top.toPath(),
+        top.toPath(path),
         Brush.linearGradient(listOf(style.top, style.topFar), start = top[0], end = top[3]),
     )
     // Hard creases: every visible edge in the darker edge colour, then a thin highlight set just
     // inside the near top edge, so the slats read with crisp corners as in the reference.
     val crease = 0.9f * d
-    drawPolygon(front, style.edge, stroke = crease)
-    drawPolygon(cap, style.edge, stroke = crease)
-    drawPolygon(top, style.edge, stroke = crease)
+    drawPolygon(front, style.edge, stroke = crease, path = path)
+    drawPolygon(cap, style.edge, stroke = crease, path = path)
+    drawPolygon(top, style.edge, stroke = crease, path = path)
     val across = top[3] - top[0]
     val inset = across * (1.3f * d / across.getDistance().coerceAtLeast(1f))
     drawLine(style.highlight, top[0] + inset, top[1] + inset, strokeWidth = 1.1f * d)
@@ -316,11 +325,12 @@ fun measureRhineFaceText(
         constraints = Constraints(minWidth = maxWidth, maxWidth = maxWidth),
     )
 
-private fun DrawScope.drawPolygon(points: List<Offset>, color: Color, stroke: Float) =
-    drawPath(points.toPath(), color, style = Stroke(width = stroke))
+private fun DrawScope.drawPolygon(points: List<Offset>, color: Color, stroke: Float, path: Path) =
+    drawPath(points.toPath(path), color, style = Stroke(width = stroke))
 
-private fun List<Offset>.toPath() =
-    Path().apply {
+private fun List<Offset>.toPath(path: Path) =
+    path.apply {
+        rewind()
         moveTo(this@toPath[0].x, this@toPath[0].y)
         for (i in 1 until size) lineTo(this@toPath[i].x, this@toPath[i].y)
         close()

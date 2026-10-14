@@ -40,17 +40,26 @@ class TasksViewModel(
 
     init {
         viewModelScope.launch {
-            repo.getTasksFlow().collect { data ->
-                mutable.update { old ->
-                    old.copy(
-                        tasks = data,
-                        completedTasks = data.values.flatten().filter { it.isCompleted },
-                        currentCategory =
-                            data.keys.firstOrNull { it.id == old.currentCategory?.id }
-                                ?: data.keys.firstOrNull(),
-                    )
+            // The Task page owns full bodies. Hidden pages must not keep re-querying them
+            // after Rhine mutations; the last UI snapshot remains available for returning drafts.
+            mutable.subscriptionCount
+                .map { it > 0 }
+                .distinctUntilChanged()
+                .collectLatest { visible ->
+                    if (visible)
+                        repo.getTasksFlow().collect { data ->
+                            mutable.update { old ->
+                                old.copy(
+                                    tasks = data,
+                                    completedTasks =
+                                        data.values.flatten().filter { it.isCompleted },
+                                    currentCategory =
+                                        data.keys.firstOrNull { it.id == old.currentCategory?.id }
+                                            ?: data.keys.firstOrNull(),
+                                )
+                            }
+                        }
                 }
-            }
         }
         viewModelScope.launch {
             combine(datastore.getIs24Hr(), datastore.getTaskReorderPref()) { hours, reorder ->

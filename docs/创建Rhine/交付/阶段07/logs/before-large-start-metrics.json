@@ -1,0 +1,232 @@
+{
+  "requests": 24,
+  "emissions": 24,
+  "bodyReads": 0,
+  "activePages": 18,
+  "peakActivePages": 18,
+  "maxPage": 100,
+  "maxLoadedPage": 100,
+  "draws": 3,
+  "maxBlocks": 325,
+  "latest": {
+    "blocks": 112,
+    "u": 50,
+    "v": 49,
+    "Zero": 0,
+    "Real": 112,
+    "Placeholder": 0,
+    "AddParent": 0,
+    "Decoration": 0
+  },
+  "rangeCapacity": 64,
+  "ranges": [
+    {
+      "kind": "Task",
+      "parent": 1,
+      "offset": 0,
+      "limit": 100
+    },
+    {
+      "kind": "Task",
+      "parent": 2,
+      "offset": 0,
+      "limit": 100
+    },
+    {
+      "kind": "Task",
+      "parent": 3,
+      "offset": 0,
+      "limit": 100
+    },
+    {
+      "kind": "Task",
+      "parent": 4,
+      "offset": 0,
+      "limit": 100
+    },
+    {
+      "kind": "Task",
+      "parent": 5,
+      "offset": 0,
+      "limit": 100
+    },
+    {
+      "kind": "Task",
+      "parent": 6,
+      "offset": 0,
+      "limit": 100
+    },
+    {
+      "kind": "Task",
+      "parent": 43,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 44,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 45,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 46,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 47,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 48,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 49,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 50,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 51,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 52,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 53,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 54,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 55,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 56,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 57,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 58,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 59,
+      "offset": 15,
+      "limit": 64
+    },
+    {
+      "kind": "Task",
+      "parent": 60,
+      "offset": 15,
+      "limit": 64
+    }
+  ],
+  "frameCapacity": 2048,
+  "frames": [
+    {
+      "totalNs": 97175282,
+      "drawNs": 382000,
+      "layoutNs": 31779500,
+      "first": 1
+    },
+    {
+      "totalNs": 965488722,
+      "drawNs": 241730500,
+      "layoutNs": 238566300,
+      "first": 0
+    },
+    {
+      "totalNs": 106226524,
+      "drawNs": 54032900,
+      "layoutNs": 74900,
+      "first": 0
+    },
+    {
+      "totalNs": 39564028,
+      "drawNs": 1867400,
+      "layoutNs": 72500,
+      "first": 0
+    },
+    {
+      "totalNs": 40728462,
+      "drawNs": 1987000,
+      "layoutNs": 58900,
+      "first": 0
+    },
+    {
+      "totalNs": 38238796,
+      "drawNs": 2149800,
+      "layoutNs": 100400,
+      "first": 0
+    },
+    {
+      "totalNs": 23099564,
+      "drawNs": 2796600,
+      "layoutNs": 116800,
+      "first": 0
+    },
+    {
+      "totalNs": 292783198,
+      "drawNs": 237986300,
+      "layoutNs": 70300,
+      "first": 0
+    },
+    {
+      "totalNs": 295965232,
+      "drawNs": 1921600,
+      "layoutNs": 67600,
+      "first": 0
+    },
+    {
+      "totalNs": 28524318,
+      "drawNs": 244400,
+      "layoutNs": 435800,
+      "first": 0
+    }
+  ],
+  "textCacheCapacity": 128
+}

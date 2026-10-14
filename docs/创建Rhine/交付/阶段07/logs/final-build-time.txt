@@ -1,0 +1,4 @@
+Final APK copy time: 2026-10-14T20:15:23.167913
+Final successful build log modification time: 2026-10-14T19:52:18.445359
+Version:6.0.7-rhine-stage07-v1 /6070 /FOSS Debug
+Java21 /WSL /two workers /in-process

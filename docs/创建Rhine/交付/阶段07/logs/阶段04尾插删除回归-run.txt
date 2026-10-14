@@ -1,0 +1,22 @@
+CHECKPOINT 01-empty-start-v1.png
+CHECKPOINT 02-category-form-v1.png
+CHECKPOINT 03-category-keyboard-v1.png
+CHECKPOINT 04-category-zero-v1.png
+CHECKPOINT 05-first-task-v1.png
+CHECKPOINT 06-u99-short-before-v1.png
+CHECKPOINT 07-create-failed-draft-v1.png
+CHECKPOINT 08-short-second-after-v1.png
+CHECKPOINT 09-section-u99-short-before-v1.png
+CHECKPOINT 10-section-create-v1.png
+CHECKPOINT 11-section-second-after-v1.png
+CHECKPOINT 12-sibling-form-v1.png
+CHECKPOINT 13-sibling-zero-v1.png
+CHECKPOINT 14-section-delete-confirm-v1.png
+CHECKPOINT 15-section-deleted-zero-v1.png
+CHECKPOINT 16-longest-before-v1.png
+CHECKPOINT 17-category-cascade-confirm-v1.png
+CHECKPOINT 18-delete-failed-context-v1.png
+CHECKPOINT 19-longest-removed-v1.png
+CHECKPOINT 20-shrunk-tail-v1.png
+CHECKPOINT 21-deleted-all-empty-v1.png
+All screenshot assertions passed

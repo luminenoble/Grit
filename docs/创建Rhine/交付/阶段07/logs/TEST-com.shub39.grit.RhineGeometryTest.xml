@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.shub39.grit.RhineGeometryTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-10-14T11:52:07.404Z" hostname="Lemonade" time="0.08">
+  <properties/>
+  <testcase name="centerWallSitsLeftOfCentreAtReferencePitch" classname="com.shub39.grit.RhineGeometryTest" time="0.005"/>
+  <testcase name="windowCoversWholeScreen" classname="com.shub39.grit.RhineGeometryTest" time="0.005"/>
+  <testcase name="unprojectInvertsProject" classname="com.shub39.grit.RhineGeometryTest" time="0.0"/>
+  <testcase name="emptyDataKeepsUAtStart" classname="com.shub39.grit.RhineGeometryTest" time="0.0"/>
+  <testcase name="lightTextColorIsMadeReadable" classname="com.shub39.grit.RhineGeometryTest" time="0.003"/>
+  <testcase name="drawnBlocksScaleWithViewportNotData" classname="com.shub39.grit.RhineGeometryTest" time="0.017"/>
+  <testcase name="hitTestPicksFrontMostBlock" classname="com.shub39.grit.RhineGeometryTest" time="0.045"/>
+  <testcase name="everyLabelledBlockKeepsItsSideLabel" classname="com.shub39.grit.RhineGeometryTest" time="0.001"/>
+  <testcase name="landscapeBasisMatchesReferenceAngles" classname="com.shub39.grit.RhineGeometryTest" time="0.0"/>
+  <testcase name="onlyCenterColumnRisesWithSinglePeak" classname="com.shub39.grit.RhineGeometryTest" time="0.0"/>
+  <testcase name="columnRunsFromLowerRightToUpperLeft" classname="com.shub39.grit.RhineGeometryTest" time="0.0"/>
+  <testcase name="painterOrderDrawsOccludersLast" classname="com.shub39.grit.RhineGeometryTest" time="0.003"/>
+  <testcase name="slotKindsFollowLogicalBounds" classname="com.shub39.grit.RhineGeometryTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.shub39.grit.RhineDisplayTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-14T11:52:06.246Z" hostname="Lemonade" time="1.15">
+  <properties/>
+  <testcase name="densityGoalsAreMonotonicAndIndependentOfBusinessBounds" classname="com.shub39.grit.RhineDisplayTest" time="0.236"/>
+  <testcase name="extremesKeepProjectionWindowBoundedAndFrontmostHitsRespectDecoration" classname="com.shub39.grit.RhineDisplayTest" time="0.047"/>
+  <testcase name="defaultsMatchConfirmedBaseline" classname="com.shub39.grit.RhineDisplayTest" time="0.448"/>
+  <testcase name="switchingModesDoesNotOverwriteCustomDimensionsOrViewportTargets" classname="com.shub39.grit.RhineDisplayTest" time="0.0"/>
+  <testcase name="hidingNumbersDoesNotChangeIdentityOrOperationPermissions" classname="com.shub39.grit.RhineDisplayTest" time="0.001"/>
+  <testcase name="shadedFacesKeepRawColorReadableAtBothEnds" classname="com.shub39.grit.RhineDisplayTest" time="0.226"/>
+  <testcase name="invalidNumbersFallBackIndividuallyAndUnknownSchemasFallBackCompletely" classname="com.shub39.grit.RhineDisplayTest" time="0.189"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

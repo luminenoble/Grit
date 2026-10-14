@@ -1,0 +1,2106 @@
+{
+  "requests": 16,
+  "emissions": 32,
+  "bodyReads": 0,
+  "activePages": 4,
+  "peakActivePages": 4,
+  "maxPage": 12,
+  "maxLoadedPage": 12,
+  "draws": 64,
+  "maxBlocks": 115,
+  "latest": {
+    "blocks": 115,
+    "u": 7.6132116,
+    "v": 0,
+    "Zero": 3,
+    "Real": 21,
+    "Placeholder": 21,
+    "AddParent": 0,
+    "Decoration": 70
+  },
+  "rangeCapacity": 64,
+  "ranges": [
+    {
+      "kind": "Task",
+      "parent": 1,
+      "offset": 0,
+      "limit": 12
+    },
+    {
+      "kind": "Task",
+      "parent": 2,
+      "offset": 0,
+      "limit": 8
+    },
+    {
+      "kind": "Task",
+      "parent": 3,
+      "offset": 0,
+      "limit": 1
+    },
+    {
+      "kind": "Task",
+      "parent": 5,
+      "offset": 0,
+      "limit": 9
+    },
+    {
+      "kind": "Task",
+      "parent": 1,
+      "offset": 0,
+      "limit": 12
+    },
+    {
+      "kind": "Task",
+      "parent": 2,
+      "offset": 0,
+      "limit": 8
+    },
+    {
+      "kind": "Task",
+      "parent": 3,
+      "offset": 0,
+      "limit": 1
+    },
+    {
+      "kind": "Task",
+      "parent": 5,
+      "offset": 0,
+      "limit": 9
+    },
+    {
+      "kind": "Task",
+      "parent": 1,
+      "offset": 0,
+      "limit": 12
+    },
+    {
+      "kind": "Task",
+      "parent": 2,
+      "offset": 0,
+      "limit": 8
+    },
+    {
+      "kind": "Task",
+      "parent": 3,
+      "offset": 0,
+      "limit": 1
+    },
+    {
+      "kind": "Task",
+      "parent": 5,
+      "offset": 0,
+      "limit": 9
+    },
+    {
+      "kind": "Task",
+      "parent": 1,
+      "offset": 0,
+      "limit": 12
+    },
+    {
+      "kind": "Task",
+      "parent": 2,
+      "offset": 0,
+      "limit": 8
+    },
+    {
+      "kind": "Task",
+      "parent": 3,
+      "offset": 0,
+      "limit": 1
+    },
+    {
+      "kind": "Task",
+      "parent": 5,
+      "offset": 0,
+      "limit": 9
+    }
+  ],
+  "frameCapacity": 2048,
+  "frames": [
+    {
+      "totalNs": 34717420,
+      "drawNs": 8726020,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 23846554,
+      "drawNs": 8481354,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 32725988,
+      "drawNs": 7982188,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 45375022,
+      "drawNs": 5863722,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 27092090,
+      "drawNs": 942690,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 30730824,
+      "drawNs": 10623224,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 28359058,
+      "drawNs": 4972358,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 39135892,
+      "drawNs": 12066092,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 26115026,
+      "drawNs": 1542700,
+      "layoutNs": 82300,
+      "first": 0
+    },
+    {
+      "totalNs": 22199960,
+      "drawNs": 1349400,
+      "layoutNs": 53600,
+      "first": 0
+    },
+    {
+      "totalNs": 19261714,
+      "drawNs": 1578600,
+      "layoutNs": 79400,
+      "first": 0
+    },
+    {
+      "totalNs": 74210780,
+      "drawNs": 28310000,
+      "layoutNs": 42100,
+      "first": 0
+    },
+    {
+      "totalNs": 35344084,
+      "drawNs": 5806084,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34605118,
+      "drawNs": 15322518,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 17720854,
+      "drawNs": 4951154,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 109524486,
+      "drawNs": 23122100,
+      "layoutNs": 69900,
+      "first": 0
+    },
+    {
+      "totalNs": 25952590,
+      "drawNs": 10008690,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 125168388,
+      "drawNs": 62054300,
+      "layoutNs": 78600,
+      "first": 0
+    },
+    {
+      "totalNs": 35556326,
+      "drawNs": 11899226,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 32119494,
+      "drawNs": 6631494,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 45646262,
+      "drawNs": 2749162,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 26581064,
+      "drawNs": 576764,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 33969298,
+      "drawNs": 10436098,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 21163532,
+      "drawNs": 1118600,
+      "layoutNs": 57100,
+      "first": 0
+    },
+    {
+      "totalNs": 35551866,
+      "drawNs": 4892166,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34340500,
+      "drawNs": 10808300,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 31827334,
+      "drawNs": 7469734,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 31606468,
+      "drawNs": 6763668,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34643902,
+      "drawNs": 7097502,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 21782936,
+      "drawNs": 6401636,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 36649670,
+      "drawNs": 5586970,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 29297338,
+      "drawNs": 4164438,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 36044172,
+      "drawNs": 13298072,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 36073906,
+      "drawNs": 9325506,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 35259740,
+      "drawNs": 8312140,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 22593874,
+      "drawNs": 7704374,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 21084508,
+      "drawNs": 6161108,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 28805242,
+      "drawNs": 4926342,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 19404110,
+      "drawNs": 6684110,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 16431478,
+      "drawNs": 4300278,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 18923512,
+      "drawNs": 6290312,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 17027146,
+      "drawNs": 5573746,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 28682180,
+      "drawNs": 15767480,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 26536214,
+      "drawNs": 12884114,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 11698116,
+      "drawNs": 345716,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 36985950,
+      "drawNs": 10215150,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 56851650,
+      "drawNs": 4380100,
+      "layoutNs": 63600,
+      "first": 0
+    },
+    {
+      "totalNs": 70740440,
+      "drawNs": 37816100,
+      "layoutNs": 860500,
+      "first": 0
+    },
+    {
+      "totalNs": 51604576,
+      "drawNs": 622600,
+      "layoutNs": 1578500,
+      "first": 0
+    },
+    {
+      "totalNs": 41292420,
+      "drawNs": 25056500,
+      "layoutNs": 895500,
+      "first": 0
+    },
+    {
+      "totalNs": 42410854,
+      "drawNs": 147100,
+      "layoutNs": 48700,
+      "first": 0
+    },
+    {
+      "totalNs": 35617856,
+      "drawNs": 42400,
+      "layoutNs": 1077600,
+      "first": 0
+    },
+    {
+      "totalNs": 73444090,
+      "drawNs": 55300,
+      "layoutNs": 741300,
+      "first": 0
+    },
+    {
+      "totalNs": 35022426,
+      "drawNs": 790900,
+      "layoutNs": 38900,
+      "first": 0
+    },
+    {
+      "totalNs": 22815960,
+      "drawNs": 572000,
+      "layoutNs": 50000,
+      "first": 0
+    },
+    {
+      "totalNs": 35180794,
+      "drawNs": 737400,
+      "layoutNs": 78300,
+      "first": 0
+    },
+    {
+      "totalNs": 31310228,
+      "drawNs": 648600,
+      "layoutNs": 47400,
+      "first": 0
+    },
+    {
+      "totalNs": 36865362,
+      "drawNs": 753700,
+      "layoutNs": 70200,
+      "first": 0
+    },
+    {
+      "totalNs": 54002796,
+      "drawNs": 906800,
+      "layoutNs": 4282800,
+      "first": 0
+    },
+    {
+      "totalNs": 64535630,
+      "drawNs": 586200,
+      "layoutNs": 38500,
+      "first": 0
+    },
+    {
+      "totalNs": 71370664,
+      "drawNs": 814700,
+      "layoutNs": 60200,
+      "first": 0
+    },
+    {
+      "totalNs": 51676532,
+      "drawNs": 876200,
+      "layoutNs": 48400,
+      "first": 0
+    },
+    {
+      "totalNs": 50835666,
+      "drawNs": 812200,
+      "layoutNs": 56200,
+      "first": 0
+    },
+    {
+      "totalNs": 38868200,
+      "drawNs": 523100,
+      "layoutNs": 46500,
+      "first": 0
+    },
+    {
+      "totalNs": 53525434,
+      "drawNs": 591000,
+      "layoutNs": 49200,
+      "first": 0
+    },
+    {
+      "totalNs": 41228168,
+      "drawNs": 469800,
+      "layoutNs": 39300,
+      "first": 0
+    },
+    {
+      "totalNs": 51200002,
+      "drawNs": 686000,
+      "layoutNs": 54900,
+      "first": 0
+    },
+    {
+      "totalNs": 38646236,
+      "drawNs": 424700,
+      "layoutNs": 33300,
+      "first": 0
+    },
+    {
+      "totalNs": 66093470,
+      "drawNs": 65200,
+      "layoutNs": 56100,
+      "first": 0
+    },
+    {
+      "totalNs": 69046204,
+      "drawNs": 600500,
+      "layoutNs": 45400,
+      "first": 0
+    },
+    {
+      "totalNs": 68365438,
+      "drawNs": 51500,
+      "layoutNs": 54800,
+      "first": 0
+    },
+    {
+      "totalNs": 47816106,
+      "drawNs": 70400,
+      "layoutNs": 52800,
+      "first": 0
+    },
+    {
+      "totalNs": 65325192,
+      "drawNs": 27157800,
+      "layoutNs": 41300,
+      "first": 0
+    },
+    {
+      "totalNs": 94714262,
+      "drawNs": 29924100,
+      "layoutNs": 3662800,
+      "first": 0
+    },
+    {
+      "totalNs": 118201196,
+      "drawNs": 53220400,
+      "layoutNs": 66200,
+      "first": 0
+    },
+    {
+      "totalNs": 120627798,
+      "drawNs": 24857500,
+      "layoutNs": 61600,
+      "first": 0
+    },
+    {
+      "totalNs": 99298568,
+      "drawNs": 28448600,
+      "layoutNs": 55000,
+      "first": 0
+    },
+    {
+      "totalNs": 98030236,
+      "drawNs": 29785600,
+      "layoutNs": 47700,
+      "first": 0
+    },
+    {
+      "totalNs": 95453404,
+      "drawNs": 28534400,
+      "layoutNs": 37300,
+      "first": 0
+    },
+    {
+      "totalNs": 78830480,
+      "drawNs": 34561400,
+      "layoutNs": 54600,
+      "first": 0
+    },
+    {
+      "totalNs": 58925582,
+      "drawNs": 33589000,
+      "layoutNs": 67400,
+      "first": 0
+    },
+    {
+      "totalNs": 105881916,
+      "drawNs": 37385900,
+      "layoutNs": 72300,
+      "first": 0
+    },
+    {
+      "totalNs": 167714450,
+      "drawNs": 50900900,
+      "layoutNs": 76500,
+      "first": 0
+    },
+    {
+      "totalNs": 186440852,
+      "drawNs": 53183300,
+      "layoutNs": 59100,
+      "first": 0
+    },
+    {
+      "totalNs": 171161088,
+      "drawNs": 45188000,
+      "layoutNs": 59500,
+      "first": 0
+    },
+    {
+      "totalNs": 156638024,
+      "drawNs": 47208700,
+      "layoutNs": 77000,
+      "first": 0
+    },
+    {
+      "totalNs": 75507180,
+      "drawNs": 45561200,
+      "layoutNs": 43700,
+      "first": 0
+    },
+    {
+      "totalNs": 43129450,
+      "drawNs": 14840150,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 26096418,
+      "drawNs": 14885718,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 39551586,
+      "drawNs": 9648286,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 188446614,
+      "drawNs": 1625800,
+      "layoutNs": 14869800,
+      "first": 0
+    },
+    {
+      "totalNs": 42872920,
+      "drawNs": 793000,
+      "layoutNs": 34600,
+      "first": 0
+    },
+    {
+      "totalNs": 53074154,
+      "drawNs": 1418700,
+      "layoutNs": 64700,
+      "first": 0
+    },
+    {
+      "totalNs": 52537788,
+      "drawNs": 1429100,
+      "layoutNs": 15171900,
+      "first": 0
+    },
+    {
+      "totalNs": 56822422,
+      "drawNs": 618100,
+      "layoutNs": 33700,
+      "first": 0
+    },
+    {
+      "totalNs": 56793056,
+      "drawNs": 882100,
+      "layoutNs": 36300,
+      "first": 0
+    },
+    {
+      "totalNs": 56953090,
+      "drawNs": 1015000,
+      "layoutNs": 42500,
+      "first": 0
+    },
+    {
+      "totalNs": 57961024,
+      "drawNs": 1256200,
+      "layoutNs": 50800,
+      "first": 0
+    },
+    {
+      "totalNs": 31002792,
+      "drawNs": 14846992,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 36741726,
+      "drawNs": 14716326,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 36151160,
+      "drawNs": 11896960,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34486394,
+      "drawNs": 8731694,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34549628,
+      "drawNs": 7411628,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34023362,
+      "drawNs": 5744962,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 32457296,
+      "drawNs": 6480796,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 38151030,
+      "drawNs": 6155630,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 25252664,
+      "drawNs": 11992864,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 33927898,
+      "drawNs": 8915298,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 31711032,
+      "drawNs": 2205700,
+      "layoutNs": 142100,
+      "first": 0
+    },
+    {
+      "totalNs": 32001266,
+      "drawNs": 4897666,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 31177700,
+      "drawNs": 7400100,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 32605934,
+      "drawNs": 6640234,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 31606668,
+      "drawNs": 6248268,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 35960102,
+      "drawNs": 4878302,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 14297170,
+      "drawNs": 3162470,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 23242904,
+      "drawNs": 13106704,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 41785138,
+      "drawNs": 6824538,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 40772372,
+      "drawNs": 13911072,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 35191006,
+      "drawNs": 13803006,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 32647240,
+      "drawNs": 11781840,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 37869274,
+      "drawNs": 8500974,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34697708,
+      "drawNs": 11101908,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 21333042,
+      "drawNs": 8749742,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34436576,
+      "drawNs": 4960176,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 21599010,
+      "drawNs": 7548510,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 22634444,
+      "drawNs": 5312744,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 36421478,
+      "drawNs": 6297178,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 45844746,
+      "drawNs": 6680846,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 38752914,
+      "drawNs": 15393714,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 26537648,
+      "drawNs": 10483248,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 57650548,
+      "drawNs": 1286300,
+      "layoutNs": 65500,
+      "first": 0
+    },
+    {
+      "totalNs": 39376316,
+      "drawNs": 1540100,
+      "layoutNs": 63500,
+      "first": 0
+    },
+    {
+      "totalNs": 62971638,
+      "drawNs": 806900,
+      "layoutNs": 857800,
+      "first": 0
+    },
+    {
+      "totalNs": 52422208,
+      "drawNs": 22904000,
+      "layoutNs": 949400,
+      "first": 0
+    },
+    {
+      "totalNs": 52426242,
+      "drawNs": 82900,
+      "layoutNs": 57600,
+      "first": 0
+    },
+    {
+      "totalNs": 71790152,
+      "drawNs": 38883900,
+      "layoutNs": 1027600,
+      "first": 0
+    },
+    {
+      "totalNs": 88030086,
+      "drawNs": 73100,
+      "layoutNs": 78400,
+      "first": 0
+    },
+    {
+      "totalNs": 103118488,
+      "drawNs": 104300,
+      "layoutNs": 30913800,
+      "first": 0
+    },
+    {
+      "totalNs": 83937156,
+      "drawNs": 53400,
+      "layoutNs": 467900,
+      "first": 0
+    },
+    {
+      "totalNs": 38237858,
+      "drawNs": 826100,
+      "layoutNs": 41700,
+      "first": 0
+    },
+    {
+      "totalNs": 54946992,
+      "drawNs": 547400,
+      "layoutNs": 39100,
+      "first": 0
+    },
+    {
+      "totalNs": 60685526,
+      "drawNs": 397800,
+      "layoutNs": 32000,
+      "first": 0
+    },
+    {
+      "totalNs": 59784060,
+      "drawNs": 2313800,
+      "layoutNs": 3627000,
+      "first": 0
+    },
+    {
+      "totalNs": 39018328,
+      "drawNs": 703300,
+      "layoutNs": 56900,
+      "first": 0
+    },
+    {
+      "totalNs": 44694262,
+      "drawNs": 642700,
+      "layoutNs": 51200,
+      "first": 0
+    },
+    {
+      "totalNs": 42920696,
+      "drawNs": 755500,
+      "layoutNs": 160000,
+      "first": 0
+    },
+    {
+      "totalNs": 51252930,
+      "drawNs": 698500,
+      "layoutNs": 58400,
+      "first": 0
+    },
+    {
+      "totalNs": 66137964,
+      "drawNs": 561400,
+      "layoutNs": 44300,
+      "first": 0
+    },
+    {
+      "totalNs": 66127198,
+      "drawNs": 545200,
+      "layoutNs": 47400,
+      "first": 0
+    },
+    {
+      "totalNs": 51416766,
+      "drawNs": 598400,
+      "layoutNs": 47400,
+      "first": 0
+    },
+    {
+      "totalNs": 23902434,
+      "drawNs": 729800,
+      "layoutNs": 52500,
+      "first": 0
+    },
+    {
+      "totalNs": 23198568,
+      "drawNs": 558000,
+      "layoutNs": 49400,
+      "first": 0
+    },
+    {
+      "totalNs": 22751902,
+      "drawNs": 69700,
+      "layoutNs": 51800,
+      "first": 0
+    },
+    {
+      "totalNs": 34415336,
+      "drawNs": 692800,
+      "layoutNs": 57500,
+      "first": 0
+    },
+    {
+      "totalNs": 43845770,
+      "drawNs": 74300,
+      "layoutNs": 109300,
+      "first": 0
+    },
+    {
+      "totalNs": 41536104,
+      "drawNs": 79200,
+      "layoutNs": 65200,
+      "first": 0
+    },
+    {
+      "totalNs": 41606638,
+      "drawNs": 71600,
+      "layoutNs": 68700,
+      "first": 0
+    },
+    {
+      "totalNs": 58045724,
+      "drawNs": 23682600,
+      "layoutNs": 41800,
+      "first": 0
+    },
+    {
+      "totalNs": 64311160,
+      "drawNs": 31102200,
+      "layoutNs": 2306100,
+      "first": 0
+    },
+    {
+      "totalNs": 98630294,
+      "drawNs": 27444400,
+      "layoutNs": 51400,
+      "first": 0
+    },
+    {
+      "totalNs": 144440162,
+      "drawNs": 35575200,
+      "layoutNs": 58000,
+      "first": 0
+    },
+    {
+      "totalNs": 110181864,
+      "drawNs": 23116300,
+      "layoutNs": 58700,
+      "first": 0
+    },
+    {
+      "totalNs": 88929034,
+      "drawNs": 29993000,
+      "layoutNs": 57500,
+      "first": 0
+    },
+    {
+      "totalNs": 82873602,
+      "drawNs": 35745500,
+      "layoutNs": 49300,
+      "first": 0
+    },
+    {
+      "totalNs": 82066278,
+      "drawNs": 49810700,
+      "layoutNs": 51100,
+      "first": 0
+    },
+    {
+      "totalNs": 108973612,
+      "drawNs": 36126000,
+      "layoutNs": 63700,
+      "first": 0
+    },
+    {
+      "totalNs": 144781814,
+      "drawNs": 39919100,
+      "layoutNs": 59900,
+      "first": 0
+    },
+    {
+      "totalNs": 140385016,
+      "drawNs": 31576000,
+      "layoutNs": 60400,
+      "first": 0
+    },
+    {
+      "totalNs": 136640518,
+      "drawNs": 25072400,
+      "layoutNs": 47500,
+      "first": 0
+    },
+    {
+      "totalNs": 117289520,
+      "drawNs": 32121700,
+      "layoutNs": 88500,
+      "first": 0
+    },
+    {
+      "totalNs": 122809522,
+      "drawNs": 35306100,
+      "layoutNs": 47400,
+      "first": 0
+    },
+    {
+      "totalNs": 65589378,
+      "drawNs": 23629500,
+      "layoutNs": 53500,
+      "first": 0
+    },
+    {
+      "totalNs": 28419314,
+      "drawNs": 12936714,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 17433116,
+      "drawNs": 5618816,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 187243012,
+      "drawNs": 1819200,
+      "layoutNs": 14026100,
+      "first": 0
+    },
+    {
+      "totalNs": 37141052,
+      "drawNs": 13299252,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 41308552,
+      "drawNs": 1193400,
+      "layoutNs": 46100,
+      "first": 0
+    },
+    {
+      "totalNs": 51229286,
+      "drawNs": 1074800,
+      "layoutNs": 43400,
+      "first": 0
+    },
+    {
+      "totalNs": 56826120,
+      "drawNs": 1078200,
+      "layoutNs": 49900,
+      "first": 0
+    },
+    {
+      "totalNs": 58240254,
+      "drawNs": 2473900,
+      "layoutNs": 14951000,
+      "first": 0
+    },
+    {
+      "totalNs": 46743088,
+      "drawNs": 1197900,
+      "layoutNs": 52500,
+      "first": 0
+    },
+    {
+      "totalNs": 47114322,
+      "drawNs": 4760500,
+      "layoutNs": 41600,
+      "first": 0
+    },
+    {
+      "totalNs": 47815456,
+      "drawNs": 1545200,
+      "layoutNs": 58100,
+      "first": 0
+    },
+    {
+      "totalNs": 39800524,
+      "drawNs": 14966724,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 38814158,
+      "drawNs": 14321758,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 36423492,
+      "drawNs": 12769092,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 37352626,
+      "drawNs": 11165326,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 25006860,
+      "drawNs": 10098160,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 32826294,
+      "drawNs": 8590094,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34320028,
+      "drawNs": 6135928,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 22098162,
+      "drawNs": 6468362,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 48029196,
+      "drawNs": 5776496,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 51300730,
+      "drawNs": 1349800,
+      "layoutNs": 82400,
+      "first": 0
+    },
+    {
+      "totalNs": 27828832,
+      "drawNs": 1731532,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 32526566,
+      "drawNs": 11567066,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 38987300,
+      "drawNs": 6366400,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 25724134,
+      "drawNs": 13227834,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 32196168,
+      "drawNs": 9345068,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 33024602,
+      "drawNs": 6485902,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 31217236,
+      "drawNs": 9210636,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34655470,
+      "drawNs": 4789470,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34519604,
+      "drawNs": 8437404,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 24943238,
+      "drawNs": 9113238,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 33901372,
+      "drawNs": 8622572,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 21217006,
+      "drawNs": 5854506,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 31255340,
+      "drawNs": 4913840,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 45539874,
+      "drawNs": 5102274,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 37576342,
+      "drawNs": 12574942,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 36836976,
+      "drawNs": 8978176,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 35005510,
+      "drawNs": 11056110,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 22678944,
+      "drawNs": 8327344,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 22005278,
+      "drawNs": 6316178,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 26905912,
+      "drawNs": 5629512,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 26321146,
+      "drawNs": 1071700,
+      "layoutNs": 86300,
+      "first": 0
+    },
+    {
+      "totalNs": 36520780,
+      "drawNs": 1283500,
+      "layoutNs": 81100,
+      "first": 0
+    },
+    {
+      "totalNs": 22447106,
+      "drawNs": 746800,
+      "layoutNs": 2335000,
+      "first": 0
+    },
+    {
+      "totalNs": 90384040,
+      "drawNs": 21746900,
+      "layoutNs": 711000,
+      "first": 0
+    },
+    {
+      "totalNs": 61191308,
+      "drawNs": 63800,
+      "layoutNs": 51600,
+      "first": 0
+    },
+    {
+      "totalNs": 72542320,
+      "drawNs": 32937400,
+      "layoutNs": 1509900,
+      "first": 0
+    },
+    {
+      "totalNs": 60294754,
+      "drawNs": 48100,
+      "layoutNs": 47600,
+      "first": 0
+    },
+    {
+      "totalNs": 74881890,
+      "drawNs": 70200,
+      "layoutNs": 29676300,
+      "first": 0
+    },
+    {
+      "totalNs": 73808424,
+      "drawNs": 65000,
+      "layoutNs": 517100,
+      "first": 0
+    },
+    {
+      "totalNs": 28643526,
+      "drawNs": 791800,
+      "layoutNs": 58200,
+      "first": 0
+    },
+    {
+      "totalNs": 37320160,
+      "drawNs": 738700,
+      "layoutNs": 68400,
+      "first": 0
+    },
+    {
+      "totalNs": 44266194,
+      "drawNs": 736900,
+      "layoutNs": 65000,
+      "first": 0
+    },
+    {
+      "totalNs": 40347328,
+      "drawNs": 15084400,
+      "layoutNs": 4277100,
+      "first": 0
+    },
+    {
+      "totalNs": 37158362,
+      "drawNs": 450500,
+      "layoutNs": 47300,
+      "first": 0
+    },
+    {
+      "totalNs": 45559496,
+      "drawNs": 886100,
+      "layoutNs": 95200,
+      "first": 0
+    },
+    {
+      "totalNs": 41236830,
+      "drawNs": 554000,
+      "layoutNs": 48800,
+      "first": 0
+    },
+    {
+      "totalNs": 51952064,
+      "drawNs": 446900,
+      "layoutNs": 44200,
+      "first": 0
+    },
+    {
+      "totalNs": 49374398,
+      "drawNs": 721500,
+      "layoutNs": 114800,
+      "first": 0
+    },
+    {
+      "totalNs": 38499932,
+      "drawNs": 414900,
+      "layoutNs": 35800,
+      "first": 0
+    },
+    {
+      "totalNs": 51183066,
+      "drawNs": 692900,
+      "layoutNs": 44600,
+      "first": 0
+    },
+    {
+      "totalNs": 53423500,
+      "drawNs": 1096300,
+      "layoutNs": 101100,
+      "first": 0
+    },
+    {
+      "totalNs": 41246034,
+      "drawNs": 769400,
+      "layoutNs": 62800,
+      "first": 0
+    },
+    {
+      "totalNs": 43032468,
+      "drawNs": 673700,
+      "layoutNs": 64500,
+      "first": 0
+    },
+    {
+      "totalNs": 42284502,
+      "drawNs": 706100,
+      "layoutNs": 50400,
+      "first": 0
+    },
+    {
+      "totalNs": 49262936,
+      "drawNs": 1456100,
+      "layoutNs": 99100,
+      "first": 0
+    },
+    {
+      "totalNs": 53202570,
+      "drawNs": 46500,
+      "layoutNs": 52100,
+      "first": 0
+    },
+    {
+      "totalNs": 52432004,
+      "drawNs": 1439500,
+      "layoutNs": 46000,
+      "first": 0
+    },
+    {
+      "totalNs": 53801938,
+      "drawNs": 58600,
+      "layoutNs": 61000,
+      "first": 0
+    },
+    {
+      "totalNs": 53129772,
+      "drawNs": 64500,
+      "layoutNs": 61600,
+      "first": 0
+    },
+    {
+      "totalNs": 51538606,
+      "drawNs": 48600,
+      "layoutNs": 51500,
+      "first": 0
+    },
+    {
+      "totalNs": 67414458,
+      "drawNs": 31380000,
+      "layoutNs": 10097000,
+      "first": 0
+    },
+    {
+      "totalNs": 69929894,
+      "drawNs": 35085400,
+      "layoutNs": 1610800,
+      "first": 0
+    },
+    {
+      "totalNs": 67729928,
+      "drawNs": 25418100,
+      "layoutNs": 111200,
+      "first": 0
+    },
+    {
+      "totalNs": 90553696,
+      "drawNs": 32156400,
+      "layoutNs": 40700,
+      "first": 0
+    },
+    {
+      "totalNs": 91392198,
+      "drawNs": 30067600,
+      "layoutNs": 67600,
+      "first": 0
+    },
+    {
+      "totalNs": 105572000,
+      "drawNs": 33993400,
+      "layoutNs": 37300,
+      "first": 0
+    },
+    {
+      "totalNs": 87457902,
+      "drawNs": 29606000,
+      "layoutNs": 45900,
+      "first": 0
+    },
+    {
+      "totalNs": 81405670,
+      "drawNs": 33158800,
+      "layoutNs": 51500,
+      "first": 0
+    },
+    {
+      "totalNs": 114784014,
+      "drawNs": 46195700,
+      "layoutNs": 54100,
+      "first": 0
+    },
+    {
+      "totalNs": 129340248,
+      "drawNs": 36508200,
+      "layoutNs": 60600,
+      "first": 0
+    },
+    {
+      "totalNs": 141557984,
+      "drawNs": 37820500,
+      "layoutNs": 96100,
+      "first": 0
+    },
+    {
+      "totalNs": 123680086,
+      "drawNs": 51860100,
+      "layoutNs": 51400,
+      "first": 0
+    },
+    {
+      "totalNs": 136745288,
+      "drawNs": 42183000,
+      "layoutNs": 89600,
+      "first": 0
+    },
+    {
+      "totalNs": 149387824,
+      "drawNs": 40568100,
+      "layoutNs": 59600,
+      "first": 0
+    },
+    {
+      "totalNs": 136191426,
+      "drawNs": 29279700,
+      "layoutNs": 64200,
+      "first": 0
+    },
+    {
+      "totalNs": 49029916,
+      "drawNs": 3259216,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 32162184,
+      "drawNs": 7692184,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34244918,
+      "drawNs": 4761518,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 42125186,
+      "drawNs": 712100,
+      "layoutNs": 292700,
+      "first": 0
+    },
+    {
+      "totalNs": 40117254,
+      "drawNs": 1444900,
+      "layoutNs": 5463000,
+      "first": 0
+    },
+    {
+      "totalNs": 28777388,
+      "drawNs": 981900,
+      "layoutNs": 53500,
+      "first": 0
+    },
+    {
+      "totalNs": 37588922,
+      "drawNs": 12427422,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 53476522,
+      "drawNs": 1644300,
+      "layoutNs": 54300,
+      "first": 0
+    },
+    {
+      "totalNs": 41716656,
+      "drawNs": 738500,
+      "layoutNs": 43800,
+      "first": 0
+    },
+    {
+      "totalNs": 49616690,
+      "drawNs": 1240000,
+      "layoutNs": 56100,
+      "first": 0
+    },
+    {
+      "totalNs": 38464724,
+      "drawNs": 725500,
+      "layoutNs": 37100,
+      "first": 0
+    },
+    {
+      "totalNs": 22861092,
+      "drawNs": 5651792,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34657926,
+      "drawNs": 6512826,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 28367694,
+      "drawNs": 2015594,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 25063128,
+      "drawNs": 12088028,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 21309662,
+      "drawNs": 8722762,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 17415796,
+      "drawNs": 5004696,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 25132930,
+      "drawNs": 4949030,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 19461664,
+      "drawNs": 8713664,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 36081298,
+      "drawNs": 1125200,
+      "layoutNs": 112200,
+      "first": 0
+    },
+    {
+      "totalNs": 23230732,
+      "drawNs": 11186732,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 22285866,
+      "drawNs": 7053766,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34186900,
+      "drawNs": 6049000,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 21628034,
+      "drawNs": 7633534,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 21398068,
+      "drawNs": 5353968,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34794102,
+      "drawNs": 5104602,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 15014970,
+      "drawNs": 1983270,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 34244904,
+      "drawNs": 12013404,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 21612638,
+      "drawNs": 6910738,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 39704572,
+      "drawNs": 5237372,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 35414906,
+      "drawNs": 12937106,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 27091240,
+      "drawNs": 12547440,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 35017374,
+      "drawNs": 10860374,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 30720308,
+      "drawNs": 8408408,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 33972142,
+      "drawNs": 5753942,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 32855576,
+      "drawNs": 7099976,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 48303810,
+      "drawNs": 4357410,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 47257578,
+      "drawNs": 4320078,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 33930346,
+      "drawNs": 4441746,
+      "layoutNs": 0,
+      "first": 0
+    },
+    {
+      "totalNs": 63688980,
+      "drawNs": 1343100,
+      "layoutNs": 75100,
+      "first": 0
+    },
+    {
+      "totalNs": 56149848,
+      "drawNs": 1326100,
+      "layoutNs": 93500,
+      "first": 0
+    },
+    {
+      "totalNs": 44569438,
+      "drawNs": 1218600,
+      "layoutNs": 880000,
+      "first": 0
+    },
+    {
+      "totalNs": 93926272,
+      "drawNs": 18532400,
+      "layoutNs": 579700,
+      "first": 0
+    },
+    {
+      "totalNs": 88773506,
+      "drawNs": 88000,
+      "layoutNs": 96500,
+      "first": 0
+    },
+    {
+      "totalNs": 76232420,
+      "drawNs": 37293600,
+      "layoutNs": 1863000,
+      "first": 0
+    },
+    {
+      "totalNs": 89882254,
+      "drawNs": 649300,
+      "layoutNs": 3330700,
+      "first": 0
+    },
+    {
+      "totalNs": 150895056,
+      "drawNs": 94500,
+      "layoutNs": 58867100,
+      "first": 0
+    },
+    {
+      "totalNs": 98367392,
+      "drawNs": 49000,
+      "layoutNs": 454200,
+      "first": 0
+    },
+    {
+      "totalNs": 68967828,
+      "drawNs": 8676300,
+      "layoutNs": 19680500,
+      "first": 0
+    },
+    {
+      "totalNs": 78547362,
+      "drawNs": 639000,
+      "layoutNs": 49900,
+      "first": 0
+    },
+    {
+      "totalNs": 52272764,
+      "drawNs": 913400,
+      "layoutNs": 72100,
+      "first": 0
+    },
+    {
+      "totalNs": 68582898,
+      "drawNs": 753900,
+      "layoutNs": 61400,
+      "first": 0
+    },
+    {
+      "totalNs": 64724432,
+      "drawNs": 1035200,
+      "layoutNs": 102900,
+      "first": 0
+    },
+    {
+      "totalNs": 49373000,
+      "drawNs": 1798900,
+      "layoutNs": 183300,
+      "first": 0
+    },
+    {
+      "totalNs": 47513434,
+      "drawNs": 870600,
+      "layoutNs": 64000,
+      "first": 0
+    },
+    {
+      "totalNs": 55624068,
+      "drawNs": 3471300,
+      "layoutNs": 54700,
+      "first": 0
+    },
+    {
+      "totalNs": 41411736,
+      "drawNs": 742100,
+      "layoutNs": 52500,
+      "first": 0
+    },
+    {
+      "totalNs": 52593604,
+      "drawNs": 738100,
+      "layoutNs": 73400,
+      "first": 0
+    },
+    {
+      "totalNs": 70937438,
+      "drawNs": 584900,
+      "layoutNs": 49600,
+      "first": 0
+    },
+    {
+      "totalNs": 83850172,
+      "drawNs": 1022000,
+      "layoutNs": 64900,
+      "first": 0
+    },
+    {
+      "totalNs": 51371774,
+      "drawNs": 64600,
+      "layoutNs": 59100,
+      "first": 0
+    },
+    {
+      "totalNs": 64535708,
+      "drawNs": 97000,
+      "layoutNs": 57500,
+      "first": 0
+    },
+    {
+      "totalNs": 70749262,
+      "drawNs": 26815900,
+      "layoutNs": 55000,
+      "first": 0
+    },
+    {
+      "totalNs": 65790998,
+      "drawNs": 36484300,
+      "layoutNs": 2557000,
+      "first": 0
+    },
+    {
+      "totalNs": 74725632,
+      "drawNs": 23769300,
+      "layoutNs": 116700,
+      "first": 0
+    },
+    {
+      "totalNs": 111196000,
+      "drawNs": 33578900,
+      "layoutNs": 136000,
+      "first": 0
+    },
+    {
+      "totalNs": 120374502,
+      "drawNs": 29814000,
+      "layoutNs": 66600,
+      "first": 0
+    },
+    {
+      "totalNs": 115188538,
+      "drawNs": 27722300,
+      "layoutNs": 37700,
+      "first": 0
+    },
+    {
+      "totalNs": 69264940,
+      "drawNs": 29838900,
+      "layoutNs": 66300,
+      "first": 0
+    },
+    {
+      "totalNs": 85757052,
+      "drawNs": 51992500,
+      "layoutNs": 48100,
+      "first": 0
+    },
+    {
+      "totalNs": 111062386,
+      "drawNs": 37458900,
+      "layoutNs": 66100,
+      "first": 0
+    },
+    {
+      "totalNs": 141534888,
+      "drawNs": 48423300,
+      "layoutNs": 92300,
+      "first": 0
+    }
+  ],
+  "textCacheCapacity": 384,
+  "retainedFacePaths": 1,
+  "workSeconds": 39.9831839750002
+}

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "density": "Standard",
+  "targetRows": 12.0,
+  "targetColumns": 3.0,
+  "topSp": 8.0,
+  "sideSp": 7.0,
+  "length": 207.0,
+  "depth": 18.0,
+  "base": 16.0,
+  "center": 24.0,
+  "peak": 70.0,
+  "spread": 4.5,
+  "gapU": 16.0,
+  "gapV": 12.0,
+  "categoryNumbers": true,
+  "taskNumbers": true,
+  "sectionNumbers": true,
+  "placeholderNames": false,
+  "scrollFocusedTitle": false,
+  "reduceMotion": false,
+  "shadow": "Standard"
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "name": "com.shub39.grit.RhineAdjustTest",
+    "tests": "7",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "0.873"
+  },
+  {
+    "name": "com.shub39.grit.RhineDisplayTest",
+    "tests": "7",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "1.15"
+  },
+  {
+    "name": "com.shub39.grit.RhineGeometryTest",
+    "tests": "13",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "0.08"
+  },
+  {
+    "name": "com.shub39.grit.RhineHierarchyTest",
+    "tests": "10",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "1.032"
+  },
+  {
+    "name": "com.shub39.grit.RhineModelTest",
+    "tests": "7",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "0.956"
+  },
+  {
+    "name": "com.shub39.grit.RhineMutationTest",
+    "tests": "6",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "0.148"
+  },
+  {
+    "name": "com.shub39.grit.RhineNavigationTest",
+    "tests": "13",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "0.127"
+  },
+  {
+    "name": "com.shub39.grit.RhinePerformanceTest",
+    "tests": "1",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "0.009"
+  }
+]

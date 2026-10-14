@@ -1,0 +1,10 @@
+最终包30设备及全部阶段03–06本轮UI回归已通过；媒体采集01–09取得，启动empty后uiautomator dump超时25秒。
+随后am start -S、wm size reset均超时25秒，ADB devices仍列device；连原生logcat读取和emu kill也未返回。
+Windows检测只有本轮既有AVD的emulator PID20904与qemu PID14960。停止这两个进程，确认没有另一同AVD实例，再用-no-snapshot-load/-no-snapshot-save重启既有rhine-p0-api36，未wipe data。
+本轮未归因于应用单一代码，不将输入/宿主超时或中断的媒体/恢复步骤计为通过。此前失败命令日志保留；恢复后只补齐受阻媒体、只读入口与参数复核，不重复无止境性能测试。
+重启后10–14已采集；15首次断言要求“已完成”在可见区域，但Task8移到第2项后，“Task”搜索首两项均未完成，Task2的完成标记位于可滚动列表下方。读取实际无障碍树确认结果存在，未判为搜索数据失败。
+采集用例改为“Task 2”查询，直接呈现跨类别重名且已完成的结果；从现有搜索上下文继续15及后续媒体，没有为得到通过而改应用行为或重跑性能。
+最终日期键盘补拍：首个辅助脚本从ScrollView靠圆角的底边起拖，未滚动，日期节点只有18px处在表单视窗中，中心点击落在视窗外；不是未来日期保存失败。改为实际ScrollView空白侧边中段780→330，输入future实际值后验证拒绝，再输入Jan03保存通过。
+自检发现30日期标签上沿在滚动视窗之外，沿真实边缘向下拖50px让完整标签/值/固定保存取消进入视窗；新版30已补拍，旧图保留diagnostics/date-label-before-scroll。
+新增Task07同样补拍滚回顶部，显示完整B短列父标签与Stage07Short标题，再实际保存、对象数断言B仅2项并补拍08。该表单真实滚动节点类为android.view.View而非ScrollView，按当前scrollable节点定位空白侧边；旧图保留diagnostics/create-parent-before-scroll。
+连续流程旧25片尾停在重建的载入中一帧，作为历史保留于diagnostics/flow-before-final-settle。新版25重新从头连续录制98.72秒，在配置保存返回后实际沿U下一格/上一格并断言Task8/U2和12项，片尾可见稳定数据；未剪辑/拼接/变速。

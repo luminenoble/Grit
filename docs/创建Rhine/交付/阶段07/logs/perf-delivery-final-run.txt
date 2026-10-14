@@ -1,0 +1,11 @@
+Retry startup accessibility root
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+final-large-before.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+large-idle {"requests": 0, "emissions": 0, "bodyReads": 0, "activePages": 18, "peakActivePages": 18, "maxPage": 0, "maxLoadedPage": 0, "draws": 0, "maxBlocks": 0, "latest": {"blocks": 112, "u": 50, "v": 49, "Zero": 0, "Real": 112, "Placeholder": 0, "AddParent": 0, "Decoration": 0}, "rangeCapacity": 64, "frameCapacity": 2048, "textCacheCapacity": 384, "retainedFacePaths": 1, "workSeconds": 10.000095440999758}
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+large-browse20 {"requests": 900, "emissions": 900, "bodyReads": 0, "activePages": 18, "peakActivePages": 18, "maxPage": 72, "maxLoadedPage": 72, "draws": 253, "maxBlocks": 115, "latest": {"blocks": 112, "u": 53, "v": 49, "Zero": 0, "Real": 112, "Placeholder": 0, "AddParent": 0, "Decoration": 0}, "rangeCapacity": 64, "frameCapacity": 2048, "textCacheCapacity": 384, "retainedFacePaths": 1, "workSeconds": 18.743220850000398, "totalNs": {"n": 252, "p50": 131.714738, "p90": 184.049994, "p95": 214.062472, "max": 301.507592, "over16_67": 252}, "drawNs": {"n": 252, "p50": 46.6691, "p90": 73.4759, "p95": 81.4583, "max": 117.341, "over16_67": 252}, "layoutNs": {"n": 252, "p50": 0.0587, "p90": 0.0994, "p95": 0.138, "max": 0.5376, "over16_67": 0}}
+DONE final

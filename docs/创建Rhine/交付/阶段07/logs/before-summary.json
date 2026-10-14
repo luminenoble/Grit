@@ -1,0 +1,76 @@
+{
+  "large-idle": {
+    "requests": 0,
+    "emissions": 0,
+    "bodyReads": 0,
+    "activePages": 18,
+    "peakActivePages": 18,
+    "maxPage": 0,
+    "maxLoadedPage": 0,
+    "draws": 0,
+    "maxBlocks": 0,
+    "latest": {
+      "blocks": 112,
+      "u": 50,
+      "v": 49,
+      "Zero": 0,
+      "Real": 112,
+      "Placeholder": 0,
+      "AddParent": 0,
+      "Decoration": 0
+    },
+    "rangeCapacity": 64,
+    "frameCapacity": 2048,
+    "textCacheCapacity": 128,
+    "workSeconds": 10.00012002699998
+  },
+  "large-browse20": {
+    "requests": 1134,
+    "emissions": 1134,
+    "bodyReads": 0,
+    "activePages": 18,
+    "peakActivePages": 18,
+    "maxPage": 72,
+    "maxLoadedPage": 72,
+    "draws": 243,
+    "maxBlocks": 115,
+    "latest": {
+      "blocks": 112,
+      "u": 55,
+      "v": 49,
+      "Zero": 0,
+      "Real": 112,
+      "Placeholder": 0,
+      "AddParent": 0,
+      "Decoration": 0
+    },
+    "rangeCapacity": 64,
+    "frameCapacity": 2048,
+    "textCacheCapacity": 128,
+    "workSeconds": 19.19192423600009,
+    "totalNs": {
+      "n": 243,
+      "p50": 139.291888,
+      "p90": 191.32916,
+      "p95": 210.12041,
+      "max": 319.275178,
+      "over16_67": 243
+    },
+    "drawNs": {
+      "n": 243,
+      "p50": 54.4115,
+      "p90": 73.6481,
+      "p95": 83.594,
+      "max": 128.7076,
+      "over16_67": 243
+    },
+    "layoutNs": {
+      "n": 243,
+      "p50": 0.0588,
+      "p90": 0.0961,
+      "p95": 0.1207,
+      "max": 0.7988,
+      "over16_67": 0
+    }
+  }
+}

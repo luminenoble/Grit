@@ -1,0 +1,22 @@
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段07/浏览录屏.py", line 4, in <module>
+    start(u=50,v=49,dataset='large',detail=False)
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段07/采集工具.py", line 55, in start
+    adb('shell','am','start','-S','-n',COMPONENT,'--es','dataset',dataset,'--ef','u',u,'--ef','v',v,'--ez','detail',str(detail).lower(),'--ez','failSaveOnce',str(fail).lower(),'--ez','traceTouch',str(trace).lower(),'--ez','failDeleteOnce',str(fail_delete).lower(),'--el','submitDelayMs',str(delay),'--ez','adjust',str(adjust).lower(),'--ez','failMoveOnce',str(fail_move).lower(),'--ez','failSearchOnce',str(fail_search).lower(),'--el','searchDelayMs',search_delay)
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段07/采集工具.py", line 16, in adb
+    return subprocess.check_output([ADB,*map(str,args)],text=not binary,timeout=25)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2116, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+  File "/usr/lib/python3.12/subprocess.py", line 1253, in _check_timeout
+    raise TimeoutExpired(
+subprocess.TimeoutExpired: Command '['/mnt/d/professionalTools/AndroidStorage/sdk/platform-tools/adb.exe', 'shell', 'am', 'start', '-S', '-n', 'com.shub39.grit.debug/com.shub39.grit.rhine.RhinePreviewActivity', '--es', 'dataset', 'large', '--ef', 'u', '50', '--ef', 'v', '49', '--ez', 'detail', 'false', '--ez', 'failSaveOnce', 'false', '--ez', 'traceTouch', 'false', '--ez', 'failDeleteOnce', 'false', '--el', 'submitDelayMs', '500', '--ez', 'adjust', 'false', '--ez', 'failMoveOnce', 'false', '--ez', 'failSearchOnce', 'false', '--el', 'searchDelayMs', '0']' timed out after 25 seconds

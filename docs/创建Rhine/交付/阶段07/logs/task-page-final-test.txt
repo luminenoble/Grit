@@ -1,0 +1,11 @@
+ERROR: null root node returned by UiTestAutomationBridge.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+32-task-page-saved-v1.png
+PASS actual Task detail save into same isolated repository; leaving Rhine restores portrait
+33-task-to-rhine-v1.png
+PASS return Rhine locks landscape and follows stable Task ID/current title
+34-rhine-to-task-section-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS actual Rhine Section save immediately appears in actual Task list expanded records; stable ID/count
+PASS page round trip retains task and section positions without replayed saves

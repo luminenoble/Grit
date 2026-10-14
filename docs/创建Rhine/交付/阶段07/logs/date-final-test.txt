@@ -1,0 +1,10 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段07/日期最终复验.py", line 11, in <module>
+    replace_field(index,'2099-01-01');back();click(label='保存');expect('不能晚于今天')
+                                             ^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段07/采集工具.py", line 44, in click
+    if not ns: raise AssertionError(f'Control missing: {label or desc}')
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Control missing: 保存

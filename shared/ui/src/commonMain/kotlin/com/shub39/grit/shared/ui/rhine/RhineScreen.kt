@@ -924,7 +924,9 @@ fun RhineCanvas(
         com.shub39.grit.core.settings.RhineDisplayConfig(),
     reduced: Boolean = display.reduceMotion || !rhineSystemAnimationsEnabled(),
 ) {
-    val measurer = rememberTextMeasurer(cacheSize = 128)
+    val measurer = rememberTextMeasurer(cacheSize = 384)
+    val facePath = remember { androidx.compose.ui.graphics.Path() }
+    val drawObserver = LocalRhineDrawObserver.current
     val density = LocalDensity.current.density
     val labels =
         remember(input.layer, display) {
@@ -1154,7 +1156,7 @@ fun RhineCanvas(
                     cameraV = input.cameraV,
                 ) ?: input
             else input
-        drawRhineScene(
+        val layout =
             layoutScene(
                 drawing,
                 projection,
@@ -1163,14 +1165,9 @@ fun RhineCanvas(
                 },
                 preview.value,
                 if (adjustment?.submitting == true) 6f else lift,
-            ),
-            drawing,
-            style,
-            labels,
-            measurer,
-            display,
-            titlePhase,
-        )
+            )
+        drawObserver?.drawn(layout)
+        drawRhineScene(layout, drawing, style, labels, measurer, display, titlePhase, facePath)
     }
 }
 

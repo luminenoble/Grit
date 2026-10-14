@@ -80,8 +80,7 @@ data class RhineSceneInput(
         get() = columns.size
 
     /** M: longest real column. */
-    val maxItemCount: Int
-        get() = columns.maxOfOrNull { it.itemCount } ?: 0
+    val maxItemCount: Int = columns.maxOfOrNull { it.itemCount } ?: 0
 
     /** Focusable range `u in 0..M+1`, `v in 0..C`. With no columns U stays at the start. */
     val maxU: Int
@@ -354,3 +353,11 @@ fun pointInQuad(p: Offset, quad: List<Offset>): Boolean {
     }
     return true
 }
+
+/** Optional developer observer; normal business screens do not install one. */
+fun interface RhineDrawObserver {
+    fun drawn(layout: RhineLayout)
+}
+
+val LocalRhineDrawObserver =
+    androidx.compose.runtime.staticCompositionLocalOf<RhineDrawObserver?> { null }

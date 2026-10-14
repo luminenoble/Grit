@@ -1,0 +1,2 @@
+androidApp/src/main/assets/changelog.json:37:      "Added new Consistency Stat in Habit Analytics",
+androidApp/src/main/assets/changelog.json:41:      "Fixed Habits being created with no selected days",

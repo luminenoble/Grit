@@ -1,0 +1,54 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+01-category-default-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+02-center-peak-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+03-section-default-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+04-section-edit-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+05-section-ime-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+06-u99-short-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+07-create-task-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+08-short-second-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+09-tail-v1.png
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段07/最终媒体采集.py", line 19, in <module>
+    start(0,0,dataset='empty',config={});snap('10-empty-v1.png','0 categories / CATEGORY / DETAIL / U0 V0')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段07/采集工具.py", line 59, in start
+    expect('GRIT RHINE')
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段07/采集工具.py", line 50, in expect
+    t=tree()
+      ^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段07/采集工具.py", line 24, in tree
+    dumped=adb('shell','uiautomator','dump','/sdcard/rhine03.xml')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段07/采集工具.py", line 16, in adb
+    return subprocess.check_output([ADB,*map(str,args)],text=not binary,timeout=25)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2116, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+  File "/usr/lib/python3.12/subprocess.py", line 1253, in _check_timeout
+    raise TimeoutExpired(
+subprocess.TimeoutExpired: Command '['/mnt/d/professionalTools/AndroidStorage/sdk/platform-tools/adb.exe', 'shell', 'uiautomator', 'dump', '/sdcard/rhine03.xml']' timed out after 25 seconds

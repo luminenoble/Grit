@@ -1,0 +1,4 @@
+    versionCode=6070 minSdk=29 targetSdk=37
+    versionName=6.0.7-rhine-stage07-v1
+    lastUpdateTime=2026-10-14 10:56:25
+      firstInstallTime=2026-10-08 15:29:07

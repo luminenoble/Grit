@@ -26,10 +26,8 @@ plugins {
 }
 
 val appName = "Grit_Rhine"
-val appVersionCode = 6060
-val appVersionName = "6.0.6"
-
-val gitHash = execute("git", "rev-parse", "HEAD").take(7)
+val appVersionCode = 6070
+val appVersionName = "6.0.7"
 
 android {
     namespace = "com.shub39.grit"
@@ -62,7 +60,7 @@ android {
         create("beta") {
             resValue("string", "app_name", "$appName Beta")
             applicationIdSuffix = ".beta"
-            versionNameSuffix = "-beta$gitHash"
+            versionNameSuffix = "-beta"
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -73,6 +71,7 @@ android {
 
         debug {
             applicationIdSuffix = ".debug"
+            versionNameSuffix = "-rhine-stage07-v1"
             resValue("string", "app_name", appName)
         }
     }
@@ -184,9 +183,6 @@ tasks.register<Copy>("copyRhineDebugApk") {
 }
 
 room3 { schemaDirectory("$projectDir/schemas") }
-
-fun execute(vararg command: String): String =
-    providers.exec { commandLine(*command) }.standardOutput.asText.get().trim()
 
 tasks.register("generateChangelog") {
     description = "Assembling Changelog"

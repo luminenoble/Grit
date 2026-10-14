@@ -23,7 +23,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -85,6 +88,8 @@ class RhinePreviewActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (intent.getBooleanExtra("enableTaskPage", false))
+            requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         displayStore =
             fixtureModel.store
                 ?: SettingsDatastoreImpl(
@@ -127,6 +132,7 @@ class RhinePreviewActivity : FragmentActivity() {
                             GritNotificationManager(applicationContext),
                         )
                         .also { fixtureModel.repository = it }
+            repository = fixtureModel.metrics.wrap(repository)
             var failDeleteOnce = intent.getBooleanExtra("failDeleteOnce", false)
             suspend fun checkDelete() {
                 kotlinx.coroutines.delay(intent.getLongExtra("submitDelayMs", 700L))
@@ -218,72 +224,155 @@ class RhinePreviewActivity : FragmentActivity() {
                         return repository.upsertSection(section)
                     }
                 }
+            val tasksModel =
+                if (intent.getBooleanExtra("enableTaskPage", false)) {
+                    androidx.lifecycle.ViewModelProvider.create(
+                            this@RhinePreviewActivity,
+                            object : androidx.lifecycle.ViewModelProvider.Factory {
+                                @Suppress("UNCHECKED_CAST")
+                                override fun <T : androidx.lifecycle.ViewModel> create(
+                                    modelClass: Class<T>
+                                ): T =
+                                    com.shub39.grit.shared.ui.viewmodel.TasksViewModel(
+                                        editorRepo,
+                                        object : AlarmScheduler {
+                                            override fun schedule(task: Task) {}
+
+                                            override fun cancel(task: Task) {}
+
+                                            override fun cancelAll() {}
+                                        },
+                                        displayStore,
+                                    ) as T
+                            },
+                        )[com.shub39.grit.shared.ui.viewmodel.TasksViewModel::class.java]
+                } else null
             val source = RepositoryRhineDataSource(repository)
-            val previewColumns =
-                source.window(source.catalog().first(), SlotWindow(0, 100, 0, 5)).first()
+            val metrics = resources.displayMetrics
+            val size =
+                androidx.compose.ui.geometry.Size(
+                    maxOf(metrics.widthPixels, metrics.heightPixels).toFloat(),
+                    minOf(metrics.widthPixels, metrics.heightPixels).toFloat(),
+                )
+            val initial = RhineCamera(intent.getFloatExtra("u", 0f), intent.getFloatExtra("v", 0f))
+            val previewWindow =
+                RhineProjection(
+                        display.geometry(
+                            size.width / metrics.density,
+                            size.height / metrics.density,
+                        ),
+                        metrics.density,
+                        size,
+                        initial,
+                    )
+                    .visibleSlots(margin = 3)
+                    .queryWindow()
+            val previewColumns = source.window(source.catalog().first(), previewWindow).first()
             setContent {
-                GritTheme {
-                    var showDisplay by rememberSaveable {
-                        mutableStateOf(intent.getBooleanExtra("settings", false))
-                    }
-                    var settingsSaving by remember { mutableStateOf(false) }
-                    var settingsMessage by remember { mutableStateOf<String?>(null) }
-                    val sceneHolder =
-                        androidx.compose.runtime.saveable.rememberSaveableStateHolder()
-                    Box(Modifier.fillMaxSize()) {
-                        if (showDisplay) {
-                            RhineWindowMode()
-                            val input =
-                                RhineSceneInput(
-                                    RhineLayer.Categories,
-                                    previewColumns,
-                                    intent.getFloatExtra("v", 0f).toInt(),
-                                    intent.getFloatExtra("u", 0f),
-                                )
-                            RhineDisplayPage(
-                                saved = display,
-                                saving = settingsSaving,
-                                message = settingsMessage,
-                                previewInput = input,
-                                onBack = { showDisplay = false },
-                                onSave = { config ->
-                                    settingsSaving = true
-                                    lifecycleScope.launch {
-                                        displayStore.setRhineDisplay(config)
-                                        display = displayStore.getRhineDisplay().first()
-                                        settingsMessage = "Rhine 显示配置已保存"
-                                        settingsSaving = false
+                androidx.compose.runtime.CompositionLocalProvider(
+                    LocalRhineDrawObserver provides fixtureModel.metrics
+                ) {
+                    GritTheme {
+                        var showTasks by rememberSaveable { mutableStateOf(false) }
+                        var showDisplay by rememberSaveable {
+                            mutableStateOf(intent.getBooleanExtra("settings", false))
+                        }
+                        var settingsSaving by remember { mutableStateOf(false) }
+                        var settingsMessage by remember { mutableStateOf<String?>(null) }
+                        val sceneHolder =
+                            androidx.compose.runtime.saveable.rememberSaveableStateHolder()
+                        Box(Modifier.fillMaxSize()) {
+                            if (showTasks && tasksModel != null) {
+                                val tasksState by tasksModel.state.collectAsState()
+                                androidx.compose.foundation.layout.Column(
+                                    Modifier.fillMaxSize()
+                                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                                ) {
+                                    androidx.compose.material3.TextButton(
+                                        onClick = { showTasks = false }
+                                    ) {
+                                        androidx.compose.material3.Text("返回隔离 Rhine")
                                     }
-                                },
-                            )
-                        } else
-                            sceneHolder.SaveableStateProvider("rhine") {
-                                RhineScreen(
-                                    display = display,
-                                    onOpenTasks = { finish() },
-                                    onOpenSettings = { showDisplay = true },
-                                    dataSource = source,
-                                    editRepository = editorRepo,
-                                    initialMode =
-                                        if (intent.getBooleanExtra("adjust", false))
-                                            RhineMode.Adjust
-                                        else if (intent.getBooleanExtra("detail", false))
-                                            RhineMode.Detail
-                                        else RhineMode.Preview,
-                                    initialCamera =
-                                        RhineCamera(
-                                            intent.getFloatExtra("u", 0f),
-                                            intent.getFloatExtra("v", 0f),
-                                        ),
+                                    androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
+                                        androidx.compose.runtime.CompositionLocalProvider(
+                                            com.shub39.grit.shared.ui.LocalWindowSizeClass provides
+                                                androidx.compose.material3.windowsizeclass
+                                                    .calculateWindowSizeClass(
+                                                        this@RhinePreviewActivity
+                                                    )
+                                        ) {
+                                            com.shub39.grit.shared.ui.task.ui.TasksPage(
+                                                tasksState,
+                                                tasksModel::onAction,
+                                            )
+                                        }
+                                    }
+                                }
+                            } else if (showDisplay) {
+                                RhineWindowMode()
+                                val input =
+                                    RhineSceneInput(
+                                        RhineLayer.Categories,
+                                        previewColumns,
+                                        intent.getFloatExtra("v", 0f).toInt(),
+                                        intent.getFloatExtra("u", 0f),
+                                    )
+                                RhineDisplayPage(
+                                    saved = display,
+                                    saving = settingsSaving,
+                                    message = settingsMessage,
+                                    previewInput = input,
+                                    onBack = { showDisplay = false },
+                                    onSave = { config ->
+                                        settingsSaving = true
+                                        lifecycleScope.launch {
+                                            displayStore.setRhineDisplay(config)
+                                            display = displayStore.getRhineDisplay().first()
+                                            settingsMessage = "Rhine 显示配置已保存"
+                                            settingsSaving = false
+                                        }
+                                    },
                                 )
-                            }
-                        if (intent.getBooleanExtra("traceTouch", false)) {
-                            // Pointer-free drawing overlay: it observes Android events, never
-                            // consumes them.
-                            Canvas(Modifier.fillMaxSize()) {
-                                traceTouch?.let { point ->
-                                    drawCircle(Color(0xFF426E79).copy(alpha = 0.28f), 20f, point)
-                                    drawCircle(Color(0xFF426E79), 20f, point, style = Stroke(3f))
+                            } else
+                                sceneHolder.SaveableStateProvider("rhine") {
+                                    RhineScreen(
+                                        display = display,
+                                        onOpenTasks = {
+                                            if (tasksModel != null) showTasks = true else finish()
+                                        },
+                                        onOpenSettings = { showDisplay = true },
+                                        dataSource = source,
+                                        editRepository = editorRepo,
+                                        initialMode =
+                                            if (intent.getBooleanExtra("adjust", false))
+                                                RhineMode.Adjust
+                                            else if (intent.getBooleanExtra("detail", false))
+                                                RhineMode.Detail
+                                            else RhineMode.Preview,
+                                        initialCamera =
+                                            RhineCamera(
+                                                intent.getFloatExtra("u", 0f),
+                                                intent.getFloatExtra("v", 0f),
+                                            ),
+                                    )
+                                }
+                            if (intent.getBooleanExtra("traceTouch", false)) {
+                                // Pointer-free drawing overlay: it observes Android events, never
+                                // consumes them.
+                                Canvas(Modifier.fillMaxSize()) {
+                                    traceTouch?.let { point ->
+                                        drawCircle(
+                                            Color(0xFF426E79).copy(alpha = 0.28f),
+                                            20f,
+                                            point,
+                                        )
+                                        drawCircle(
+                                            Color(0xFF426E79),
+                                            20f,
+                                            point,
+                                            style = Stroke(3f),
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -291,11 +380,17 @@ class RhinePreviewActivity : FragmentActivity() {
                 }
             }
         }
+        window.addOnFrameMetricsAvailableListener(
+            { _, frame, _ -> fixtureModel.metrics.frame(frame) },
+            android.os.Handler(mainLooper),
+        )
     }
 
     private suspend fun seed(fixture: String) {
         val counts =
             when (fixture) {
+                "large" -> List(100) { 100 }
+                "sections1000" -> listOf(2)
                 "empty" -> emptyList()
                 "one-empty" -> listOf(0)
                 "uneven" -> listOf(100, 1, 1)
@@ -315,7 +410,8 @@ class RhinePreviewActivity : FragmentActivity() {
                 .upsert(
                     CategoryEntity(
                         id,
-                        if (fixture == "one-empty") "唯一空类别" else names[v],
+                        if (fixture == "large") "Category ${v + 1}"
+                        else if (fixture == "one-empty") "唯一空类别" else names[v],
                         "隔离内存测试数据 · 类别描述 · 包含目标、背景和资料。\n".repeat(5),
                         v,
                         if (v == 1) "#426E79" else null,
@@ -326,7 +422,9 @@ class RhinePreviewActivity : FragmentActivity() {
                 )
             repeat(count) { i ->
                 val title =
-                    if (fixture == "adjust") "Task ${i + 1}"
+                    if (fixture == "large") {
+                        if (i % 10 == 0) "重名项目" else "Task ${i + 1} · 长标题的真实摘要与正文隔离性能测试"
+                    } else if (fixture == "adjust") "Task ${i + 1}"
                     else if (fixture == "search")
                         if (i == 2) "literal %_\\" else "Alpha 设计评审 ${i + 1}"
                     else if (fixture == "detail")
@@ -349,16 +447,24 @@ class RhinePreviewActivity : FragmentActivity() {
                             updatedAt = now,
                         )
                     )
-                if (fixture == "detail" || fixture == "section-uneven" || fixture == "adjust") {
+                if (
+                    fixture == "detail" ||
+                        fixture == "section-uneven" ||
+                        fixture == "adjust" ||
+                        fixture == "sections1000"
+                ) {
                     val n =
-                        if (fixture == "adjust") if (i == 2) 0 else 12
+                        if (fixture == "sections1000") if (i == 0) 1000 else 1
+                        else if (fixture == "adjust") if (i == 2) 0 else 12
                         else if (fixture == "section-uneven") listOf(100, 1)[i]
                         else listOf(6, 12, 0, 1, 3)[i % 5]
                     repeat(n) { j ->
                         db.sectionDao()
                             .upsert(
                                 SectionEntity(
-                                    id = (id * 1000 + i) * 100 + j + 1,
+                                    id =
+                                        (id * 1000 + i) *
+                                            (if (fixture == "sections1000") 10000 else 100) + j + 1,
                                     taskId = id * 1000 + i,
                                     title =
                                         if (fixture == "adjust") "Section ${j + 1}"
@@ -386,6 +492,13 @@ class RhinePreviewActivity : FragmentActivity() {
         lifecycleScope.launch {
             val id = update.getLongExtra("taskId", 2001L)
             when (update.getStringExtra("mutation")) {
+                "inspect-config" ->
+                    java.io.File(cacheDir, "rhine07-config.json").writeText(display.encode())
+                "reset-perf" -> fixtureModel.metrics.reset()
+                "inspect-perf" ->
+                    java.io
+                        .File(cacheDir, "rhine07-perf.json")
+                        .writeText(fixtureModel.metrics.json().toString())
                 "display" -> {
                     display = RhineDisplayConfig.decode(update.getStringExtra("displayConfig"))
                 }
@@ -500,6 +613,7 @@ class RhinePreviewActivity : FragmentActivity() {
  * repository.
  */
 class RhineFixtureModel : androidx.lifecycle.ViewModel() {
+    val metrics = RhineMetrics()
     var db: TaskDatabase? = null
     var repository: TaskRepo? = null
     var store: SettingsDatastoreImpl? = null

@@ -1,0 +1,79 @@
+netsim I 10-14 10:42:30.320 netsimd.rs:375 - netsim startup
+netsim I 10-14 10:42:30.321 netsimd.rs:384 - Artifacts: "C:\\Users\\22357\\AppData\\Local\\Temp\\netsimd"
+netsim I 10-14 10:42:30.322 netsimd.rs:386 - Args {
+    fd_startup_str: None,
+    connector_instance: None,
+    instance: None,
+    logtostderr: false,
+    dev: false,
+    no_cli_ui: true,
+    no_web_ui: false,
+    http_proxy: None,
+    no_shutdown: false,
+    idle_shutdown_timeout: None,
+    startup_timeout: None,
+    pcap: false,
+    disable_address_reuse: false,
+    verbose: false,
+    version: false,
+    grpc_port: None,
+    hci_port: None,
+    tcp_port: None,
+    ws_port: None,
+    host_dns: Some(
+        "172.19.0.2",
+    ),
+    forward_host_mdns: false,
+    test_beacons: false,
+    no_test_beacons: false,
+    wifi: WifiConfig {
+        wifi_ssid: None,
+        wifi_password: None,
+        wifi_channel: None,
+        wifi_beacon_interval: None,
+        wifi_mode: None,
+    },
+}
+D:\professionalTools\AndroidStorage\sdk\emulator\qemu\windows-x86_64\qemu-system-x86_64.exe: Unable to connect character device modem: Failed to connect socket: Input/output error
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+C:/buildbot/src/googleplex-android/emu-37-2-release/hardware/google/gfxstream/host/gl/glestranslator/gles_v2/gles_v2_imp.cpp:translator::gles2::glPixelStorei:3277 error 0x501
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+C:/buildbot/src/googleplex-android/emu-37-2-release/hardware/google/gfxstream/host/gl/glestranslator/gles_v2/gles_v2_imp.cpp:translator::gles2::glPixelStorei:3277 error 0x501
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+C:/buildbot/src/googleplex-android/emu-37-2-release/hardware/google/gfxstream/host/gl/glestranslator/gles_v2/gles_v2_imp.cpp:translator::gles2::glPixelStorei:3277 error 0x501
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+C:/buildbot/src/googleplex-android/emu-37-2-release/hardware/google/gfxstream/host/gl/glestranslator/gles_v2/gles_v2_imp.cpp:translator::gles2::glPixelStorei:3277 error 0x501
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+C:/buildbot/src/googleplex-android/emu-37-2-release/hardware/google/gfxstream/host/gl/glestranslator/gles_v2/gles_v2_imp.cpp:translator::gles2::glPixelStorei:3277 error 0x501
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+C:/buildbot/src/googleplex-android/emu-37-2-release/hardware/google/gfxstream/host/gl/glestranslator/gles_v2/gles_v2_imp.cpp:translator::gles2::glPixelStorei:3277 error 0x501
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+C:/buildbot/src/googleplex-android/emu-37-2-release/hardware/google/gfxstream/host/gl/glestranslator/gles_v2/gles_v2_imp.cpp:translator::gles2::glPixelStorei:3277 error 0x501
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+C:/buildbot/src/googleplex-android/emu-37-2-release/hardware/google/gfxstream/host/gl/glestranslator/gles_v2/gles_v2_imp.cpp:translator::gles2::glPixelStorei:3277 error 0x501
+glTexImage2D: got err pre :( 0x502 internal 0x8058 format 0x1908 type 0x1401
+glTexImage2D: got err :( 0x502 internal

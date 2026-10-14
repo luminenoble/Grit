@@ -1,0 +1,3 @@
+Final APK archived: 2026-10-14T18:56:22.209019
+Java21 / Linux WSL / /mnt/d/wsl-share/Grit
+Build:6.0.7-rhine-stage07-v1;FOSS Debug

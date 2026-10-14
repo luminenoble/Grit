@@ -1,0 +1,1 @@
+Restored device size/density/font/animation/IME/cutout to initial state

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/mnt/d/wsl-share/Grit/docs/创建Rhine/交付/阶段07/媒体审阅.py", line 23, in <module>
+    assert actions[-1]['end'] < seconds, (video.name, actions[-1], seconds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('before-large-browse-v1.mp4', {'action': 7, 'start': 14.986853654000015, 'end': 15.638759854}, 15.24)

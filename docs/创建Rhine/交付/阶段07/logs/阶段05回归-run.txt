@@ -1,0 +1,56 @@
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS Task 8→2, middle shift, reverse by ordinal, stable parent and one commit
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS original release, Android back and ordinal cancel never call move
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS preview/detail long press, placeholder, unique add column and decoration cannot sort
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS noncenter first tap only centers, never opens position form
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS Category zero moves whole column, excludes zero from content ordering
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS Section 8→2 and sibling Task zero along V; parent return follows ID
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS invalid ordinals rejected without call; failure retains retry context
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS rapid confirmation and back during commit submit exactly once
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS ordinal invalidates on reorder, external move/delete, parent deletion and reused import
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS active drag cancels on mutation/import/size change without a write
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS rename/color update preserves stable move identity and current title
+PASS case-insensitive search, completed, pages, empty and literal-title results
+PASS search failure retries; rapid new input rejects delayed old results
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS selected stale result follows moved ID; deleted result leaves valid scene
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS second-layer search returns upper preview, clears parent; import/back discard pending query
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+PASS edge scrolling clamps to last real item, never U101 placeholder
+16 passed, 0 failed

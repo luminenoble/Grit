@@ -1,0 +1,28 @@
+{
+  "requests": 0,
+  "emissions": 0,
+  "bodyReads": 0,
+  "activePages": 18,
+  "peakActivePages": 18,
+  "maxPage": 0,
+  "maxLoadedPage": 0,
+  "draws": 0,
+  "maxBlocks": 0,
+  "latest": {
+    "blocks": 112,
+    "u": 50,
+    "v": 49,
+    "Zero": 0,
+    "Real": 112,
+    "Placeholder": 0,
+    "AddParent": 0,
+    "Decoration": 0
+  },
+  "rangeCapacity": 64,
+  "ranges": [],
+  "frameCapacity": 2048,
+  "frames": [],
+  "textCacheCapacity": 384,
+  "retainedFacePaths": 1,
+  "workSeconds": 10.000095440999758
+}
