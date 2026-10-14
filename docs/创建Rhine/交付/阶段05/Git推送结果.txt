@@ -1,0 +1,14 @@
+remote: warning: See https://gh.io/lfs for more information.
+remote: warning: File docs/创建Rhine/交付/阶段02/Grit_Rhine-stage02-v1-ea4b12a1.apk is 51.69 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+remote: warning: File docs/创建Rhine/交付/阶段01/Grit_Rhine-stage01-v3-eb5f0860.apk is 51.44 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+remote: warning: File docs/创建Rhine/交付/阶段04/Grit_Rhine-stage04-v1-de70f2e2.apk is 52.11 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+remote: warning: File docs/创建Rhine/交付/阶段05/Grit_Rhine-stage05-v1-a2d32226.apk is 52.39 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+remote: warning: File docs/创建Rhine/交付/阶段03/Grit_Rhine-stage03-v1-b944d8aa.apk is 51.98 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+remote: warning: File docs/创建Rhine/交付/阶段05/Grit_Rhine-stage05-v1-422f3be7.apk is 52.39 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+remote: warning: File docs/创建Rhine/交付/阶段04/Grit_Rhine-stage04-v1-4ccbb591.apk is 52.10 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+remote: warning: File docs/创建Rhine/交付/阶段04/Grit_Rhine-stage04-v1-547a7831.apk is 52.10 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+remote: warning: File docs/创建Rhine/交付/阶段05/Grit_Rhine-stage05-v1-7e8342d3.apk is 52.39 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+remote: warning: File docs/创建Rhine/交付/阶段05/Grit_Rhine-stage05-v1-051bcf23.apk is 52.39 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB
+remote: warning: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.
+To https://github.com/luminenoble/Grit.git
+   de3edc7..67b3a25  HEAD -> opt-graph
