@@ -9,5 +9,3 @@ com.shub39.grit.RhineTextLayoutTest:..
 Time: 3.544
 
 OK (21 tests)
-
-

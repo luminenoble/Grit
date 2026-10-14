@@ -10,5 +10,3 @@ com.shub39.grit.RhineAdjustGestureTest:.
 Time: 15.411
 
 OK (22 tests)
-
-
