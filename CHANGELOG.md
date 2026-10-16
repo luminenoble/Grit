@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.0.7
+
+- Renamed the app to Rrit_Rhine
+- Replaced dark selected category fills with a light background and black outline, including Today
+- Added a darker outline to completed task cards
+- Released the Category / Task / Section workspace and the Rhine view with search, ordering and display settings
+- Uses a separate Rhine database and the grit_rhine formatVersion=1 backup format
+
 ## 6.0.6
 
 - Fixed task updates replacing habit widgets by refreshing widgets through their registered providers

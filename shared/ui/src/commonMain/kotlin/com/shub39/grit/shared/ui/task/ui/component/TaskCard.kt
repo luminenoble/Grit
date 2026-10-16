@@ -17,6 +17,7 @@
 package com.shub39.grit.shared.ui.task.ui.component
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -51,6 +52,9 @@ fun TaskCard(
         shape = shape,
         elevation = CardDefaults.cardElevation(2.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border =
+            if (task.isCompleted) BorderStroke(1.5.dp, MaterialTheme.colorScheme.onSurface)
+            else null,
     ) {
         Row(
             Modifier.fillMaxWidth().padding(12.dp),

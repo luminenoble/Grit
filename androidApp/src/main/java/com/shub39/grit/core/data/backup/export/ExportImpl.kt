@@ -33,7 +33,7 @@ class ExportImpl(private val taskRepo: TaskRepo) : ExportRepo {
         val text = withContext(Dispatchers.IO) { RhineBackup.json.encodeToString(snapshot) }
         val file =
             FileKit.openFileSaver(
-                suggestedName = "Grit_Rhine-${snapshot.exportedAt.toString().replace(":", "")}",
+                suggestedName = "Rrit_Rhine-${snapshot.exportedAt.toString().replace(":", "")}",
                 defaultExtension = "json",
             )
         if (file == null) return false

@@ -342,7 +342,7 @@ fun RootPage(
                             )
                         },
                         supportingContent = {
-                            Text(text = "Grit_Rhine ${appVersion.ifBlank { "x.x.x" }}")
+                            Text(text = "Rrit_Rhine ${appVersion.ifBlank { "x.x.x" }}")
                         },
                         trailingContent = {
                             Icon(

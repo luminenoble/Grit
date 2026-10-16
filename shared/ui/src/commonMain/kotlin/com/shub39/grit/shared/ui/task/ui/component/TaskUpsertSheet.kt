@@ -49,8 +49,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
@@ -259,11 +257,10 @@ fun TaskUpsertSheetContent(
             item {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     categories.forEach { category ->
-                        ToggleButton(
+                        CategoryToggleButton(
                             enabled = !saving,
                             checked = category.id == newTask.categoryId,
                             onCheckedChange = { newTask = newTask.copy(categoryId = category.id) },
-                            colors = ToggleButtonDefaults.tonalToggleButtonColors(),
                             content = { Text(category.name) },
                         )
                     }

@@ -1,6 +1,8 @@
-# Grit_Rhine
+# Rrit_Rhine
 
 基于 [Grit](https://github.com/shub39/Grit) 修改的 Android 工作记录应用，保留原项目的 GPL-3.0 许可。
+
+正式版：[Rrit_Rhine 6.0.7](https://github.com/luminenoble/Grit/releases/tag/6.0.7) · [下载 APK](https://github.com/luminenoble/Grit/releases/download/6.0.7/Rrit_Rhine-6.0.7-foss.apk)。选中类别使用浅色底、黑色描边，已完成任务使用深色描边。
 
 数据以 Category → Task → Section 组织：类别和任务有独立描述及文字颜色，Section 支持工作内容、完成日期和手动排序。保留任务手动完成、今天视图、提醒、任务小组件和 JSON 备份。
 

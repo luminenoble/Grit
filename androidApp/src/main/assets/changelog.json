@@ -1,5 +1,15 @@
 [
   {
+    "version": "6.0.7",
+    "changes": [
+      "Renamed the app to Rrit_Rhine",
+      "Replaced dark selected category fills with a light background and black outline, including Today",
+      "Added a darker outline to completed task cards",
+      "Released the Category / Task / Section workspace and the Rhine view with search, ordering and display settings",
+      "Uses a separate Rhine database and the grit_rhine formatVersion=1 backup format"
+    ]
+  },
+  {
     "version": "6.0.6",
     "changes": [
       "Fixed task updates replacing habit widgets by refreshing widgets through their registered providers",
@@ -69,12 +79,6 @@
     "changes": [
       "Updated Translations",
       "Fixed Unable to change Task Categories"
-    ]
-  },
-  {
-    "version": "5.9.21",
-    "changes": [
-      "Updated Translations"
     ]
   }
 ]

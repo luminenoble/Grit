@@ -68,7 +68,6 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.animateFloatingActionButton
@@ -97,6 +96,7 @@ import com.shub39.grit.shared.ui.components.leadingItemShape
 import com.shub39.grit.shared.ui.components.middleItemShape
 import com.shub39.grit.shared.ui.task.TaskAction
 import com.shub39.grit.shared.ui.task.TaskState
+import com.shub39.grit.shared.ui.task.ui.component.CategoryToggleButton
 import com.shub39.grit.shared.ui.task.ui.component.TaskCard
 import com.shub39.grit.shared.ui.theme.GritRadius
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
@@ -146,7 +146,7 @@ fun TaskList(
         )
 
         if (state.tasks.isEmpty()) {
-            Text("请新增类别，或从设置导入 Grit_Rhine 新格式备份。旧版数据需先在应用外转换。", Modifier.padding(16.dp))
+            Text("请新增类别，或从设置导入 Rrit_Rhine 新格式备份。旧版数据需先在应用外转换。", Modifier.padding(16.dp))
         }
 
         CategorySelector(
@@ -311,7 +311,7 @@ private fun CategorySelector(
         if (!isExpanded) {
             // Virtual "Today" category: tasks flagged isToday across all categories.
             item(key = "today_selector") {
-                ToggleButton(
+                CategoryToggleButton(
                     checked = state.isTodayView,
                     onCheckedChange = {
                         onAction(TaskAction.SelectTodayView)
@@ -329,7 +329,7 @@ private fun CategorySelector(
             }
 
             items(state.tasks.keys.toList(), key = { it.id }) { category ->
-                ToggleButton(
+                CategoryToggleButton(
                     checked = !state.isTodayView && category == state.currentCategory,
                     onCheckedChange = {
                         onAction(TaskAction.ChangeCategory(category))

@@ -30,7 +30,7 @@ import org.koin.plugin.module.dsl.startKoin
 fun main() {
     startKoin<AppModule>()
 
-    singleWindowApplication(title = "Grit") {
+    singleWindowApplication(title = "Rrit_Rhine") {
         val windowSizeClass = calculateWindowSizeClass()
         val viewmodel = koinViewModel<MainViewModel>()
         val state by viewmodel.state.collectAsStateWithLifecycle()

@@ -25,7 +25,7 @@ plugins {
     alias(libs.plugins.koin.compiler)
 }
 
-val appName = "Grit_Rhine"
+val appName = "Rrit_Rhine"
 val appVersionCode = 6070
 val appVersionName = "6.0.7"
 
@@ -71,7 +71,7 @@ android {
 
         debug {
             applicationIdSuffix = ".debug"
-            versionNameSuffix = "-rhine-stage07-v1"
+            versionNameSuffix = "-debug"
             resValue("string", "app_name", appName)
         }
     }
@@ -105,6 +105,11 @@ android {
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
+    }
+
+    lint {
+        // Incomplete community translations use base strings; keep gaps visible as warnings.
+        warning += "MissingTranslation"
     }
 
     sourceSets {
@@ -178,8 +183,8 @@ dependencies {
 tasks.register<Copy>("copyRhineDebugApk") {
     dependsOn("assembleFossDebug")
     from(layout.buildDirectory.file("outputs/apk/foss/debug/androidApp-foss-debug.apk"))
-    into(layout.buildDirectory.dir("outputs/grit_rhine"))
-    rename { "Grit_Rhine-debug.apk" }
+    into(layout.buildDirectory.dir("outputs/rrit_rhine"))
+    rename { "Rrit_Rhine-debug.apk" }
 }
 
 room3 { schemaDirectory("$projectDir/schemas") }

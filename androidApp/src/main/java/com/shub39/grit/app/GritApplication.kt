@@ -66,12 +66,12 @@ class GritApplication : Application(), KoinComponent {
                     try {
                         scheduler.schedule(task)
                     } catch (e: Exception) {
-                        Log.e("Grit_Rhine", "任务提醒调度失败", e)
+                        Log.e("Rrit_Rhine", "任务提醒调度失败", e)
                     }
                 }
                 WidgetUpdates.tasks(this@GritApplication)
             } catch (e: Exception) {
-                Log.e("Grit_Rhine", "启动刷新失败", e)
+                Log.e("Rrit_Rhine", "启动刷新失败", e)
             }
         }
 
