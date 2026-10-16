@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.0.8
+
+- Renamed the app to Grhinet; all other functionality and styling are unchanged
+
 ## 6.0.7
 
 - Renamed the app to Rrit_Rhine

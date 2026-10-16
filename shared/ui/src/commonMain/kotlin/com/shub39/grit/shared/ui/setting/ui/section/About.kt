@@ -260,7 +260,7 @@ private fun LazyListScope.aboutApp(versionName: String, uriHandler: UriHandler) 
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Rrit_Rhine",
+                            text = "Grhinet",
                             style =
                                 MaterialTheme.typography.headlineMedium.copy(
                                     fontFamily = flexFontRounded()

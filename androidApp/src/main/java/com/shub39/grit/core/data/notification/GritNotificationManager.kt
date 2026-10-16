@@ -42,7 +42,7 @@ class GritNotificationManager(private val context: Context) {
             manager.createNotificationChannel(
                 NotificationChannel(
                     CHANNEL,
-                    "Rrit_Rhine Tasks",
+                    "Grhinet Tasks",
                     NotificationManager.IMPORTANCE_DEFAULT,
                 )
             )

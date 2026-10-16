@@ -98,7 +98,7 @@ fun rhineSample(sample: RhineSample): RhineSceneInput =
                             "阅读",
                             listOf("三体", "百年孤独", "人类简史", "置身事内", "长安的荔枝", "额尔古纳河右岸"),
                         ),
-                        column(5, 5, "项目", listOf("Rrit_Rhine", "个人网站", "照片归档", "家庭账本")),
+                        column(5, 5, "项目", listOf("Grhinet", "个人网站", "照片归档", "家庭账本")),
                     ),
                 focusV = 1,
                 focusU = 3f,

@@ -1227,7 +1227,7 @@ private fun RhineHud(
             Column(Modifier.fillMaxSize().padding(10.dp)) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("Rrit_Rhine", style = t.style(14.sp, true))
+                        Text("Grhinet", style = t.style(14.sp, true))
                         Text(
                             if (isCategories) "CATEGORY LAYER" else "SECTION LAYER",
                             style = t.style(8.sp),
@@ -1346,7 +1346,7 @@ private fun RhineHud(
 
         // Brand block: product, layer, mode.
         Column(Modifier.offset(x = w * 0.03f, y = h * 0.10f)) {
-            Text("Rrit_Rhine", style = t.style(19.sp, bold = true, tracking = 0.02f))
+            Text("Grhinet", style = t.style(19.sp, bold = true, tracking = 0.02f))
             Text(
                 if (isCategories) "CATEGORY LAYER" else "SECTION LAYER",
                 style = t.style(9.sp, alpha = 0.8f),

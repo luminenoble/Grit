@@ -25,9 +25,9 @@ plugins {
     alias(libs.plugins.koin.compiler)
 }
 
-val appName = "Rrit_Rhine"
-val appVersionCode = 6070
-val appVersionName = "6.0.7"
+val appName = "Grhinet"
+val appVersionCode = 6080
+val appVersionName = "6.0.8"
 
 android {
     namespace = "com.shub39.grit"
@@ -184,7 +184,7 @@ tasks.register<Copy>("copyRhineDebugApk") {
     dependsOn("assembleFossDebug")
     from(layout.buildDirectory.file("outputs/apk/foss/debug/androidApp-foss-debug.apk"))
     into(layout.buildDirectory.dir("outputs/rrit_rhine"))
-    rename { "Rrit_Rhine-debug.apk" }
+    rename { "Grhinet-debug.apk" }
 }
 
 room3 { schemaDirectory("$projectDir/schemas") }

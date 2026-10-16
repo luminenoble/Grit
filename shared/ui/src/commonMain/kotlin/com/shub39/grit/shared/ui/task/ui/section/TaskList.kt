@@ -146,7 +146,7 @@ fun TaskList(
         )
 
         if (state.tasks.isEmpty()) {
-            Text("请新增类别，或从设置导入 Rrit_Rhine 新格式备份。旧版数据需先在应用外转换。", Modifier.padding(16.dp))
+            Text("请新增类别，或从设置导入 Grhinet 新格式备份。旧版数据需先在应用外转换。", Modifier.padding(16.dp))
         }
 
         CategorySelector(

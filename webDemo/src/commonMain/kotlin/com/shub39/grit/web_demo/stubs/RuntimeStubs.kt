@@ -111,7 +111,7 @@ class TaskRepoStub : TaskRepo {
         MutableStateFlow(
             DemoData(
                 listOf(Category(id = 1, name = "工作")),
-                listOf(Task(id = 1, categoryId = 1, title = "Welcome to Rrit_Rhine")),
+                listOf(Task(id = 1, categoryId = 1, title = "Welcome to Grhinet")),
             )
         )
     private val mutex = Mutex()

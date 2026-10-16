@@ -28,7 +28,7 @@
     <string name="export">Export data</string>
     <string name="export_desc">Export categories, tasks and sections as JSON</string>
     <string name="restore">Restore</string>
-    <string name="restore_desc">Import a Rrit_Rhine backup to replace current data</string>
+    <string name="restore_desc">Import a Grhinet backup to replace current data</string>
     <string name="material_theme_desc">Use colors based on wallpaper</string>
     <string name="use_24Hr">Use 24 hr clock</string>
     <string name="use_24Hr_desc">Use 24 hr clock to set time</string>
