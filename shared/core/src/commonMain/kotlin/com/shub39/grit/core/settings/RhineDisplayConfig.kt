@@ -18,6 +18,14 @@ enum class RhineShadow {
     Standard,
 }
 
+/** Block illustration fitting: fill and crop from the top-left (default), fill centred, or whole. */
+@Serializable
+enum class RhineImageFit {
+    CropTopStart,
+    CropCenter,
+    Fit,
+}
+
 /** Local display preferences only. Never part of the business JSON backup. All lengths are dp. */
 @Serializable
 data class RhineDisplayConfig(
@@ -42,6 +50,8 @@ data class RhineDisplayConfig(
     val scrollFocusedTitle: Boolean = false,
     val reduceMotion: Boolean = false,
     val shadow: RhineShadow = RhineShadow.Standard,
+    /** How block illustrations fill their area; never stretched. */
+    val illustrationFit: RhineImageFit = RhineImageFit.CropTopStart,
 ) {
     fun normalized(): RhineDisplayConfig {
         if (version != 1) return RhineDisplayConfig()

@@ -268,6 +268,7 @@ class RhineIntegrationRepositoryTest {
                         override fun cancelAll() {}
                     },
                     store,
+                    null,
                 )
             models.put("task", model)
             val visible = launch { model.state.collect {} }

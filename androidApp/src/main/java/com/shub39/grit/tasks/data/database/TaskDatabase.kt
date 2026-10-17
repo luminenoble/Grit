@@ -20,9 +20,12 @@ import androidx.room3.*
 import com.shub39.grit.core.data.Converters
 
 @Database(
-    entities = [CategoryEntity::class, TaskEntity::class, SectionEntity::class],
+    entities =
+        [CategoryEntity::class, TaskEntity::class, SectionEntity::class, IllustrationEntity::class],
     version = TaskDatabase.SCHEMA_VERSION,
     exportSchema = true,
+    // v2 only adds the rhine_illustrations table; existing rows are untouched.
+    autoMigrations = [AutoMigration(from = 1, to = 2)],
 )
 @ColumnTypeConverters(Converters::class)
 abstract class TaskDatabase : RoomDatabase() {
@@ -32,8 +35,10 @@ abstract class TaskDatabase : RoomDatabase() {
 
     abstract fun sectionDao(): SectionDao
 
+    abstract fun illustrationDao(): IllustrationDao
+
     companion object {
         const val DB_NAME = "grit_rhine_database"
-        const val SCHEMA_VERSION = 1
+        const val SCHEMA_VERSION = 2
     }
 }

@@ -69,6 +69,17 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun MainApp(state: MainAppState, onNavigateToPaywall: () -> Unit) {
+    // One illustration store for Rhine and the Task page editors.
+    androidx.compose.runtime.CompositionLocalProvider(
+        com.shub39.grit.shared.ui.rhine.LocalRhineIllustrationRepo provides
+            org.koin.compose.koinInject<com.shub39.grit.core.tasks.RhineIllustrationRepo>()
+    ) {
+        MainAppContent(state, onNavigateToPaywall)
+    }
+}
+
+@Composable
+private fun MainAppContent(state: MainAppState, onNavigateToPaywall: () -> Unit) {
     val windowSizeClass = LocalWindowSizeClass.current
 
     val appBackStack =

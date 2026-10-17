@@ -17,12 +17,17 @@
 package com.shub39.grit.shared.ui.task
 
 import com.shub39.grit.core.tasks.Category
+import com.shub39.grit.core.tasks.IllustrationChange
 import com.shub39.grit.core.tasks.Task
 
 sealed interface TaskAction {
     data object ClearError : TaskAction
 
-    data class AddCategory(val category: Category, val onSaved: (() -> Unit)? = null) : TaskAction
+    data class AddCategory(
+        val category: Category,
+        val illustration: IllustrationChange = IllustrationChange.Keep,
+        val onSaved: (() -> Unit)? = null,
+    ) : TaskAction
 
     data class ChangeCategory(val category: Category) : TaskAction
 
@@ -38,5 +43,9 @@ sealed interface TaskAction {
 
     data class ReorderCategories(val mapping: List<Pair<Int, Category>>) : TaskAction
 
-    data class UpsertTask(val task: Task, val onSaved: (() -> Unit)? = null) : TaskAction
+    data class UpsertTask(
+        val task: Task,
+        val illustration: IllustrationChange = IllustrationChange.Keep,
+        val onSaved: (() -> Unit)? = null,
+    ) : TaskAction
 }

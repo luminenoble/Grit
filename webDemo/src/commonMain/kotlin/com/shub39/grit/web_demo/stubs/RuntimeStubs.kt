@@ -109,6 +109,27 @@ class SettingsDatastoreStub : SettingsDatastore {
 
 private data class DemoData(val categories: List<Category>, val tasks: List<Task>)
 
+/** In memory; the web demo has no gallery, so nothing is ever retained. */
+@Single(binds = [RhineIllustrationRepo::class])
+class RhineIllustrationRepoStub : RhineIllustrationRepo {
+    private val rows = MutableStateFlow(mapOf<Pair<IllustrationOwner, Long>, String>())
+
+    override fun illustrationsFlow(owner: IllustrationOwner, ids: Set<Long>) =
+        rows.map { all ->
+            all.filterKeys { it.first == owner && it.second in ids }.mapKeys { it.key.second }
+        }
+
+    override suspend fun illustration(owner: IllustrationOwner, id: Long) = rows.value[owner to id]
+
+    override suspend fun setIllustration(owner: IllustrationOwner, id: Long, uri: String?) {
+        rows.value = if (uri == null) rows.value - (owner to id) else rows.value + ((owner to id) to uri)
+    }
+
+    override suspend fun retain(uri: String) = false
+
+    override suspend fun releaseIfUnused(uri: String) {}
+}
+
 @Single(binds = [TaskRepo::class])
 class TaskRepoStub : TaskRepo {
     private val generation = MutableStateFlow(0L)

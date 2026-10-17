@@ -271,9 +271,13 @@ fun layoutScene(
             // Heights follow the temporary positions too, so committing the permutation cannot
             // transfer the peak to the object that used to occupy the destination.
             val weight = columnLiftWeight(0, input.cameraV - previewV)
+            // Nothing before a column's start (u < 0) rises: the wall begins at the 0 block, whose
+            // long face stays open to show the column illustration (docs/视觉优化/03 section 5).
             fun height(at: Float) =
-                (g.baseHeight + (g.heightOf(0, 0, 0, input.focusU - at) - g.baseHeight) * weight) *
-                    d
+                if (at < 0f) g.baseHeight * d
+                else
+                    (g.baseHeight +
+                        (g.heightOf(0, 0, 0, input.focusU - at) - g.baseHeight) * weight) * d
             val h = height(previewU) + if (picked) lift * d else 0f
             val hFront = height(previewU - 1f)
             val visible = h - hFront + g.gapU * d / projection.slopeU

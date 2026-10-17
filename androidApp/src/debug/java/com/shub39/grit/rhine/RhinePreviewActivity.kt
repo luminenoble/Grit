@@ -224,6 +224,11 @@ class RhinePreviewActivity : FragmentActivity() {
                         return repository.upsertSection(section)
                     }
                 }
+            val illustrationRepo =
+                com.shub39.grit.tasks.data.repository.RhineIllustrationRepository(
+                    applicationContext,
+                    db,
+                )
             val tasksModel =
                 if (intent.getBooleanExtra("enableTaskPage", false)) {
                     androidx.lifecycle.ViewModelProvider.create(
@@ -243,6 +248,7 @@ class RhinePreviewActivity : FragmentActivity() {
                                             override fun cancelAll() {}
                                         },
                                         displayStore,
+                                        illustrationRepo,
                                     ) as T
                             },
                         )[com.shub39.grit.shared.ui.viewmodel.TasksViewModel::class.java]
@@ -270,7 +276,9 @@ class RhinePreviewActivity : FragmentActivity() {
             val previewColumns = source.window(source.catalog().first(), previewWindow).first()
             setContent {
                 androidx.compose.runtime.CompositionLocalProvider(
-                    LocalRhineDrawObserver provides fixtureModel.metrics
+                    LocalRhineDrawObserver provides fixtureModel.metrics,
+                    // Isolated like the fixture database: never the user's illustrations.
+                    LocalRhineIllustrationRepo provides illustrationRepo,
                 ) {
                     GritTheme {
                         var showTasks by rememberSaveable { mutableStateOf(false) }

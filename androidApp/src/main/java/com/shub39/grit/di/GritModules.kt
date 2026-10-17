@@ -21,6 +21,7 @@ import androidx.datastore.preferences.core.Preferences
 import com.shub39.grit.core.data.datastore.DatastoreFactory
 import com.shub39.grit.shared.ui.di.UIModules
 import com.shub39.grit.tasks.data.database.CategoryDao
+import com.shub39.grit.tasks.data.database.IllustrationDao
 import com.shub39.grit.tasks.data.database.SectionDao
 import com.shub39.grit.tasks.data.database.TaskDatabase
 import com.shub39.grit.tasks.data.database.TaskDbFactory
@@ -39,6 +40,8 @@ class GritModules {
     @Single fun getSectionDao(db: TaskDatabase): SectionDao = db.sectionDao()
 
     @Single fun getCategoryDao(db: TaskDatabase): CategoryDao = db.categoryDao()
+
+    @Single fun getIllustrationDao(db: TaskDatabase): IllustrationDao = db.illustrationDao()
 
     @Single
     fun getDatastore(factory: DatastoreFactory): DataStore<Preferences> =

@@ -16,7 +16,16 @@
  */
 package com.shub39.grit.shared.ui.rhine
 
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
@@ -56,6 +65,8 @@ fun DrawScope.drawRhineScene(
     facePath: Path = Path(),
     contextAlpha: Float = 1f,
     raisedAlpha: Float = 1f,
+    /** Decoded illustration for a block (slot, raised), when it has one. */
+    illustration: (RhineSlot, Boolean) -> ImageBitmap? = { _, _ -> null },
 ) {
     drawRect(style.floor)
     val d = layout.projection.density
@@ -76,15 +87,21 @@ fun DrawScope.drawRhineScene(
         val slot = block.slot
         val focused = slot.v == input.focusV && slot.u.toFloat() == input.focusU
 
-        // Side face: the column label.
+        // Side face: the column label, and below it the illustration where one applies.
         val column = slot.column
+        val isRaised = block === raised
+        val image =
+            if (showsIllustration(slot, isRaised)) illustration(slot, isRaised) else null
+        val area = image?.let { illustrationArea(block.frontFrame, style, pad) }
         if (
             column != null &&
                 (slot.showsSideLabel ||
                     (display.placeholderNames && slot.kind == RhineBlockKind.Placeholder))
         ) {
             drawFaceText(
-                frame = block.frontFrame,
+                frame =
+                    if (area != null) block.frontFrame.copy(height = area.top - 3f * d)
+                    else block.frontFrame,
                 text = labels.sideLabel(column),
                 color =
                     style.readableFace(
@@ -99,6 +116,17 @@ fun DrawScope.drawRhineScene(
                 scrollSeconds = if (focused && display.scrollFocusedTitle) titlePhase else 0f,
             )
         }
+
+        if (image != null && area != null)
+            drawFaceImage(
+                block.frontFrame,
+                image,
+                area,
+                display.illustrationFit,
+                style.frontAt(center),
+                style.frontLowAt(center),
+                style.edge,
+            )
 
         // Top face: item index and title.
         val top =
@@ -275,16 +303,7 @@ private fun DrawScope.drawFaceText(
         else null
     val scrolling = natural != null && natural.size.width > maxWidth
     if (scrolling) result = natural!!
-    val matrix =
-        Matrix().apply {
-            values[Matrix.ScaleX] = frame.xAxis.x
-            values[Matrix.SkewY] = frame.xAxis.y
-            values[Matrix.SkewX] = frame.yAxis.x
-            values[Matrix.ScaleY] = frame.yAxis.y
-            values[Matrix.TranslateX] = frame.origin.x
-            values[Matrix.TranslateY] = frame.origin.y
-        }
-    withTransform({ transform(matrix) }) {
+    withTransform({ transform(frame.matrix()) }) {
         clipRect(pad * 0.5f, 0f, frame.width - pad * 0.5f, frame.height) {
             val y = (frame.height - result.size.height) / 2f
             val overflow = (result.size.width - maxWidth).coerceAtLeast(0)
@@ -322,6 +341,61 @@ private fun DrawScope.drawFaceText(
                 )
             }
         }
+    }
+}
+
+/** Face-local to screen transform. */
+private fun FaceFrame.matrix() =
+    Matrix().apply {
+        values[Matrix.ScaleX] = xAxis.x
+        values[Matrix.SkewY] = xAxis.y
+        values[Matrix.SkewX] = yAxis.x
+        values[Matrix.ScaleY] = yAxis.y
+        values[Matrix.TranslateX] = origin.x
+        values[Matrix.TranslateY] = origin.y
+    }
+
+/**
+ * Face-local area for an illustration under a one-line label band, with [pad] at the sides and
+ * 3 dp above and below; null when the visible face is too small (under 18 × 48 dp).
+ */
+private fun DrawScope.illustrationArea(frame: FaceFrame, style: RhineStyle, pad: Float): Rect? {
+    val gap = 3f * density
+    val band = style.sideTextSize.toPx() * 1.6f + pad * 0.5f
+    val area = Rect(pad, band + gap, frame.width - pad, frame.height - gap)
+    return area.takeIf { it.height >= 18f * density && it.width >= 48f * density }
+}
+
+/** Draws [image] into [area] of a face, lit like the face and set into it by a fine edge. */
+private fun DrawScope.drawFaceImage(
+    frame: FaceFrame,
+    image: ImageBitmap,
+    area: Rect,
+    fit: com.shub39.grit.core.settings.RhineImageFit,
+    shadeTop: Color,
+    shadeBottom: Color,
+    edge: Color,
+) {
+    val (src, dst) = illustrationRects(IntSize(image.width, image.height), area, fit)
+    val corner = CornerRadius(2f * density)
+    withTransform({ transform(frame.matrix()) }) {
+        clipPath(Path().apply { addRoundRect(RoundRect(area, corner)) }) {
+            drawImage(
+                image,
+                srcOffset = src.first,
+                srcSize = src.second,
+                dstOffset = IntOffset(dst.left.roundToInt(), dst.top.roundToInt()),
+                dstSize = IntSize(dst.width.roundToInt(), dst.height.roundToInt()),
+                filterQuality = FilterQuality.Medium,
+            )
+            drawRect(
+                Brush.verticalGradient(listOf(shadeTop, shadeBottom), area.top, area.bottom),
+                topLeft = area.topLeft,
+                size = area.size,
+                alpha = 0.18f,
+            )
+        }
+        drawRoundRect(edge, area.topLeft, area.size, corner, style = Stroke(0.5f * density))
     }
 }
 

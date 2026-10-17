@@ -16,6 +16,7 @@
  */
 package com.shub39.grit.app
 
+import com.shub39.grit.tasks.data.repository.RhineIllustrationRepository
 import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Build
@@ -72,6 +73,11 @@ class GritApplication : Application(), KoinComponent {
                 WidgetUpdates.tasks(this@GritApplication)
             } catch (e: Exception) {
                 Log.e("Grhinet", "启动刷新失败", e)
+            }
+            try {
+                get<RhineIllustrationRepository>().reconcile()
+            } catch (e: Exception) {
+                Log.e("Grhinet", "插图授权对账失败", e)
             }
         }
 

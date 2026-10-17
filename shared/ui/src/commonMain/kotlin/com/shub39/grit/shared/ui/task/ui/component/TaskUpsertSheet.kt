@@ -126,6 +126,8 @@ expect fun TaskUpsertSheet(
     transparent: Boolean = false,
     /** Extra field shown first in the form (e.g. the illustration picker). */
     extra: (@Composable () -> Unit)? = null,
+    /** The [extra] field holds unsaved changes. */
+    extraDirty: Boolean = false,
 )
 
 @Composable
@@ -150,6 +152,7 @@ fun TaskUpsertSheetContent(
     onDraftChange: ((Task) -> Unit)? = null,
     transparent: Boolean = false,
     extra: (@Composable () -> Unit)? = null,
+    extraDirty: Boolean = false,
 ) {
     val originalTask = remember(task.id) { task }
     var newTask by remember(task.id) { mutableStateOf(task) }
@@ -181,7 +184,7 @@ fun TaskUpsertSheetContent(
             sections =
                 sectionItems.mapIndexed { index, item -> item.section.copy(orderIndex = index) },
         )
-    val dirty = draft != originalTask
+    val dirty = draft != originalTask || extraDirty
     LaunchedEffect(draft) { onDraftChange?.invoke(draft) }
     val requestClose: () -> Unit = {
         if (!saving) {

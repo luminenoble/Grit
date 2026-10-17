@@ -67,6 +67,7 @@ fun RhineEditor(
     onDraft: (RhineEdit) -> Unit = {},
     backdrop: GlassBackdrop? = null,
     extra: (@Composable () -> Unit)? = null,
+    extraDirty: Boolean = false,
 ) {
     if (edit is RhineEdit.SectionDraft) {
         SectionEditor(
@@ -159,6 +160,7 @@ fun RhineEditor(
                         onDraftChange = { onDraft(RhineEdit.TaskDraft(it, edit.categories)) },
                         transparent = true,
                         extra = extra,
+                        extraDirty = extraDirty,
                     )
                 else -> Unit
             }

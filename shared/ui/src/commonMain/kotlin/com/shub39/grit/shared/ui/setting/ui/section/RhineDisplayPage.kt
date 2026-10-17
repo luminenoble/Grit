@@ -256,6 +256,23 @@ fun RhineDisplayPage(
                                     }
                                 },
                             )
+                            Text("插图显示")
+                            GlassSegmented(
+                                options = RhineImageFit.entries,
+                                selected = draft.illustrationFit,
+                                onSelect = { draft = draft.copy(illustrationFit = it) },
+                                label = { value ->
+                                    when (value) {
+                                        RhineImageFit.CropTopStart -> "填充·左上"
+                                        RhineImageFit.CropCenter -> "填充·居中"
+                                        RhineImageFit.Fit -> "完整显示"
+                                    }
+                                },
+                            )
+                            Text(
+                                "插图显示在 0 号块侧面名称下方，保持比例、不拉伸。",
+                                style = MaterialTheme.typography.labelSmall,
+                            )
                             Text(
                                 "0 号始终保留名称与编辑标记。减少动画时保留焦点、拾起和目标反馈。默认长标题居中省略，滚动只作用于聚焦块。",
                                 style = MaterialTheme.typography.labelSmall,

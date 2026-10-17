@@ -44,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -80,6 +81,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.shub39.grit.core.tasks.*
+import com.shub39.grit.core.tasks.apply
 import com.shub39.grit.shared.ui.components.glass.GlassButton
 import com.shub39.grit.shared.ui.components.glass.GlassButtonStyle
 import com.shub39.grit.shared.ui.components.glass.GlassToast
@@ -149,6 +151,12 @@ fun RhineScreen(
     val director = remember { RhineDirector() }
     /** Live editor draft, mirrored onto the raised preview block. */
     var draft by remember { mutableStateOf<RhineEdit?>(null) }
+    val illustrations = LocalRhineIllustrationRepo.current
+    var illustrationDraft by remember { mutableStateOf<IllustrationDraft?>(null) }
+    val illustrationCache = rememberRhineImageDecoder().let { remember(it) { RhineIllustrationCache(it) } }
+    androidx.compose.runtime.DisposableEffect(illustrationCache) {
+        onDispose { illustrationCache.clear() }
+    }
     LaunchedEffect(notice) {
         if (notice != null) {
             delay(3000)
@@ -513,6 +521,11 @@ fun RhineScreen(
         }
     }
     fun finishEditor() {
+        illustrationDraft?.let { d ->
+            // Release images that were picked but not (or no longer) stored.
+            illustrations?.let { repo -> scope.launch { d.discard(repo) } }
+        }
+        illustrationDraft = null
         edit = null
         draft = null
         deleting = false
@@ -636,7 +649,21 @@ fun RhineScreen(
                 scope.launch {
                     val load = async {
                         try {
-                            Result.success(loadEdit(slot))
+                            val loaded = loadEdit(slot)
+                            val owner =
+                                if (loaded is RhineEdit.CategoryDraft) IllustrationOwner.Category
+                                else IllustrationOwner.Task
+                            val id =
+                                when (loaded) {
+                                    is RhineEdit.CategoryDraft -> loaded.value.id
+                                    is RhineEdit.TaskDraft -> loaded.value.id
+                                    else -> 0L
+                                }
+                            val initial =
+                                if (id == 0L) null else illustrations?.illustration(owner, id)
+                            initial?.let { illustrationCache.retry(it) }
+                            illustrationDraft = IllustrationDraft(initial)
+                            Result.success(loaded)
                         } catch (e: kotlinx.coroutines.CancellationException) {
                             throw e
                         } catch (e: Exception) {
@@ -724,6 +751,17 @@ fun RhineScreen(
             } finally {
                 loading = false
             }
+        }
+    }
+    /** The object is stored already; a failed illustration write only warns. */
+    suspend fun applyIllustration(owner: IllustrationOwner, id: Long) {
+        val change = illustrationDraft?.change ?: return
+        try {
+            illustrations?.apply(owner, id, change)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            notice = "已保存，插图未保存，请重试"
         }
     }
     fun submit(
@@ -845,14 +883,46 @@ fun RhineScreen(
         director.slot?.let { slot ->
             when (slot.kind) {
                 RhineBlockKind.Zero -> slot.column?.index ?: 0
+                // Taken from the slot captured at entry, so saving does not renumber the preview.
                 RhineBlockKind.Placeholder -> (slot.column?.itemCount ?: 0) + 1
-                else -> input.columnCount + 1
+                else -> slot.v + 1
             }
         } ?: 0
     val currentDraft = draft ?: edit
     val frameOf: () -> Pair<RhineFrame, RhineRaise?> = {
         framer.frame(director, browser.camera) { rhineDraftSlot(currentDraft, it, draftIndex) }
     }
+    // Illustrations: only column-start blocks of the centre column and its neighbours can be tall
+    // enough to show one, plus the edited block.
+    val illustrationOwner =
+        if (input.layer == RhineLayer.Categories) IllustrationOwner.Category else IllustrationOwner.Task
+    val nearIds =
+        (browser.center - 1..browser.center + 1).mapNotNull { input.columns.getOrNull(it)?.id }.toSet()
+    val overview by
+        remember(illustrations, illustrationOwner, nearIds) {
+                illustrations?.illustrationsFlow(illustrationOwner, nearIds)
+                    ?: kotlinx.coroutines.flow.flowOf(emptyMap())
+            }
+            .collectAsState(emptyMap())
+    val overviewBucket = illustrationBucket(geometry.blockLength * density)
+    val editorBucket = illustrationBucket(geometry.blockLength * density * 1.6f)
+    val editorUri =
+        illustrationDraft?.current?.takeIf {
+            director.stage != RhineStage.Idle && director.stage != RhineStage.NavEnter
+        }
+    LaunchedEffect(overview, editorUri, overviewBucket, editorBucket) {
+        overview.values.forEach { launch { illustrationCache.load(it, overviewBucket) } }
+        editorUri?.let { launch { illustrationCache.load(it, editorBucket) } }
+    }
+    val illustrationOf: (RhineSlot, Boolean) -> androidx.compose.ui.graphics.ImageBitmap? =
+        { slot, raised ->
+            if (raised) editorUri?.let { illustrationCache.bitmap(it, editorBucket) }
+            else
+                slot.column
+                    ?.takeIf { slot.kind == RhineBlockKind.Zero }
+                    ?.let { overview[it.id] }
+                    ?.let { illustrationCache.bitmap(it, overviewBucket) }
+        }
     val glassBackdrop =
         backdrop.takeIf {
             display.shadow == com.shub39.grit.core.settings.RhineShadow.Standard && !reduced
@@ -881,6 +951,7 @@ fun RhineScreen(
             display = display,
             reduced = reduced,
             transition = frameOf,
+            illustration = illustrationOf,
         )
         Box(
             Modifier.fillMaxSize()
@@ -1017,12 +1088,14 @@ fun RhineScreen(
                 { if (cinematic) cancelEditor() else if (!saving) edit = null },
                 { category ->
                     submit(create = category.id == 0L, parent = true) {
-                        repo!!.upsertCategory(category)
+                        repo!!.upsertCategory(category).also {
+                            applyIllustration(IllustrationOwner.Category, it)
+                        }
                     }
                 },
                 { task ->
                     submit(create = task.id == 0L, parent = input.layer == RhineLayer.Sections) {
-                        repo!!.upsertTask(task)
+                        repo!!.upsertTask(task).also { applyIllustration(IllustrationOwner.Task, it) }
                     }
                 },
                 { section -> submit(create = section.id == 0L) { repo!!.upsertSection(section) } },
@@ -1033,6 +1106,11 @@ fun RhineScreen(
                 panelAlpha = { frameOf().first.panelAlpha },
                 panelFraction = panelFraction,
                 onDraft = { draft = it },
+                extra =
+                    illustrationDraft?.let { d ->
+                        { IllustrationField(d, illustrations, enabled = !saving) }
+                    },
+                extraDirty = illustrationDraft?.change?.let { it != IllustrationChange.Keep } == true,
             )
         }
         if (deleting)
@@ -1106,6 +1184,8 @@ fun RhineCanvas(
     reduced: Boolean = display.reduceMotion || !rhineSystemAnimationsEnabled(),
     /** Current transition frame and raised block, read at draw time. */
     transition: () -> Pair<RhineFrame, RhineRaise?> = { RhineFrame() to null },
+    /** Decoded illustration for a block (slot, raised), read at draw time. */
+    illustration: (RhineSlot, Boolean) -> androidx.compose.ui.graphics.ImageBitmap? = { _, _ -> null },
 ) {
     val measurer = rememberTextMeasurer(cacheSize = 384)
     val facePath = remember { androidx.compose.ui.graphics.Path() }
@@ -1364,6 +1444,7 @@ fun RhineCanvas(
             facePath,
             contextAlpha = frame.contextAlpha,
             raisedAlpha = frame.selectedAlpha,
+            illustration = illustration,
         )
     }
 }

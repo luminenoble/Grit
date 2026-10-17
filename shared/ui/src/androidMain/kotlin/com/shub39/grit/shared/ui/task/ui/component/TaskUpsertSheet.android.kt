@@ -51,6 +51,7 @@ actual fun TaskUpsertSheet(
     onDraftChange: ((Task) -> Unit)?,
     transparent: Boolean,
     extra: (@Composable () -> Unit)?,
+    extraDirty: Boolean,
 ) {
     val context = LocalContext.current
 
@@ -101,5 +102,6 @@ actual fun TaskUpsertSheet(
         onDraftChange = onDraftChange,
         transparent = transparent,
         extra = extra,
+        extraDirty = extraDirty,
     )
 }
