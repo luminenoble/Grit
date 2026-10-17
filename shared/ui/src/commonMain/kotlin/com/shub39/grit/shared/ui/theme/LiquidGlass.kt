@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -149,7 +150,9 @@ fun Modifier.glassSource(backdrop: GlassBackdrop): Modifier {
         .drawWithContent {
             layer.record { this@drawWithContent.drawContent() }
             backdrop.size = IntSize(size.width.toInt(), size.height.toInt())
-            backdrop.frame++
+            // Must not observe its own counter: reading it here would invalidate this draw on
+            // every write and redraw the source forever.
+            Snapshot.withoutReadObservation { backdrop.frame += 1 }
             drawLayer(layer)
         }
 }
