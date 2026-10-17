@@ -20,8 +20,10 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import kotlin.math.ceil
+import kotlin.math.cos
 import kotlin.math.exp
 import kotlin.math.floor
+import kotlin.math.sin
 
 /**
  * Default block geometry for the Rhine scene. Lengths are dp; the screen basis is dimensionless
@@ -84,25 +86,53 @@ data class RhineGeometry(
  * Single projection shared by drawing, hit testing and (later) gestures and bounds.
  *
  * World coordinates are px: a slot (u, v) occupies U in `[u*pitchU, u*pitchU + depth]` and V in
- * `[v*pitchV, v*pitchV + length]`.
+ * `[v*pitchV, v*pitchV + length]`. [pose] turns, tilts and zooms the camera for transitions; with
+ * [RhinePose.Identity] the projection is exactly the original fixed basis around [camera].
  */
 class RhineProjection(
     val geometry: RhineGeometry,
     val density: Float,
     val size: Size,
     val camera: RhineCamera,
+    val pose: RhinePose = RhinePose.Identity,
 ) {
     val depth = geometry.blockDepth * density
     val length = geometry.blockLength * density
     val pitchU = (geometry.blockDepth + geometry.gapU) * density
     val pitchV = (geometry.blockLength + geometry.gapV) * density
 
-    private val eU = geometry.basisU
-    private val eV = geometry.basisV
-    private val eZ = geometry.basisZ
-    private val anchor = Offset(size.width * geometry.anchor.x, size.height * geometry.anchor.y)
     private val camU = camera.u * pitchU + depth / 2f
     private val camV = camera.v * pitchV + length / 2f
+    // Effective screen vectors per world px: zoom · B_k · Rz(yaw), see RhinePose.
+    private val eU: Offset
+    private val eV: Offset
+    private val eZ: Offset
+    private val origin: Offset
+    private val pivotU: Float
+    private val pivotV: Float
+    private val pivotZ: Float
+
+    init {
+        val anchor = Offset(size.width * geometry.anchor.x, size.height * geometry.anchor.y)
+        if (pose.isIdentity) {
+            eU = geometry.basisU
+            eV = geometry.basisV
+            eZ = geometry.basisZ
+        } else {
+            val c = cos(pose.yaw)
+            val s = sin(pose.yaw)
+            val u = Offset(geometry.basisU.x, geometry.basisU.y * pose.kh)
+            val v = Offset(geometry.basisV.x, geometry.basisV.y * pose.kh)
+            eU = (u * c + v * s) * pose.zoom
+            eV = (v * c - u * s) * pose.zoom
+            eZ = Offset(geometry.basisZ.x, geometry.basisZ.y * pose.kz) * pose.zoom
+        }
+        origin = pose.screen ?: anchor
+        pivotU = pose.pivot?.u ?: camU
+        pivotV = pose.pivot?.v ?: camV
+        pivotZ = pose.pivot?.z ?: 0f
+    }
+
     private val det = eU.x * eV.y - eU.y * eV.x
 
     init {
@@ -117,20 +147,26 @@ class RhineProjection(
     val slopeU = (eZ.x * eV.y - eZ.y * eV.x) / det
     val slopeV = (eU.x * eZ.y - eU.y * eZ.x) / det
 
+    /** World centre of slot (u, v) at height z px, for posing the camera around a block. */
+    fun slotCenter(u: Float, v: Float, z: Float) =
+        WorldPoint(u * pitchU + depth / 2f, v * pitchV + length / 2f, z)
+
     /** Screen point of world (wu, wv) px at height z px. */
     fun project(wu: Float, wv: Float, z: Float): Offset =
         Offset(
-            anchor.x + (wu - camU) * eU.x + (wv - camV) * eV.x + z * eZ.x,
-            anchor.y + (wu - camU) * eU.y + (wv - camV) * eV.y + z * eZ.y,
+            origin.x + (wu - pivotU) * eU.x + (wv - pivotV) * eV.x + (z - pivotZ) * eZ.x,
+            origin.y + (wu - pivotU) * eU.y + (wv - pivotV) * eV.y + (z - pivotZ) * eZ.y,
         )
+
+    fun project(p: WorldPoint): Offset = project(p.u, p.v, p.z)
 
     /** Inverse of [project] on the plane at height z, returning world (wu, wv) px. */
     fun unproject(point: Offset, z: Float): Offset {
-        val px = point.x - anchor.x - z * eZ.x
-        val py = point.y - anchor.y - z * eZ.y
+        val px = point.x - origin.x - (z - pivotZ) * eZ.x
+        val py = point.y - origin.y - (z - pivotZ) * eZ.y
         val a = (px * eV.y - py * eV.x) / det
         val b = (eU.x * py - eU.y * px) / det
-        return Offset(camU + a, camV + b)
+        return Offset(pivotU + a, pivotV + b)
     }
 
     /**

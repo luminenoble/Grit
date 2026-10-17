@@ -56,6 +56,8 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -118,6 +120,12 @@ expect fun TaskUpsertSheet(
     saving: Boolean = false,
     restrictStructure: Boolean = false,
     allowDraftChanges: Boolean = true,
+    /** Called with the current draft whenever it changes, e.g. for a live preview. */
+    onDraftChange: ((Task) -> Unit)? = null,
+    /** Full screen only: no own background, for hosts that draw a glass panel behind. */
+    transparent: Boolean = false,
+    /** Extra field shown first in the form (e.g. the illustration picker). */
+    extra: (@Composable () -> Unit)? = null,
 )
 
 @Composable
@@ -139,6 +147,9 @@ fun TaskUpsertSheetContent(
     saving: Boolean = false,
     restrictStructure: Boolean = false,
     allowDraftChanges: Boolean = true,
+    onDraftChange: ((Task) -> Unit)? = null,
+    transparent: Boolean = false,
+    extra: (@Composable () -> Unit)? = null,
 ) {
     val originalTask = remember(task.id) { task }
     var newTask by remember(task.id) { mutableStateOf(task) }
@@ -171,6 +182,7 @@ fun TaskUpsertSheetContent(
                 sectionItems.mapIndexed { index, item -> item.section.copy(orderIndex = index) },
         )
     val dirty = draft != originalTask
+    LaunchedEffect(draft) { onDraftChange?.invoke(draft) }
     val requestClose: () -> Unit = {
         if (!saving) {
             if (dirty) showUnsaved = true else onDismissRequest()
@@ -255,6 +267,7 @@ fun TaskUpsertSheetContent(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
+            if (extra != null) item { extra() }
             item {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     categories.forEach { category ->
@@ -580,9 +593,18 @@ fun TaskUpsertSheetContent(
     if (fullScreen) {
         Column(
             modifier =
-                modifier.fillMaxSize().imePadding().background(MaterialTheme.colorScheme.background)
+                modifier
+                    .fillMaxSize()
+                    .imePadding()
+                    .background(
+                        if (transparent) Color.Transparent else MaterialTheme.colorScheme.background
+                    )
         ) {
             TopAppBar(
+                colors =
+                    if (transparent)
+                        TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                    else TopAppBarDefaults.topAppBarColors(),
                 title = {
                     Text(
                         text = stringResource(Res.string.task_details),

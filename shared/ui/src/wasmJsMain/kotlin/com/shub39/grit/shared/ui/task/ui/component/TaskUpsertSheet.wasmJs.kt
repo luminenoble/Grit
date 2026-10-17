@@ -40,6 +40,9 @@ actual fun TaskUpsertSheet(
     saving: Boolean,
     restrictStructure: Boolean,
     allowDraftChanges: Boolean,
+    onDraftChange: ((Task) -> Unit)?,
+    transparent: Boolean,
+    extra: (@Composable () -> Unit)?,
 ) {
     var showDateTimePicker by remember { mutableStateOf(false) }
 
@@ -61,5 +64,8 @@ actual fun TaskUpsertSheet(
         saving = saving,
         restrictStructure = restrictStructure,
         allowDraftChanges = allowDraftChanges,
+        onDraftChange = onDraftChange,
+        transparent = transparent,
+        extra = extra,
     )
 }

@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -145,6 +146,9 @@ fun RhineScreen(
     var error by remember { mutableStateOf<String?>(null) }
     var notice by remember { mutableStateOf<String?>(null) }
     var deleting by remember { mutableStateOf(false) }
+    val director = remember { RhineDirector() }
+    /** Live editor draft, mirrored onto the raised preview block. */
+    var draft by remember { mutableStateOf<RhineEdit?>(null) }
     LaunchedEffect(notice) {
         if (notice != null) {
             delay(3000)
@@ -164,7 +168,8 @@ fun RhineScreen(
             edit != null ||
             adjustment.submitting ||
             (adjustment.move != null && !adjustment.dragging) ||
-            search != null
+            search != null ||
+            director.active
     val activeSource = if (session.showingSections) sectionSource!! else source
 
     fun cancelAdjustment() {
@@ -239,6 +244,9 @@ fun RhineScreen(
         selecting = false
         search = null
         val cancelledEntry = transition && !session.showingSections
+        // An unfinished Category → Task entry is abandoned like the old fade; editor transitions
+        // re-target the new viewport by themselves.
+        if (director.stage == RhineStage.NavEnter) director.reset()
         transitionJob?.cancel()
         transition = false
         if (cancelledEntry) session.clearParent()
@@ -247,6 +255,7 @@ fun RhineScreen(
     }
     androidx.compose.runtime.DisposableEffect(Unit) {
         onDispose {
+            director.reset()
             adjustment.clear()
             upper.reconciling = false
             lower.reconciling = false
@@ -424,12 +433,6 @@ fun RhineScreen(
                 }
             }
     }
-    DraftBackHandler(enabled = edit == null && !loading) {
-        if (adjustment.submitting) return@DraftBackHandler
-        if (adjustment.move != null) cancelAdjustment()
-        else if (search != null) closeSearch()
-        else if (session.parent != null) returnToParent() else if (!transition) onOpenTasks()
-    }
     LaunchedEffect(lowerInput, lower.interacting, session.showingSections) {
         if (
             session.showingSections && !lower.interacting && !transition && adjustment.move == null
@@ -455,6 +458,8 @@ fun RhineScreen(
                 epoch += 1
                 transition = false
                 phase.snapTo(0f)
+                director.reset()
+                draft = null
                 edit = null
                 deleting = false
                 adjustment.clear()
@@ -470,6 +475,93 @@ fun RhineScreen(
                 notice = "数据已替换，已返回新数据起点"
             }
             session.generation = generation
+        }
+    }
+    /** Reads the stored object (or a new draft) that [slot] edits. */
+    suspend fun loadEdit(slot: RhineSlot): RhineEdit {
+        val repo = repo!!
+        return when {
+            slot.kind == RhineBlockKind.AddParent && input.layer == RhineLayer.Categories ->
+                RhineEdit.CategoryDraft(Category(name = ""))
+            slot.kind == RhineBlockKind.AddParent ->
+                RhineEdit.TaskDraft(
+                    Task(categoryId = session.categoryId!!, title = ""),
+                    repo.getCategories().filter { it.id == session.categoryId },
+                )
+            slot.kind == RhineBlockKind.Placeholder && input.layer == RhineLayer.Categories ->
+                RhineEdit.TaskDraft(
+                    Task(categoryId = slot.column!!.id, title = ""),
+                    repo.getCategories().filter { it.id == slot.column.id },
+                )
+            slot.kind == RhineBlockKind.Placeholder ->
+                RhineEdit.SectionDraft(Section(taskId = slot.column!!.id))
+            slot.kind == RhineBlockKind.Zero && input.layer == RhineLayer.Categories ->
+                RhineEdit.CategoryDraft(
+                    requireNotNull(repo.getCategories().firstOrNull { it.id == slot.column!!.id }) {
+                        "类别已不存在"
+                    }
+                )
+            slot.kind == RhineBlockKind.Zero ->
+                RhineEdit.TaskDraft(
+                    requireNotNull(repo.getTaskById(slot.column!!.id)) { "任务已不存在" },
+                    repo.getCategories(),
+                )
+            else ->
+                RhineEdit.SectionDraft(
+                    requireNotNull(repo.getSectionById(slot.item!!.id)) { "Section 已不存在" }
+                )
+        }
+    }
+    fun finishEditor() {
+        edit = null
+        draft = null
+        deleting = false
+        loading = false
+        director.reset()
+    }
+    /**
+     * Descent and clockwise return (docs/视觉优化/02 section 8). The browser camera glides from
+     * [RhineExit.from] to [RhineExit.to] alongside, so data windows and the peak follow; [after]
+     * runs once the default framing is restored.
+     */
+    fun exitEditor(exit: RhineExit, targetBrowser: RhineBrowser = browser, after: () -> Unit = {}) {
+        director.job?.cancel()
+        director.exit = exit
+        director.ms = 0f
+        director.stage = RhineStage.EditorExit
+        val token = director.epoch
+        director.job =
+            scope.launch {
+                director.playTo(RhineMotionSpec.EditorMs.toFloat(), reduced) { ms ->
+                    val back = editorExitProgress(ms, exit.dissolve)
+                    targetBrowser.move(
+                        RhineCamera(
+                            exit.from.u + (exit.to.u - exit.from.u) * back,
+                            exit.from.v + (exit.to.v - exit.from.v) * back,
+                        )
+                    )
+                }
+                if (token != director.epoch) return@launch
+                after()
+                finishEditor()
+            }
+    }
+    /** Back or cancel while entering or editing: an unfinished entry plays backwards. */
+    fun cancelEditor() {
+        if (saving) return
+        when (director.stage) {
+            RhineStage.EditorEnter -> {
+                director.job?.cancel()
+                loading = false
+                val token = director.epoch
+                director.job =
+                    scope.launch {
+                        director.playTo(0f, reduced)
+                        if (token == director.epoch) finishEditor()
+                    }
+            }
+            RhineStage.Editing -> exitEditor(RhineExit(browser.camera, browser.camera))
+            else -> Unit
         }
     }
     fun activate(slot: RhineSlot, stable: Boolean): Boolean {
@@ -494,20 +586,25 @@ fun RhineScreen(
             transition = true
             epoch += 1
             val token = epoch
+            director.begin(RhineStage.NavEnter, slot)
             transitionJob =
                 scope.launch {
                     try {
-                        phase.animateTo(
-                            1f,
-                            androidx.compose.animation.core.tween(if (reduced) 0 else 180),
-                        )
-                        val task = repo.getTaskSummaryFlow(item.id).first()
-                        if (task == null || task.categoryId != session.categoryId) {
+                        // Read the Section layer while the block lifts and turns.
+                        val load = async {
+                            val task = repo.getTaskSummaryFlow(item.id).first()
+                            if (task == null || task.categoryId != session.categoryId) null
+                            else task to repo.getTaskCountsFlow(task.categoryId).first()
+                        }
+                        director.playTo(700f, reduced)
+                        val loaded = withTimeoutOrNull(5000) { load.await() }
+                        if (loaded == null) {
+                            director.reset()
                             returnToParent()
                             return@launch
                         }
+                        val (task, counts) = loaded
                         val saved = session.position(task.id)
-                        val counts = repo.getTaskCountsFlow(task.categoryId).first()
                         val v = counts.indexOfFirst { it.taskId == task.id }.coerceAtLeast(0)
                         lower.updateBounds(RhineBounds.from(counts.map { it.count }))
                         lower.restore(
@@ -518,63 +615,61 @@ fun RhineScreen(
                                 )
                         )
                         session.showingSections = true
-                        phase.animateTo(
-                            0f,
-                            androidx.compose.animation.core.tween(if (reduced) 0 else 180),
-                        )
+                        director.playTo(RhineMotionSpec.NavMs.toFloat(), reduced)
                     } finally {
                         if (epoch == token) transition = false
+                        if (director.stage == RhineStage.NavEnter) director.reset()
                     }
                 }
+            director.job = transitionJob
+        } else if (
+            input.layer == RhineLayer.Categories ||
+                slot.kind == RhineBlockKind.Zero ||
+                slot.kind == RhineBlockKind.AddParent
+        ) {
+            // Category / Task: cinematic entry into the split editor.
+            val token = director.begin(RhineStage.EditorEnter, slot)
+            draft = null
+            val creating =
+                slot.kind == RhineBlockKind.Placeholder || slot.kind == RhineBlockKind.AddParent
+            director.job =
+                scope.launch {
+                    val load = async {
+                        try {
+                            Result.success(loadEdit(slot))
+                        } catch (e: kotlinx.coroutines.CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            Result.failure(e)
+                        }
+                    }
+                    // Centre the block first so it rises from the peak of the wall.
+                    browser.animateTo(RhineCamera(slot.u.toFloat(), slot.v.toFloat()))
+                    if (!creating) browser.select(slot)
+                    director.playTo(1250f, reduced)
+                    // Only a read slower than the lift and turn shows the loading notice.
+                    if (!load.isCompleted) loading = true
+                    val loaded = load.await()
+                    loading = false
+                    if (token != director.epoch) return@launch
+                    loaded
+                        .onSuccess { edit = it }
+                        .onFailure {
+                            notice = it.message ?: "读取失败，请重试"
+                            director.playTo(0f, reduced)
+                            if (token == director.epoch) finishEditor()
+                            return@launch
+                        }
+                    director.playTo(RhineMotionSpec.EditorMs.toFloat(), reduced)
+                    if (token == director.epoch) director.stage = RhineStage.Editing
+                }
         } else {
+            // Sections keep their own editor without the cinematic transition.
             loading = true
             scope.launch {
                 try {
-                    edit =
-                        when {
-                            slot.kind == RhineBlockKind.AddParent &&
-                                input.layer == RhineLayer.Categories ->
-                                RhineEdit.CategoryDraft(Category(name = ""))
-                            slot.kind == RhineBlockKind.AddParent ->
-                                RhineEdit.TaskDraft(
-                                    Task(categoryId = session.categoryId!!, title = ""),
-                                    repo.getCategories().filter { it.id == session.categoryId },
-                                )
-                            slot.kind == RhineBlockKind.Placeholder &&
-                                input.layer == RhineLayer.Categories ->
-                                RhineEdit.TaskDraft(
-                                    Task(categoryId = slot.column!!.id, title = ""),
-                                    repo.getCategories().filter { it.id == slot.column.id },
-                                )
-                            slot.kind == RhineBlockKind.Placeholder ->
-                                RhineEdit.SectionDraft(Section(taskId = slot.column!!.id))
-                            slot.kind == RhineBlockKind.Zero &&
-                                input.layer == RhineLayer.Categories ->
-                                RhineEdit.CategoryDraft(
-                                    requireNotNull(
-                                        repo.getCategories().firstOrNull {
-                                            it.id == slot.column!!.id
-                                        }
-                                    ) {
-                                        "类别已不存在"
-                                    }
-                                )
-                            slot.kind == RhineBlockKind.Zero ->
-                                RhineEdit.TaskDraft(
-                                    requireNotNull(repo.getTaskById(slot.column!!.id)) { "任务已不存在" },
-                                    repo.getCategories(),
-                                )
-                            else ->
-                                RhineEdit.SectionDraft(
-                                    requireNotNull(repo.getSectionById(slot.item!!.id)) {
-                                        "Section 已不存在"
-                                    }
-                                )
-                        }
-                    if (
-                        slot.kind != RhineBlockKind.Placeholder &&
-                            slot.kind != RhineBlockKind.AddParent
-                    ) {
+                    edit = loadEdit(slot)
+                    if (slot.kind != RhineBlockKind.Placeholder) {
                         browser.move(RhineCamera(slot.u.toFloat(), slot.v.toFloat()))
                         browser.select(slot)
                     }
@@ -662,6 +757,24 @@ fun RhineScreen(
                         } ?: error("已提交，但对象或父级已变化")
                     } else null
                 if (generation != session.generation) return@launch
+                if (director.stage == RhineStage.Editing) {
+                    // The editor leaves by descending into the committed object's place.
+                    deleting = false
+                    val from = targetBrowser.camera
+                    target?.let { (catalog, _) -> targetBrowser.updateBounds(catalog.bounds) }
+                    exitEditor(
+                        RhineExit(
+                            from,
+                            target?.second?.camera ?: from,
+                            hideId = if (create) id else null,
+                            dissolve = remove,
+                        ),
+                        targetBrowser,
+                    ) {
+                        target?.let { (_, snapshot) -> targetBrowser.restore(snapshot) }
+                    }
+                    return@launch
+                }
                 // Close only after the committed identity and counts have been resolved.
                 edit = null
                 deleting = false
@@ -674,10 +787,12 @@ fun RhineScreen(
                 throw e
             } catch (e: Exception) {
                 if (committed) {
-                    edit = null
-                    deleting = false
                     notice = "数据已保存；定位已刷新，请重新选择对象"
                     targetBrowser.forgetItem()
+                    deleting = false
+                    if (director.stage == RhineStage.Editing)
+                        exitEditor(RhineExit(targetBrowser.camera, targetBrowser.camera), targetBrowser)
+                    else edit = null
                 } else error = e.message ?: "提交失败，请重试；草稿已保留"
             } finally {
                 upper.reconciling = false
@@ -686,9 +801,58 @@ fun RhineScreen(
             }
         }
     }
+    DraftBackHandler(enabled = (edit == null && !loading) || director.active) {
+        when (director.stage) {
+            RhineStage.NavEnter,
+            RhineStage.EditorExit -> return@DraftBackHandler
+            RhineStage.EditorEnter,
+            RhineStage.Editing -> {
+                cancelEditor()
+                return@DraftBackHandler
+            }
+            RhineStage.Idle -> Unit
+        }
+        if (adjustment.submitting) return@DraftBackHandler
+        if (adjustment.move != null) cancelAdjustment()
+        else if (search != null) closeSearch()
+        else if (session.parent != null) returnToParent() else if (!transition) onOpenTasks()
+    }
     // The toolbar and toasts sample the scene as their glass backdrop, unless glass blur is off for
     // performance (reduced shadow quality or reduced motion).
     val backdrop = rememberGlassBackdrop()
+    // Transition frames are computed at draw time (canvas, HUD and panel layers), so the clock
+    // never recomposes this screen.
+    val densityObj = LocalDensity.current
+    val layoutDirection = androidx.compose.ui.platform.LocalLayoutDirection.current
+    val safe = rhineSafeDrawingInsets()
+    val imeBottom = WindowInsets.ime.getBottom(densityObj)
+    val panelFraction = rhineEditorPanelFraction(viewport.width / density, densityObj.fontScale)
+    val margin = 16f * density
+    val framer =
+        RhineFramer(
+            geometry,
+            density,
+            viewport,
+            androidx.compose.ui.geometry.Rect(
+                safe.getLeft(densityObj, layoutDirection) + margin,
+                safe.getTop(densityObj) + margin,
+                0f,
+                maxOf(safe.getBottom(densityObj), imeBottom) + margin,
+            ),
+            panelFraction,
+        )
+    val draftIndex =
+        director.slot?.let { slot ->
+            when (slot.kind) {
+                RhineBlockKind.Zero -> slot.column?.index ?: 0
+                RhineBlockKind.Placeholder -> (slot.column?.itemCount ?: 0) + 1
+                else -> input.columnCount + 1
+            }
+        } ?: 0
+    val currentDraft = draft ?: edit
+    val frameOf: () -> Pair<RhineFrame, RhineRaise?> = {
+        framer.frame(director, browser.camera) { rhineDraftSlot(currentDraft, it, draftIndex) }
+    }
     val glassBackdrop =
         backdrop.takeIf {
             display.shadow == com.shub39.grit.core.settings.RhineShadow.Standard && !reduced
@@ -705,7 +869,7 @@ fun RhineScreen(
                     scaleX = 1f + phase.value * 0.025f
                     scaleY = scaleX
                     translationY = -8.dp.toPx() * phase.value
-                    alpha = 1f - phase.value * 0.38f
+                    alpha = (1f - phase.value * 0.38f) * frameOf().first.sceneAlpha
                 },
             browser = browser,
             enabled = !blocked,
@@ -716,6 +880,7 @@ fun RhineScreen(
             onCancel = ::cancelAdjustment,
             display = display,
             reduced = reduced,
+            transition = frameOf,
         )
         Box(
             Modifier.fillMaxSize()
@@ -783,10 +948,8 @@ fun RhineScreen(
             // The keyboard of an in-window overlay must not reflow the HUD underneath it.
             modifier =
                 Modifier.fillMaxSize()
-                    .windowInsetsPadding(
-                        rhineSafeDrawingInsets()
-                            .exclude(androidx.compose.foundation.layout.WindowInsets.ime)
-                    ),
+                    .graphicsLayer { alpha = frameOf().first.hudAlpha }
+                    .windowInsetsPadding(rhineSafeDrawingInsets().exclude(WindowInsets.ime)),
         )
         if (adjustment.dragging) {
             val m = adjustment.move!!
@@ -845,12 +1008,13 @@ fun RhineScreen(
                     .widthIn(max = 560.dp),
                 glassBackdrop,
             )
-        edit?.let { value ->
+        val cinematic = director.stage != RhineStage.Idle && director.stage != RhineStage.NavEnter
+        edit?.takeIf { it is RhineEdit.SectionDraft || cinematic }?.let { value ->
             RhineEditor(
                 value,
                 saving,
                 error,
-                { if (!saving) edit = null },
+                { if (cinematic) cancelEditor() else if (!saving) edit = null },
                 { category ->
                     submit(create = category.id == 0L, parent = true) {
                         repo!!.upsertCategory(category)
@@ -866,6 +1030,9 @@ fun RhineScreen(
                     deleting = true
                     error = null
                 },
+                panelAlpha = { frameOf().first.panelAlpha },
+                panelFraction = panelFraction,
+                onDraft = { draft = it },
             )
         }
         if (deleting)
@@ -937,6 +1104,8 @@ fun RhineCanvas(
     display: com.shub39.grit.core.settings.RhineDisplayConfig =
         com.shub39.grit.core.settings.RhineDisplayConfig(),
     reduced: Boolean = display.reduceMotion || !rhineSystemAnimationsEnabled(),
+    /** Current transition frame and raised block, read at draw time. */
+    transition: () -> Pair<RhineFrame, RhineRaise?> = { RhineFrame() to null },
 ) {
     val measurer = rememberTextMeasurer(cacheSize = 384)
     val facePath = remember { androidx.compose.ui.graphics.Path() }
@@ -1155,12 +1324,14 @@ fun RhineCanvas(
             .then(gestureModifier)
             .semantics { contentDescription = "Rhine 场景" }
     ) {
+        val (frame, raise) = transition()
         val projection =
             RhineProjection(
                 geometry,
                 density,
                 Size(size.width, size.height),
                 RhineCamera(input.focusU, input.cameraV),
+                frame.pose,
             )
         val drawing =
             if (adjustment?.submitting == true && !adjustment.positionDialog)
@@ -1179,9 +1350,21 @@ fun RhineCanvas(
                 },
                 preview.value,
                 if (adjustment?.submitting == true) 6f else lift,
+                raise,
             )
         drawObserver?.drawn(layout)
-        drawRhineScene(layout, drawing, style, labels, measurer, display, titlePhase, facePath)
+        drawRhineScene(
+            layout,
+            drawing,
+            style,
+            labels,
+            measurer,
+            display,
+            titlePhase,
+            facePath,
+            contextAlpha = frame.contextAlpha,
+            raisedAlpha = frame.selectedAlpha,
+        )
     }
 }
 

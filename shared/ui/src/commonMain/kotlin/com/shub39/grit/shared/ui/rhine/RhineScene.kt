@@ -150,6 +150,8 @@ data class RhineBlock(
     val frontFrame: FaceFrame,
     /** Height (px, from the top edge) of [front] not hidden by the block in front of it. */
     val frontVisible: Float,
+    /** Height of the block's underside above the floor, px; non-zero only while lifted. */
+    val base: Float = 0f,
 ) {
     private val minX = (top + front + cap).minOf { it.x }
     private val maxX = (top + front + cap).maxOf { it.x }
@@ -162,9 +164,36 @@ data class RhineBlock(
             (pointInQuad(point, top) || pointInQuad(point, front) || pointInQuad(point, cap))
 }
 
-/** Visible blocks in painter's order: back to front. */
+/**
+ * A block lifted off the floor for a transition. [u], [v] name the slot it leaves; the block is drawn
+ * at [positionU], [positionV] (which may glide to another slot), [zDp] above the floor, showing
+ * [slot] when set (e.g. a draft's own labels) instead of the slot's content. [hideItemId] hides a
+ * stored block that the raised one is about to become.
+ */
 @Immutable
-class RhineLayout(val projection: RhineProjection, val blocks: List<RhineBlock>) {
+data class RhineRaise(
+    val u: Int,
+    val v: Int,
+    val zDp: Float,
+    val slot: RhineSlot? = null,
+    val positionU: Float = u.toFloat(),
+    val positionV: Float = v.toFloat(),
+    val hideItemId: Long? = null,
+    /** Keep drawing the slot's own block underneath (e.g. its successor after a delete). */
+    val keepBase: Boolean = false,
+)
+
+/**
+ * Visible blocks in painter's order: back to front. [raised] is the lifted block; once it clears
+ * every other block it is drawn last (nothing can cover it) and [raisedClear] is true.
+ */
+@Immutable
+class RhineLayout(
+    val projection: RhineProjection,
+    val blocks: List<RhineBlock>,
+    val raised: RhineBlock? = null,
+    val raisedClear: Boolean = false,
+) {
     /** Front-most block under [point]; occluded faces never win. */
     fun hitTest(point: Offset): RhineBlock? = blocks.lastOrNull { it.contains(point) }
 }
@@ -175,6 +204,7 @@ fun layoutScene(
     move: RhineMove? = null,
     target: Float = 0f,
     lift: Float = 0f,
+    raise: RhineRaise? = null,
 ): RhineLayout {
     val g = projection.geometry
     val d = projection.density
@@ -189,6 +219,9 @@ fun layoutScene(
                 )
                 .visibleSlots(margin = 3)
     val blocks = ArrayList<RhineBlock>(window.count)
+    var raised: RhineBlock? = null
+    // Higher than any block: the raised block can no longer be hidden by anything.
+    val raisedClear = raise != null && raise.zDp > g.maxHeight + 9f
     // A block can only hide blocks with larger u or larger v (the view ray runs +U, +V, -Z), so
     // descending u, then descending v, is a valid back-to-front order whatever the heights are.
     for (u in window.maxU downTo window.minU) {
@@ -244,7 +277,41 @@ fun layoutScene(
             val h = height(previewU) + if (picked) lift * d else 0f
             val hFront = height(previewU - 1f)
             val visible = h - hFront + g.gapU * d / projection.slopeU
-            val block = projection.block(slot, h, visible.coerceIn(0f, h), previewU, previewV)
+            if (
+                raise != null &&
+                    raise.hideItemId != null &&
+                    (slot.item?.id == raise.hideItemId ||
+                        (slot.kind == RhineBlockKind.Zero && slot.column?.id == raise.hideItemId))
+            )
+                continue
+            val isRaised = raise != null && u == raise.u && v == raise.v
+            if (isRaised && raise!!.keepBase) {
+                raised =
+                    projection.block(
+                        raise.slot ?: slot,
+                        h,
+                        h,
+                        raise.positionU,
+                        raise.positionV,
+                        z0 = raise.zDp * d,
+                    )
+                if (!raisedClear) blocks += raised!!
+            }
+            val block =
+                if (isRaised && !raise!!.keepBase)
+                    projection.block(
+                        raise!!.slot ?: slot,
+                        h,
+                        h,
+                        raise.positionU,
+                        raise.positionV,
+                        z0 = raise.zDp * d,
+                    )
+                else projection.block(slot, h, visible.coerceIn(0f, h), previewU, previewV)
+            if (isRaised && !raise!!.keepBase) {
+                raised = block
+                if (raisedClear) continue
+            }
             // The inverse window is conservative; discard off-screen faces/shadows before draw.
             val extent = block.top + block.front + block.cap + block.shadow
             if (
@@ -285,7 +352,21 @@ fun layoutScene(
                     else b.slot.v.toFloat()
                 }
         )
-    return RhineLayout(projection, blocks)
+    if (raise != null && raised == null) {
+        // The source slot fell outside the window (e.g. while gliding to a far destination).
+        val h = (g.baseHeight + g.centerLift + g.peakLift) * d
+        raised =
+            projection.block(
+                raise.slot ?: input.slot(raise.u, raise.v),
+                h,
+                h,
+                raise.positionU,
+                raise.positionV,
+                z0 = raise.zDp * d,
+            )
+        if (!raisedClear) blocks += raised
+    }
+    return RhineLayout(projection, blocks, raised, raisedClear)
 }
 
 fun RhineProjection.block(
@@ -294,6 +375,7 @@ fun RhineProjection.block(
     frontVisible: Float = h,
     positionU: Float = slot.u.toFloat(),
     positionV: Float = slot.v.toFloat(),
+    z0: Float = 0f,
 ): RhineBlock {
     val u0 = positionU * pitchU
     val u1 = u0 + depth
@@ -304,25 +386,32 @@ fun RhineProjection.block(
     val eZ = project(0f, 0f, 1f) - project(0f, 0f, 0f)
     // Contact shadow: the footprint pushed towards the viewer's lower left, longer for taller
     // blocks. Drawn under every block, so it only shows in the gaps.
-    val s = h * 0.45f
+    // Lifted blocks cast a wider, fainter footprint (alpha is handled by the renderer).
+    val s = h * 0.45f + z0 * 0.45f
+    val top0 = z0 + h
     return RhineBlock(
         slot = slot,
         height = h,
         top =
-            listOf(project(u0, v0, h), project(u0, v1, h), project(u1, v1, h), project(u1, v0, h)),
+            listOf(
+                project(u0, v0, top0),
+                project(u0, v1, top0),
+                project(u1, v1, top0),
+                project(u1, v0, top0),
+            ),
         front =
             listOf(
-                project(u0, v0, 0f),
-                project(u0, v1, 0f),
-                project(u0, v1, h),
-                project(u0, v0, h),
+                project(u0, v0, z0),
+                project(u0, v1, z0),
+                project(u0, v1, top0),
+                project(u0, v0, top0),
             ),
         cap =
             listOf(
-                project(u0, v0, 0f),
-                project(u1, v0, 0f),
-                project(u1, v0, h),
-                project(u0, v0, h),
+                project(u0, v0, z0),
+                project(u1, v0, z0),
+                project(u1, v0, top0),
+                project(u0, v0, top0),
             ),
         shadow =
             listOf(
@@ -332,10 +421,11 @@ fun RhineProjection.block(
                 project(u1, v0, 0f),
             ),
         // Top-face text reads along V; its "down" points towards the column start (-U).
-        topFrame = FaceFrame(project(u1, v0, h), eV, -eU, length, depth),
+        topFrame = FaceFrame(project(u1, v0, top0), eV, -eU, length, depth),
         // Front-face text reads along V; its "down" points to the floor.
-        frontFrame = FaceFrame(project(u0, v0, h), eV, -eZ, length, frontVisible),
+        frontFrame = FaceFrame(project(u0, v0, top0), eV, -eZ, length, frontVisible),
         frontVisible = frontVisible,
+        base = z0,
     )
 }
 

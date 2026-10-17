@@ -52,8 +52,13 @@ data class RhinePose(
     }
 }
 
-/** Linear interpolation; pivots and screen points must both be set on the two poses. */
+/**
+ * Linear interpolation; pivots and screen points must both be set on the two poses. The ends return
+ * the given poses themselves, so a finished transition lands exactly on its target.
+ */
 fun lerp(a: RhinePose, b: RhinePose, t: Float): RhinePose {
+    if (t <= 0f) return a
+    if (t >= 1f) return b
     fun f(x: Float, y: Float) = x + (y - x) * t
     val pa = requireNotNull(a.pivot ?: b.pivot)
     val pb = requireNotNull(b.pivot ?: a.pivot)
@@ -180,9 +185,7 @@ fun editorExitFrame(
     liftDp: Float,
     dissolve: Boolean = false,
 ): RhineFrame {
-    val back =
-        if (dissolve) window(ms, 600, 1500, GritMotion.EaseInOutCubic)
-        else window(ms, 500, 1500, GritMotion.EaseInOutCubic)
+    val back = editorExitProgress(ms, dissolve)
     return RhineFrame(
         pose = lerp(from, to, back),
         liftDp = liftDp * (1f - back),
@@ -192,6 +195,11 @@ fun editorExitFrame(
         selectedAlpha = if (dissolve) 1f - window(ms, 250, 600, GritMotion.EaseExit) else 1f,
     )
 }
+
+/** Eased progress of the descent and camera return within an editor exit. */
+fun editorExitProgress(ms: Float, dissolve: Boolean): Float =
+    if (dissolve) window(ms, 600, 1500, GritMotion.EaseInOutCubic)
+    else window(ms, 500, 1500, GritMotion.EaseInOutCubic)
 
 /**
  * Zoom that fits a block whose 8 corners project to [bounds] (under the target pose at zoom 1) into

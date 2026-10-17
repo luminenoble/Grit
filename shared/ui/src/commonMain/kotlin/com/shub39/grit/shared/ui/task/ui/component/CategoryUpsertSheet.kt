@@ -47,6 +47,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -87,6 +89,12 @@ fun CategoryUpsertSheet(
     autoFocusTitle: Boolean = true,
     saving: Boolean = false,
     pinnedActions: Boolean = false,
+    /** Called with the current draft whenever it changes, e.g. for a live preview. */
+    onDraftChange: ((Category) -> Unit)? = null,
+    /** Full screen only: no own background, for hosts that draw a glass panel behind. */
+    transparent: Boolean = false,
+    /** Extra field shown first in the form (e.g. the illustration picker). */
+    extra: (@Composable () -> Unit)? = null,
 ) {
     var newCategory by remember { mutableStateOf(category) }
     var colorPickerDialog by remember { mutableStateOf(false) }
@@ -96,6 +104,9 @@ fun CategoryUpsertSheet(
             initialText = newCategory.name,
             initialSelection = TextRange(newCategory.name.length),
         )
+
+    val draft = newCategory.copy(name = textFieldState.text.toString())
+    LaunchedEffect(draft) { onDraftChange?.invoke(draft) }
 
     val body: @Composable ColumnScope.() -> Unit = {
         val keyboardController = LocalSoftwareKeyboardController.current
@@ -117,6 +128,7 @@ fun CategoryUpsertSheet(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp),
         ) {
+            extra?.invoke()
             if (!fullScreen) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -254,9 +266,18 @@ fun CategoryUpsertSheet(
     if (fullScreen) {
         Column(
             modifier =
-                modifier.fillMaxSize().imePadding().background(MaterialTheme.colorScheme.background)
+                modifier
+                    .fillMaxSize()
+                    .imePadding()
+                    .background(
+                        if (transparent) Color.Transparent else MaterialTheme.colorScheme.background
+                    )
         ) {
             TopAppBar(
+                colors =
+                    if (transparent)
+                        TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                    else TopAppBarDefaults.topAppBarColors(),
                 actions = {
                     if (pinnedActions) {
                         TextButton(onClick = onDismiss, enabled = !saving) { Text("取消") }

@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
@@ -53,13 +54,17 @@ fun DrawScope.drawRhineScene(
         com.shub39.grit.core.settings.RhineDisplayConfig(),
     titlePhase: Float = 0f,
     facePath: Path = Path(),
+    contextAlpha: Float = 1f,
+    raisedAlpha: Float = 1f,
 ) {
     drawRect(style.floor)
     val d = layout.projection.density
     val pad = 8f * d
-    for (block in layout.blocks) {
+    val raised = layout.raised
+    fun drawOne(block: RhineBlock) {
         val center = centrality(block)
-        if (display.shadow != com.shub39.grit.core.settings.RhineShadow.Off)
+        // A block floating off the floor has no contact shadow.
+        if (display.shadow != com.shub39.grit.core.settings.RhineShadow.Off && block.base == 0f)
             drawShadow(
                 block,
                 style,
@@ -136,6 +141,25 @@ fun DrawScope.drawRhineScene(
                 stroke = 1.2f * d,
                 path = facePath,
             )
+    }
+    // Context blocks fade as one layer so overlapping faces never show through each other.
+    withAlphaLayer(contextAlpha) { for (block in layout.blocks) drawOne(block) }
+    if (raised != null && layout.raisedClear) withAlphaLayer(raisedAlpha) { drawOne(raised) }
+}
+
+private inline fun DrawScope.withAlphaLayer(alpha: Float, draw: () -> Unit) {
+    if (alpha <= 0f) return
+    if (alpha >= 1f) {
+        draw()
+        return
+    }
+    drawIntoCanvas { canvas ->
+        canvas.saveLayer(
+            androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height),
+            androidx.compose.ui.graphics.Paint().apply { this.alpha = alpha },
+        )
+        draw()
+        canvas.restore()
     }
 }
 
