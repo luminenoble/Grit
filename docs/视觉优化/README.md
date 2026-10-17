@@ -1,0 +1,126 @@
+# 视觉优化总览（Liquid Glass 与 Rhine 动效）
+
+初稿日期：2026-10-17。分支 `visual-optimize`。本目录是视觉优化任务的设计文档，结构沿用 [创建Rhine](../创建Rhine/README.md)：总览 + 三个实施阶段文档 + [进度与确认记录](进度与确认记录.md)。
+
+当前状态：**第一期（架构分析与设计文档）完成，等待用户批准后进入第二期（代码实现）**。本期未修改任何应用代码。
+
+| 阶段 | 文档 | 内容 |
+| --- | --- | --- |
+| 1 | [全局液态玻璃设计系统](01-全局液态玻璃设计系统.md) | 材质令牌、可复用组件、Task / Setting / 小组件改造、可读性与性能 |
+| 2 | [Rhine 界面与动效重构](02-Rhine界面与动效重构.md) | 删除右侧信息区、底部工具栏、对话框、进入 Task 动画、编辑器进出动画、相机位姿、状态机 |
+| 3 | [Rhine 图片与最终验收](03-Rhine图片与最终验收.md) | 相册选图、数据模型、URI 持久化、贴面绘制、可见规则、裁剪设置、纹理生命周期、迁移、测试与验收 |
+
+> 用户提示词中的 `docs/Rhine` 在仓库中实际为 [`docs/创建Rhine/`](../创建Rhine/README.md)，总规格为 [`docs/修改文档.md`](../修改文档.md)（Rhine 版式见 8.6）。
+
+## 1. 实际技术栈（已核对源码）
+
+| 项目 | 实际情况 | 位置 |
+| --- | --- | --- |
+| 语言 / UI | Kotlin 2.4、Compose Multiplatform 1.11.1、Material3 1.11.0-alpha07（`MaterialExpressiveTheme`） | `gradle/libs.versions.toml` |
+| 模块 | `:androidApp`（Android 应用、Room、DataStore、Glance 小组件）、`:shared:core`（模型与接口）、`:shared:ui`（commonMain UI，含 Rhine）、`:webDemo`（JVM/Wasm 演示桩） | `settings.gradle.kts` |
+| Android | minSdk 29、target/compile 37；Rhine 锁定横屏全屏沉浸 | `RhineWindowMode.android.kt` |
+| 数据 | Room3 `grit_rhine_database`，`SCHEMA_VERSION = 1`，表 categories / tasks / sections | `androidApp/.../tasks/data/database/` |
+| 设置 | DataStore；Rhine 显示配置为 JSON 字符串键 `rhine_display_v1`，解码容忍缺省/未知字段 | `RhineDisplayConfig.kt`、`SettingsDatastoreImpl.kt` |
+| 小组件 | Glance 1.2（RemoteViews 之上），背景为 shape drawable | `AllTasksWidget.kt`、`res/drawable/widget_matte_*.xml` |
+| 主题 | 固定米色浅色 `RhineBaseColors`，无深色、无动态取色；`matteSurface()` 为唯一表面修饰符 | `theme/GritTheme.kt`、`theme/MatteSurface.kt` |
+| 动画 | Compose `Animatable` / `tween`；无第三方动画、无 3D 引擎 | `RhineScreen.kt`、`RhineBrowser.kt` |
+| 选图基础设施 | 无。FileKit 仅用于备份文件的保存/打开（`androidApp`） | `ExportImpl.kt`、`RestoreImpl.kt` |
+
+## 2. 关键架构发现
+
+### 2.1 Rhine 不是 3D 引擎，而是一份仿射投影
+
+`RhineProjection`（`RhineGeometry.kt:89`）用固定的三个屏幕基向量把世界坐标映射到屏幕：
+
+```text
+screen = anchor + (wu − camU)·eU + (wv − camV)·eV + z·eZ
+eU = (−0.959, −0.282)   沿列 U：从右下到左上
+eV = ( 0.875, −0.485)   块长边 V：向右上约 29°
+eZ = ( 0,     −1    )   竖直向上
+anchor = (0.34·W, 0.60·H)  焦点块地面中心
+```
+
+- 相机 `RhineCamera(u, v)` **只有平移**，没有旋转、缩放或俯仰。全仓唯一的三角函数是拖动浮动的 `sin`（`RhineScreen.kt:995`）。
+- 每块只画三个面：顶面、`front`（`u0` 处的长侧面，朝右下，承载列标签，即“右侧面”）、`cap`（`v0` 端面，朝左下）。见 `RhineScene.kt:291`。
+- 绘制顺序是“u 降序、再 v 降序”（`RhineScene.kt:193`），它成立的前提是视线方向在世界中为 `+U、+V、−Z`。
+- 这组基向量**不是正交投影**（`|eU.x|²+|eV.x|² = 1.685 ≠ 1`），是按参考图手调的斜轴测。
+
+**结论**：提示词要求“沿用现有 Rhine 相机的逆时针旋转方向”，但代码里没有任何相机旋转。第二期需要为投影新增一个确定性的位姿（偏航、俯仰系数、缩放、枢轴），详见 [02 文档第 5 节](02-Rhine界面与动效重构.md#5-相机坐标系与位姿)。经计算（脚本复核），只有一个旋转方向能保持现有三面绘制与画家序完全有效：**从上方看相机逆时针绕行**（屏幕上画面顺时针转动），且转角不超过 47.6°。这与提示词“进入逆时针、退出顺时针”的要求一致。
+
+### 2.2 现有过渡
+
+- 进入/返回 Section 层（`RhineScreen.kt:405–417、497–520`）：整张画布 `graphicsLayer` 放大 2.5%、上移 8dp、透明度降到 0.62（180ms），换层后反向 180ms。这就是提示词说的“轻微抬升淡出”，实为整屏而非单块。
+- 进入编辑器：没有过渡动画。`activate()` 读取对象后先 `browser.move()` 到该块，再弹出右侧 68% 宽的 `Dialog`（`RhineEditor.kt:67–83`）。
+- 相机移动：`RhineBrowser.animateTo`，240ms `FastOutSlowInEasing`。
+- 减少动效：`display.reduceMotion || 系统动画关闭` 时全部时长为 0。
+
+### 2.3 右侧信息区（待删除）
+
+宽屏版：`RhineScreen.kt:1395–1483` 的焦点信息区（锚在 `x=0.51W, y=0.43H`，宽 0.49W），以及 `1485–1494` 单独的删除按钮。窄屏版（`w<700dp`、`h<340dp` 或字号>1.35）：`1243–1298` 右侧 49% 宽的滚动列。承载的控件和信息逐项映射见 [02 文档第 1 节](02-Rhine界面与动效重构.md#1-删除右侧信息区与底部工具栏)。顶部临时信息（`notice` / `loading`，`RhineScreen.kt:826–834`，3 秒自动消失）保留。
+
+### 2.4 已有可复用模式
+
+- `RhineDisplayPage`（`setting/ui/section/RhineDisplayPage.kt`）已经是“左侧缩放 `RhineCanvas` 预览 + 右侧控件”的分屏结构，通过覆盖 `LocalDensity` 缩放场景。编辑器分屏可直接借用这一做法。
+- `RhineCanvas` 与 `layoutScene` 互相独立，可以在任何容器内复用。
+- `DraftBackHandler`、`TaskUpsertSheet(fullScreen = true, pinnedActions…)`、`CategoryUpsertSheet` 已支持横屏侧板和键盘下的固定操作。
+
+### 2.5 液态玻璃的历史
+
+`liquid-glass` 分支（d9976a8、3d182aa）曾实现 `Modifier.liquidGlass()`。后来架构调整（[修改文档](../修改文档.md)第 35、552 行）**按用户要求移除液态玻璃，统一为固定米色**，并删除整体调色与动态主题。另外，修改文档 8.6 规定 Rhine HUD“全部为直接叠在场景上的文字和细线，无卡片底色”。
+
+本次设计保留固定米色和浅色单主题，在米色体系内做“暖色玻璃”，不恢复动态调色。不过，在 Rhine 加入玻璃底部工具栏，与 8.6 的“无卡片底色”相冲突，需要用户确认（见决策 D1、D2）。旧实现的教训：`ModalBottomSheet` 会把拖动偏移放在 `modifier` 参数内部，玻璃修饰必须画在 sheet 内容里（3d182aa）。
+
+## 3. 设计原则（本项目的 Liquid Glass 解释）
+
+1. **玻璃只属于“控件与导航层”**：浮在内容上方的导航胶囊、工具栏、悬浮按钮、菜单、对话框。内容本身（任务卡、设置行、Rhine 块）不做成半透明玻璃，只借用边缘高光与层次阴影的语言。这符合 Apple 对 Liquid Glass 的分层用法，也保证可读性。
+2. **真模糊只在有意义的地方使用**：Task / Setting 的背景是纯色米色，背景模糊毫无效果。真正需要背景模糊的只有 Rhine 场景上方的底部工具栏与对话框，以及 Task 列表滚动经过的导航胶囊与顶栏。
+3. **不引入新渲染管线或新依赖**：背景模糊用 Compose 自带的 `GraphicsLayer` 录制 + `BlurEffect`（Android 12+ 由 RenderEffect 加速），Android 10–11 退化为更不透明的着色，不使用 Haze 等第三方库。
+4. **确定性动画**：所有相机位姿由“起点位姿、终点位姿、进度”唯一计算，终点直接赋值默认位姿，不累加增量旋转。
+5. **数据安全优先**：图片引用存独立表，不改变 Category / Task 模型和 JSON 备份格式，不复制原图。
+
+## 4. 待用户确认的决策
+
+第二期开始前需要用户答复。每项给出推荐方案，用户可直接回复“全部按推荐”。
+
+| # | 决策 | 推荐 | 理由 / 影响 |
+| --- | --- | --- | --- |
+| D1 | 是否在固定米色主题上重新引入液态玻璃（此前按用户要求移除） | 引入，但限定为控件与导航层，保持米色、浅色单主题，不恢复动态调色 | 满足本次需求，同时不推翻已确认的配色决策 |
+| D2 | Rhine 底部工具栏使用玻璃底板，突破 8.6“HUD 无卡片底色”的规则 | 接受 | 工具栏承载原右侧区的操作，需要底板保证可读和可点；品牌块、右上控件、沿列读数仍保持纯文字 HUD |
+| D3 | “逆时针”的定义：代码中没有现有旋转 | 从上方俯视，相机逆时针绕选中块旋转（屏幕上场景顺时针转），退出时反向 | 唯一能保持现有三面绘制和画家序都正确的方向（见 02 文档 5.3） |
+| D4 | 编辑器终点转角 | `0.8 × 47.6° ≈ 38°`，并把俯仰系数提高到 1.30 | 转满 47.6° 时端面恰好侧对看不见，顶面也只剩约 10dp；38° 同时露出顶面、正面和一线端面，立体感最好。也可选择转满 |
+| D5 | Section 编辑是否同样使用 1.5 秒电影化进出 | 不使用；Section 保留现有编辑器，只改为玻璃样式 | 提示词只要求 Category / Task；Section 编辑频繁，1.5 秒×2 会拖慢操作 |
+| D6 | 图片引用存储方式 | 新增独立 Room 表 `rhine_illustrations`（外键级联），数据库 v1→v2 自动迁移；不进入 JSON 备份 | Category / Task 模型和备份格式 v1 都不变；URI 只在本机有效，备份无法跨设备使用 |
+| D7 | 选图入口位置 | 只在 Rhine 编辑器右侧面板中提供 | Task 页面不变，范围最小；以后可以复用组件扩展 |
+| D8 | 新增“降低透明度”设置（玻璃变为不透明） | 加在 Setting → 外观 | 改善无障碍与低端机性能，Android 没有系统级“降低透明度”可依赖 |
+| D9 | 图片只在 0 号块且侧面高度足够时显示 | 接受 | 非中心列的 0 号块高 16dp，放不下图片；概览中实际上主要是中心列 0 号块显示（见 03 文档第 5 节） |
+| D10 | 第三期截图/录屏是否提交入库 | 只提交 PNG 截图；MP4 录屏留在仓库外，在交付记录中写明路径 | 2026-10-15 用户刚清理了 424 个历史媒体文件 |
+
+## 5. 风险摘要
+
+| 风险 | 级别 | 处理 |
+| --- | --- | --- |
+| 投影引入位姿后破坏已确认的视觉基线 | 高 | 默认位姿必须与现投影逐点相等，用单元测试覆盖（02 文档 5.6） |
+| 编辑器从 `Dialog` 改为窗口内覆盖层后的横屏键盘行为 | 中 | 使用 `imePadding` 与现有固定操作区，第三期在设备上复测阶段 03/04 的键盘截图场景 |
+| 持久 URI 授权上限（Android 11+ 为 512 条）与用户删除照片 | 中 | 启动时对账并释放未引用授权；不可读时显示占位并提供“重新选择/移除” |
+| 背景模糊在模拟器 Debug 上的帧耗时（阶段 07 已记录 Debug 未达 60Hz） | 中 | 模糊区域只限于工具栏，阴影质量为“低”或开启降低透明度时关闭模糊；以 Release 或实机数据为准 |
+| 小组件无法真模糊桌面壁纸 | 已知限制 | 用半透明渐变、内高光和描边模拟，保证在任意壁纸上可读（01 文档第 5 节） |
+| WSL 内只有 Java 17，项目要求 Java 21 | 环境 | 第二期开始时定位 Windows 侧 JDK 21（如 `D:\compilerStorage\jdk`）或请用户指定 |
+
+## 6. Git 记录
+
+- 起点：分支 `opt-graph` @ `d524d4d`，与 `origin/opt-graph` 一致；`visual-optimize` 在本地和远端都不存在。
+- 暂存区原本为空。工作区有 424 个未暂存的删除（`docs/创建Rhine/交付/阶段01–07` 的历史截图、录屏、审阅图）和 1 个修改（该目录 README 的清理记录，写明为 2026-10-15 用户要求的清理）。没有未跟踪文件。
+- 处理：没有恢复任何文件，没有丢弃任何改动。按 README 记录的意图，将这 425 项提交为 `4b3eae2 docs: remove Rhine stage01-07 delivery media per 2026-10-15 cleanup`（在 `opt-graph` 上），再从这里创建并切换到 `visual-optimize`。
+- 本期文档提交在 `visual-optimize`，第一期不推送；第三期验证后再推送。按 AGENTS.md，不创建 issue 或 PR。
+
+## 7. 构建与验证入口
+
+沿用 [创建Rhine 构建说明](../创建Rhine/README.md#构建与验证)：
+
+```sh
+./gradlew :androidApp:assembleFossDebug
+./gradlew :androidApp:testFossDebugUnitTest
+./gradlew :androidApp:connectedFossDebugAndroidTest   # 需设备
+```
+
+公共代码变化需同时编译 JVM / Wasm source set 与 `:webDemo`。截图与录屏沿用阶段协议：真实设备或模拟器原图，不伪造，缺设备时如实记录。
