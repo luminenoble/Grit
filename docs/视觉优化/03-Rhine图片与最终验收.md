@@ -20,8 +20,23 @@
 
 ## 2. 选图架构
 
+### 2.1 入口（D7：Rhine 编辑器与 Task 页编辑器都提供）
+
+插图行 `IllustrationField`（缩略图 + “选择图片 / 更换 / 移除”，不可读时显示“图片不可用”）放进共享表单组件 `CategoryUpsertSheet`、`TaskUpsertSheet` 内部，位于名称字段上方。新增可选参数 `illustration: IllustrationDraft? = null`，为 null 时不显示，所以 `SectionEditor` 等其他调用不受影响。
+
+| 入口 | 位置 | 保存路径 |
+| --- | --- | --- |
+| Rhine：编辑/新建 Category、Task | 分屏编辑器右侧面板（阶段 2 第 7 节），左侧预览实时显示 | `RhineScreen.submit()`：对象保存得到 id 后写插图 |
+| Task 页：新建 Task（`TaskRoutes.AddTask`，`TasksPage.kt:131`） | 全屏表单 | `TaskAction.UpsertTask` 增加可选 `illustration: IllustrationChange?`，`TasksViewModel` 在 `upsertTask` 返回 id 后写插图 |
+| Task 页：编辑 Task（`TasksPage.kt:207`） | 同上 | 同上 |
+| Task 页：新建/编辑 Category（`TaskRoutes.CategoryEdit`，`TasksPage.kt:181`） | 同上 | `TaskAction.AddCategory` 增加同样的可选字段 |
+
+`IllustrationChange` 为 `Keep / Set(uri) / Remove`，默认 `Keep`，现有调用（列表内勾选 Section、切换完成等）不传，行为不变。Task 页只编辑插图，不显示插图：任务卡、类别按钮和小组件外观不变，插图只在 Rhine 中绘制（第 5 节）。
+
+### 2.2 流程
+
 ```text
-RhineEditor 右侧面板 · 插图行
+插图行（Rhine 编辑器 / Task 页表单）
    │ 点“选择图片”
    ▼
 rememberRhineImagePicker()            commonMain expect
@@ -32,17 +47,18 @@ rememberRhineImagePicker()            commonMain expect
    ▼
 草稿 illustration = uri（只在编辑器内存中，未落库）
    ▼  保存
-submit()：upsertCategory / upsertTask → 得到 id → illustrationRepo.set(owner, id, uri)
+Rhine：submit()；Task 页：TasksViewModel
+   upsertCategory / upsertTask → 得到 id → illustrationRepo.setIllustration(owner, id, uri)
 ```
 
 - 权限清单不变：不新增 `READ_MEDIA_IMAGES`（清单中已移除 `READ_EXTERNAL_STORAGE`）。
 - `androidx.activity:activity-compose` 已在依赖树中（MainActivity 使用 `enableEdgeToEdge`，FileKit 也依赖它）。第二期在 `shared/ui` 的 androidMain 中显式声明，不引入新库。
 - 草稿取消：草稿中新取得的授权，如果数据库中没有其他引用，就立即释放。
-- 保存顺序：对象保存成功后再写插图。插图写入失败不回滚对象（对象数据优先），提示“已保存，插图未保存，请重试”，编辑器按“已提交但定位失败”路径退出（阶段 2 第 8.2 节）。
+- 保存顺序：对象保存成功后再写插图。插图写入失败不回滚对象（对象数据优先），提示“已保存，插图未保存，请重试”。Rhine 编辑器按“已提交但定位失败”路径退出（阶段 2 第 8.2 节）；Task 页按现有 `onSaved` 关闭表单并显示同一提示。
 
 ## 3. 数据模型（D6）
 
-不修改 `Category` / `Task` 模型、`RhineBackup` 格式 v1、Task 页面或小组件。新增独立表：
+不修改 `Category` / `Task` 模型、`RhineBackup` 格式 v1 或小组件；Task 页只增加 2.1 所述的可选保存字段。新增独立表：
 
 ```kotlin
 @Entity(
@@ -198,6 +214,7 @@ val illustrationFit: RhineImageFit = RhineImageFit.CropTopStart
 | Category / Task 新建、编辑、删除、排序（含 U=99 尾插、删除最长列） | 现有 `RhineMutationRepositoryTest`、`RhineAdjustRepositoryTest` + `RhinePreviewActivity` 夹具 |
 | 编辑器进出后相机与默认画面完全恢复 | 单元测试（终点位姿 == Identity）+ 前后截图逐像素比对 |
 | 插图选择、重启后仍在、裁剪模式、可见规则、照片被删后的提示 | 设备手动 + `showsIllustration` 单元测试 |
+| Task 页表单选图/更换/移除后，Rhine 中对应 0 号块同步；Task 页其他保存（勾选 Section、切换完成）不改变插图 | 设备手动 + `TasksViewModel` 单元测试（`IllustrationChange` 默认 `Keep`） |
 | 返回键与中断：进入动画中返回、动画中旋转屏幕/改字号、快速连点、保存失败（`failSaveOnce`）、慢提交（`submitDelayMs`）、导入替换 | 夹具注入 + 录屏 |
 
 ### 10.2 视觉
@@ -213,5 +230,5 @@ val illustrationFit: RhineImageFit = RhineImageFit.CropTopStart
 
 ### 10.4 交付
 
-- 截图保存到 `docs/视觉优化/交付/`（PNG）。录屏是否入库需用户确认（2026-10-15 用户刚清理过 424 个历史媒体文件），默认只在交付记录中写明路径，不提交 MP4。
+- 截图与录屏都不提交入库（D10，用户 2026-10-17 决定）：保存在仓库外的工作目录（第三期开始时写明路径，并加入 `.gitignore` 防止误提交），交付记录只写文件名、环境与自检结论。
 - 按里程碑提交到 `visual-optimize`，最后 `git push -u origin visual-optimize`，报告提交号与推送结果；不创建 issue 或 PR（AGENTS.md）。
