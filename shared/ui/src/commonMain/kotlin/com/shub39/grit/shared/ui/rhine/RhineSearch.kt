@@ -11,9 +11,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.Dp
 import com.shub39.grit.core.tasks.*
+import com.shub39.grit.shared.ui.theme.GlassBackdrop
+import com.shub39.grit.shared.ui.theme.GlassShapes
+import com.shub39.grit.shared.ui.theme.GlassTier
+import com.shub39.grit.shared.ui.theme.GritMotion
+import com.shub39.grit.shared.ui.theme.glassSurface
 import kotlinx.coroutines.*
 
 /** Results are tagged by input, page and generation even if a repository ignores cancellation. */
@@ -51,6 +62,7 @@ fun RhineSearchPanel(
     selecting: Boolean,
     onClose: () -> Unit,
     onSelect: (Long) -> Unit,
+    backdrop: GlassBackdrop? = null,
 ) {
     val keyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     val version = state.version
@@ -77,7 +89,7 @@ fun RhineSearchPanel(
             if (state.version == version) state.loading = false
         }
     }
-    RhinePanel(onClose) {
+    RhinePanel(onClose, 520.dp, 0.52f, backdrop) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("搜索 Task 标题", style = MaterialTheme.typography.titleMedium)
             TextButton(onClick = onClose, modifier = Modifier.height(36.dp)) { Text("关闭搜索") }
@@ -144,11 +156,12 @@ fun RhinePositionPanel(
     onClose: () -> Unit,
     onSubmit: (Int) -> Unit,
     initialPosition: Int = move.source,
+    backdrop: GlassBackdrop? = null,
 ) {
     var text by remember(move) { mutableStateOf((initialPosition + 1).toString()) }
     val position = movePosition(text, move.count)
     val keyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
-    RhinePanel(onClose) {
+    RhinePanel(onClose, 420.dp, 0.46f, backdrop) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
                 "移动到第 N 项",
@@ -198,28 +211,48 @@ fun RhinePositionPanel(
     }
 }
 
-/** Fixed actions above a separately scrolling body, including with the landscape IME open. */
+/**
+ * Fixed actions above a separately scrolling body, including with the landscape IME open. Drawn in
+ * the Rhine window (not a dialog) on regular glass anchored to the right, so it can blur the scene;
+ * a tap outside closes it like a dialog's outside tap, and back is handled by the screen.
+ */
 @Composable
-private fun RhinePanel(onClose: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
+private fun RhinePanel(
+    onClose: () -> Unit,
+    maxWidth: Dp,
+    widthFraction: Float,
+    backdrop: GlassBackdrop?,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     val keyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
-    Dialog(
-        onDismissRequest = onClose,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-    ) {
-        Surface(
-            Modifier.windowInsetsPadding(com.shub39.grit.shared.ui.rhine.rhineSafeDrawingInsets())
-                .imePadding()
-                .padding(if (keyboardVisible) 4.dp else 8.dp)
-                .widthIn(max = 660.dp)
-                .fillMaxWidth()
-                .fillMaxHeight(),
-            shape = MaterialTheme.shapes.large,
-        ) {
-            Column(
-                Modifier.padding(if (keyboardVisible) 4.dp else 12.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                content = content,
+    val appear = remember { Animatable(0f) }
+    LaunchedEffect(Unit) { appear.animateTo(1f, tween(GritMotion.FadeShort, easing = GritMotion.EaseStandard)) }
+    Box(
+        Modifier.fillMaxSize()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClose,
             )
-        }
+            .windowInsetsPadding(rhineSafeDrawingInsets())
+            .imePadding(),
+        contentAlignment = Alignment.CenterEnd,
+    ) {
+        Column(
+            Modifier.graphicsLayer {
+                    alpha = appear.value
+                    translationX = (1f - appear.value) * 24.dp.toPx()
+                }
+                .padding(if (keyboardVisible) 4.dp else 8.dp)
+                .fillMaxHeight()
+                .fillMaxWidth(widthFraction)
+                .widthIn(max = maxWidth)
+                .glassSurface(GlassTier.Regular, GlassShapes.Panel, backdrop)
+                // Taps on the panel's empty space must not reach the outside-tap handler.
+                .pointerInput(Unit) { detectTapGestures {} }
+                .padding(if (keyboardVisible) 4.dp else 12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            content = content,
+        )
     }
 }

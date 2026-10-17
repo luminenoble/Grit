@@ -55,8 +55,8 @@ data class RhineGeometry(
     val basisV: Offset = Offset(0.875f, -0.485f),
     val basisZ: Offset = Offset(0f, -1f),
     /**
-     * Where the focused block's floor centre lands, as a fraction of the scene size. Left of centre
-     * so the focus panel on the right does not cover the wall.
+     * Where the focused block's floor centre lands, as a fraction of the scene size. Left of centre,
+     * as in the confirmed stage 01 composition matching the reference image.
      */
     val anchor: Offset = Offset(0.34f, 0.60f),
 ) {

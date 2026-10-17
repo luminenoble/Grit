@@ -36,9 +36,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.exclude
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -57,7 +57,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
@@ -65,7 +64,6 @@ import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
@@ -81,6 +79,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.shub39.grit.core.tasks.*
+import com.shub39.grit.shared.ui.components.glass.GlassButton
+import com.shub39.grit.shared.ui.components.glass.GlassButtonStyle
+import com.shub39.grit.shared.ui.components.glass.GlassToast
+import com.shub39.grit.shared.ui.theme.glassSource
+import com.shub39.grit.shared.ui.theme.rememberGlassBackdrop
 import com.shub39.grit.shared.ui.task.ui.component.DraftBackHandler
 import grit.shared.ui.generated.resources.Res
 import grit.shared.ui.generated.resources.montserrat
@@ -683,7 +686,15 @@ fun RhineScreen(
             }
         }
     }
+    // The toolbar and toasts sample the scene as their glass backdrop, unless glass blur is off for
+    // performance (reduced shadow quality or reduced motion).
+    val backdrop = rememberGlassBackdrop()
+    val glassBackdrop =
+        backdrop.takeIf {
+            display.shadow == com.shub39.grit.core.settings.RhineShadow.Standard && !reduced
+        }
     Box(modifier.fillMaxSize().background(style.floor)) {
+        Box(Modifier.fillMaxSize().glassSource(backdrop)) {
         RhineCanvas(
             input,
             geometry,
@@ -719,6 +730,7 @@ fun RhineScreen(
                     )
                 )
         )
+        }
         RhineHud(
             input = input,
             style = style,
@@ -766,27 +778,26 @@ fun RhineScreen(
                 }
             },
             display = display,
+            geometry = geometry,
+            backdrop = glassBackdrop,
+            // The keyboard of an in-window overlay must not reflow the HUD underneath it.
             modifier =
                 Modifier.fillMaxSize()
-                    .windowInsetsPadding(com.shub39.grit.shared.ui.rhine.rhineSafeDrawingInsets()),
+                    .windowInsetsPadding(
+                        rhineSafeDrawingInsets()
+                            .exclude(androidx.compose.foundation.layout.WindowInsets.ime)
+                    ),
         )
         if (adjustment.dragging) {
             val m = adjustment.move!!
-            Row(
+            GlassToast(
+                "${if (m.parent) "整列" else "内容"} · ${m.label}    ${m.source + 1} → ${adjustment.target + 1}",
                 Modifier.align(Alignment.TopCenter)
                     .windowInsetsPadding(rhineSafeDrawingInsets())
                     .padding(top = 12.dp)
-                    .widthIn(max = 540.dp)
-                    .background(style.floor),
-                verticalAlignment = Alignment.CenterVertically,
+                    .widthIn(max = 540.dp),
+                glassBackdrop,
             ) {
-                Text(
-                    "${if (m.parent) "整列" else "内容"} · ${m.label}",
-                    Modifier.weight(1f).padding(8.dp),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text("${m.source + 1} → ${adjustment.target + 1}")
                 TextButton(onClick = ::cancelAdjustment) { Text("取消移动") }
             }
         }
@@ -800,6 +811,7 @@ fun RhineScreen(
                     ::cancelAdjustment,
                     ::commitAdjustment,
                     initialPosition = adjustment.target,
+                    backdrop = glassBackdrop,
                 )
             }
         search?.let { state ->
@@ -811,26 +823,27 @@ fun RhineScreen(
                     selecting,
                     ::closeSearch,
                     ::selectResult,
+                    backdrop = glassBackdrop,
                 )
             }
         }
+        // Temporary top information: unchanged texts and timing, on a glass capsule.
         if (adjustment.submitting && !adjustment.positionDialog)
-            Text(
+            GlassToast(
                 "正在保存排序…",
                 Modifier.align(Alignment.TopCenter)
                     .windowInsetsPadding(rhineSafeDrawingInsets())
-                    .padding(12.dp)
-                    .background(style.floor)
-                    .padding(8.dp),
+                    .padding(12.dp),
+                glassBackdrop,
             )
         if (loading || notice != null)
-            Text(
+            GlassToast(
                 if (loading) "载入详情…" else notice!!,
                 Modifier.align(Alignment.TopCenter)
                     .windowInsetsPadding(rhineSafeDrawingInsets())
                     .padding(12.dp)
-                    .background(style.floor)
-                    .padding(8.dp),
+                    .widthIn(max = 560.dp),
+                glassBackdrop,
             )
         edit?.let { value ->
             RhineEditor(
@@ -873,8 +886,9 @@ fun RhineScreen(
                         )
                     },
                     confirmButton = {
-                        TextButton(
+                        GlassButton(
                             enabled = !saving,
+                            style = GlassButtonStyle.Danger,
                             onClick = {
                                 submit(
                                     remove = true,
@@ -898,7 +912,7 @@ fun RhineScreen(
                         }
                     },
                     dismissButton = {
-                        TextButton(enabled = !saving, onClick = { deleting = false }) {
+                        GlassButton(enabled = !saving, onClick = { deleting = false }) {
                             Text("取消删除")
                         }
                     },
@@ -1172,7 +1186,7 @@ fun RhineCanvas(
 }
 
 /** Text styles of the HUD; Montserrat for Latin, system fallback for Chinese. */
-private class HudText(val family: FontFamily, val ink: Color) {
+internal class HudText(val family: FontFamily, val ink: Color) {
     fun style(size: TextUnit, bold: Boolean = false, alpha: Float = 1f, tracking: Float = 0.04f) =
         TextStyle(
             fontFamily = family,
@@ -1185,7 +1199,7 @@ private class HudText(val family: FontFamily, val ink: Color) {
 }
 
 /** Unavailable controls are drawn faint and announce the stage that connects them. */
-private const val Pending = 0.38f
+internal const val Pending = 0.38f
 
 /**
  * Text-only HUD laid on the scene. Positions are fractions of the inset area, taken from the
@@ -1211,6 +1225,8 @@ private fun RhineHud(
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     display: com.shub39.grit.core.settings.RhineDisplayConfig,
+    geometry: RhineGeometry,
+    backdrop: com.shub39.grit.shared.ui.theme.GlassBackdrop?,
 ) {
     val t = HudText(FontFamily(Font(Res.font.montserrat)), style.ink)
     val focus = focusOverride ?: input.slot(input.focusU.roundToInt(), input.focusV)
@@ -1223,7 +1239,32 @@ private fun RhineHud(
         val w = maxWidth
         val h = maxHeight
 
-        if (w < 700.dp || h < 340.dp || LocalDensity.current.fontScale > 1.35f) {
+        val narrow = w < 700.dp || h < 340.dp || LocalDensity.current.fontScale > 1.35f
+        // Room kept under the toolbar: the footer row in the wide HUD, a margin otherwise.
+        val footerDp = h.value * 0.025f + if (narrow) 8f else 22f
+        val profile = rhineToolbarProfile(geometry, w.value, h.value, narrow, footerDp)
+        val toolbar: @Composable (Modifier) -> Unit = { m ->
+            RhineToolbar(
+                input = input,
+                style = style,
+                mode = mode,
+                focus = focus,
+                enabled = enabled,
+                parentTitle = parentTitle,
+                display = display,
+                profile = profile,
+                backdrop = backdrop,
+                t = t,
+                onBack = onBack,
+                onAction = onAction,
+                onDelete = onDelete,
+                onStepU = onStepU,
+                onStepV = onStepV,
+                modifier = m,
+            )
+        }
+
+        if (narrow) {
             Column(Modifier.fillMaxSize().padding(10.dp)) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
@@ -1239,107 +1280,14 @@ private fun RhineHud(
                     HudButton(mode.name.uppercase(), t, enabled, "切换预览/详情模式", 9.sp, onMode)
                     Spacer(Modifier.width(12.dp))
                     HudButton("⇤", t, enabled && input.focusU > 0f, "回到开头", 12.sp, onStart)
-                }
-                Box(Modifier.weight(1f).fillMaxWidth()) {
-                    Column(
-                        Modifier.align(Alignment.CenterEnd)
-                            .width(w * 0.49f)
-                            .verticalScroll(androidx.compose.foundation.rememberScrollState())
-                            .background(style.floor.copy(alpha = 0.85f))
-                    ) {
-                        if (onBack != null) HudButton("← 返回类别层", t, enabled, "返回类别层", 10.sp, onBack)
-                        Text(
-                            (if (!isCategories) "${parentTitle.orEmpty()} / " else "") +
-                                (column?.title ?: "新建"),
-                            style = t.style(9.sp),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Text(
-                            if (
-                                focus.kind == RhineBlockKind.Real &&
-                                    !display.itemNumbers(input.layer)
-                            )
-                                focus.item?.title ?: "载入中…"
-                            else focusTitle(focus, itemWord),
-                            style =
-                                t.style(12.sp, true)
-                                    .copy(
-                                        color = style.readable(focus.item?.titleColor, style.floor)
-                                    ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Text(focusStatus(focus), style = t.style(9.sp))
-                        if (mode != RhineMode.Preview) {
-                            val action =
-                                when {
-                                    mode == RhineMode.Adjust -> "移动到第 N 项"
-                                    focus.kind == RhineBlockKind.Zero -> "编辑 $parentWord"
-                                    focus.kind == RhineBlockKind.Real ->
-                                        if (isCategories) "进入 Section 层" else "编辑 Section"
-                                    focus.kind == RhineBlockKind.AddParent -> "新建 $parentWord"
-                                    else -> "尾部新增 $itemWord"
-                                }
-                            HudButton(
-                                action + " →",
-                                t,
-                                enabled &&
-                                    (mode != RhineMode.Adjust ||
-                                        canAdjustRhine(mode, true, input.focusV, focus)),
-                                action,
-                                10.sp,
-                                onAction,
-                            )
-                            if (mode == RhineMode.Detail && column != null)
-                                HudButton("删除焦点对象", t, enabled, "删除焦点对象", 9.sp, onDelete)
-                        }
-                    }
-                }
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        "$itemWord ${if(display.itemNumbers(input.layer)) indexLabel(input.focusU.roundToInt()) else "•"}/${column?.itemCount ?: 0}",
-                        Modifier.weight(1f),
-                        style = t.style(10.sp),
-                    )
-                    HudButton("↑", t, enabled && input.focusU > 0, "沿列上一格", 12.sp, { onStepU(-1) })
-                    Spacer(Modifier.width(20.dp))
-                    HudButton(
-                        "↓",
-                        t,
-                        enabled && input.focusU < input.maxU,
-                        "沿列下一格",
-                        12.sp,
-                        { onStepU(1) },
-                    )
-                    Spacer(Modifier.width(20.dp))
-                    HudButton("←", t, enabled && input.focusV > 0, "上一列", 12.sp, { onStepV(-1) })
-                    Text(
-                        column?.title ?: "新建",
-                        Modifier.widthIn(max = w * 0.16f).padding(horizontal = 10.dp),
-                        style = t.style(9.sp),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    HudButton(
-                        "→",
-                        t,
-                        enabled && input.focusV < input.maxV,
-                        "下一列",
-                        12.sp,
-                        { onStepV(1) },
-                    )
-                }
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        "DONE ${column?.completedCount ?: 0}/${column?.itemCount ?: 0}",
-                        Modifier.weight(1f),
-                        style = t.style(9.sp),
-                    )
+                    // The footer exits move up here so the toolbar keeps clear of the scene.
+                    Spacer(Modifier.width(12.dp))
                     HudButton("TASK ↗", t, enabled, onClick = onOpenTasks, size = 9.sp)
-                    Spacer(Modifier.width(16.dp))
+                    Spacer(Modifier.width(8.dp))
                     HudButton("SETTING ↗", t, enabled, onClick = onOpenSettings, size = 9.sp)
                 }
+                Spacer(Modifier.weight(1f))
+                toolbar(Modifier.fillMaxWidth())
             }
             return@BoxWithConstraints
         }
@@ -1392,110 +1340,10 @@ private fun RhineHud(
             )
         }
 
-        // Focus panel: path, focused title, rule to the right edge, status, mode hint.
-        Column(Modifier.offset(x = w * 0.51f, y = h * 0.43f).width(w * 0.49f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (onBack != null)
-                    HudButton(
-                        "←",
-                        t,
-                        enabled = enabled,
-                        description = "返回类别层",
-                        onClick = onBack,
-                        size = 13.sp,
-                    )
-                HudReadout(
-                    (if (!isCategories) "${parentTitle.orEmpty()}  /  " else "") +
-                        "$parentWord ${if (display.parentNumbers(input.layer)) indexLabel(column?.index ?: input.columnCount + 1) else ""}  /  " +
-                        (column?.title ?: "新建"),
-                    style = t.style(9.sp, alpha = 0.6f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(end = w * 0.03f),
-                )
-            }
-            Spacer(Modifier.height(10.dp))
-            HudReadout(
-                if (!display.itemNumbers(input.layer) && focus.kind == RhineBlockKind.Real)
-                    focus.item?.title ?: "载入中…"
-                else focusTitle(focus, itemWord),
-                style =
-                    t.style(15.sp, bold = true, tracking = 0.03f)
-                        .copy(color = style.readable(focus.item?.titleColor, style.floor)),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(end = w * 0.03f),
-            )
-            Spacer(Modifier.height(14.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(4.dp).background(t.ink.copy(alpha = 0.7f), CircleShape))
-                Spacer(Modifier.width(18.dp))
-                Box(Modifier.weight(1f).height(1.dp).background(t.ink.copy(alpha = 0.35f)))
-            }
-            Spacer(Modifier.height(8.dp))
-            Row(Modifier.padding(start = 22.dp, end = w * 0.03f)) {
-                HudReadout(focusStatus(focus), style = t.style(9.sp, alpha = 0.7f))
-                Spacer(Modifier.weight(1f))
-                HudReadout(
-                    "DATE ${focus.item?.completedOn?.toString() ?: "—"}",
-                    style = t.style(9.sp, alpha = 0.7f),
-                )
-            }
-            Spacer(Modifier.height(18.dp))
-            Row(Modifier.padding(start = 22.dp), verticalAlignment = Alignment.CenterVertically) {
-                if (mode == RhineMode.Preview)
-                    HudReadout("预览模式 · 沿列滑动 / 跨列切换", style = t.style(9.sp, alpha = 0.7f))
-                else if (mode == RhineMode.Adjust) {
-                    HudButton(
-                        "移动到第 N 项  →",
-                        t,
-                        enabled = enabled && canAdjustRhine(mode, true, input.focusV, focus),
-                        description = "移动到第 N 项",
-                        onClick = onAction,
-                    )
-                } else if (focus.kind == RhineBlockKind.Real || focus.kind == RhineBlockKind.Zero)
-                    HudButton(
-                        if (focus.kind == RhineBlockKind.Zero) "编辑 $parentWord  →"
-                        else if (isCategories) "进入 Section 层  →" else "编辑 Section  →",
-                        t,
-                        enabled =
-                            enabled && (focus.kind == RhineBlockKind.Zero || focus.item != null),
-                        description =
-                            if (focus.kind == RhineBlockKind.Zero) "编辑 $parentWord"
-                            else if (isCategories) "进入 Section 层" else "编辑 Section",
-                        onClick = onAction,
-                    )
-                else if (
-                    focus.kind == RhineBlockKind.Placeholder ||
-                        focus.kind == RhineBlockKind.AddParent
-                )
-                    HudButton(
-                        if (focus.kind == RhineBlockKind.AddParent) "新建 $parentWord  ＋"
-                        else "尾部新增 $itemWord  ＋",
-                        t,
-                        enabled = enabled,
-                        description =
-                            if (focus.kind == RhineBlockKind.AddParent) "新建 $parentWord"
-                            else "尾部新增 $itemWord",
-                        onClick = onAction,
-                    )
-            }
-        }
-
-        if (mode == RhineMode.Detail && column != null)
-            Box(Modifier.offset(x = w * 0.80f, y = h * 0.68f)) {
-                HudButton(
-                    "删除 ${if (focus.kind == RhineBlockKind.Real) itemWord else parentWord}",
-                    t,
-                    enabled = enabled && (focus.kind != RhineBlockKind.Real || focus.item != null),
-                    description = "删除焦点对象",
-                    onClick = onDelete,
-                )
-            }
-
         // Along-column readout: focused index over the center column's real count.
         Column(
-            Modifier.align(Alignment.BottomStart).padding(start = w * 0.03f, bottom = h * 0.10f)
+            Modifier.align(Alignment.BottomStart)
+                .padding(start = w * 0.03f, bottom = (footerDp + profile.heightDp() + 10f).dp)
         ) {
             Text(itemWord, style = t.style(9.sp, alpha = 0.7f))
             Row(verticalAlignment = Alignment.Bottom) {
@@ -1513,91 +1361,21 @@ private fun RhineHud(
             }
         }
 
-        // U stepper: arrows around a tick bar; the bar marks the focus within the column.
-        Row(
-            Modifier.offset(x = w * 0.26f, y = h * 0.87f - 12.dp).width(w * 0.19f),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            HudButton(
-                "↑",
-                t,
-                enabled = enabled && input.focusU > 0f,
-                description = "沿列上一格",
-                size = 14.sp,
-                onClick = { onStepU(-1) },
-            )
-            TickBar(
-                count = input.maxU + 1,
-                focus = input.focusU.roundToInt(),
-                ink = t.ink,
-                modifier = Modifier.weight(1f).height(14.dp),
-            )
-            HudButton(
-                "↓",
-                t,
-                enabled = enabled && input.focusU < input.maxU,
-                description = "沿列下一格",
-                size = 14.sp,
-                onClick = { onStepU(1) },
-            )
-        }
-        Text(
-            when (mode) {
-                RhineMode.Preview -> "拖动浏览 · 点按定位 · 预览"
-                RhineMode.Detail -> "详情 · 非中心列先定位 · 只尾插一项"
-                RhineMode.Adjust -> "调整 · 长按沿 U 排内容 / 0 号沿 V 排整列 · 点按序号"
-            },
-            style = t.style(8.sp, alpha = 0.55f),
-            modifier =
-                Modifier.align(Alignment.BottomStart).padding(start = w * 0.26f, bottom = h * 0.05f),
+        // Bottom toolbar: replaces the right-side focus panel, the U stepper and the V switch.
+        toolbar(
+            Modifier.align(Alignment.BottomCenter)
+                .padding(horizontal = w * 0.03f)
+                .padding(bottom = footerDp.dp)
+                .widthIn(max = 980.dp)
+                .fillMaxWidth()
         )
-
-        // V switch: previous / next column around the center column's name.
-        Row(
-            Modifier.offset(x = w * 0.52f, y = h * 0.87f - 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            HudButton(
-                "←",
-                t,
-                enabled = enabled && input.focusV > 0,
-                description = "上一列",
-                size = 13.sp,
-                onClick = { onStepV(-1) },
-            )
-            Column(Modifier.padding(horizontal = 22.dp).widthIn(max = w * 0.14f)) {
-                Text(
-                    if (column == null) "NEW $parentWord"
-                    else if (display.parentNumbers(input.layer))
-                        "$parentWord ${indexLabel(input.focusV + 1)}/${indexLabel(input.columnCount)}"
-                    else parentWord,
-                    style = t.style(8.sp, alpha = 0.6f),
-                    maxLines = 1,
-                )
-                Text(
-                    column?.title ?: "新建",
-                    style =
-                        t.style(10.sp)
-                            .copy(color = style.readable(column?.titleColor, style.floor)),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            HudButton(
-                "→",
-                t,
-                enabled = enabled && input.focusV < input.maxV,
-                description = "下一列",
-                size = 13.sp,
-                onClick = { onStepV(1) },
-            )
-        }
 
         // Status: completed count of the center column, from counts only.
         val done = column?.completedCount ?: 0
         val total = column?.itemCount ?: 0
         Row(
-            Modifier.align(Alignment.BottomEnd).padding(end = w * 0.03f, bottom = h * 0.10f),
+            Modifier.align(Alignment.BottomEnd)
+                .padding(end = w * 0.03f, bottom = (footerDp + profile.heightDp() + 12f).dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -1641,7 +1419,7 @@ private fun RhineHud(
     }
 }
 
-private fun focusTitle(focus: RhineSlot, itemWord: String): String =
+internal fun focusTitle(focus: RhineSlot, itemWord: String): String =
     when (focus.kind) {
         RhineBlockKind.Real -> focus.item?.let { "${indexLabel(it.index)}   ${it.title}" } ?: "载入中…"
         RhineBlockKind.Zero -> "00   ${focus.column?.title ?: ""}"
@@ -1650,7 +1428,7 @@ private fun focusTitle(focus: RhineSlot, itemWord: String): String =
         RhineBlockKind.Decoration -> ""
     }
 
-private fun focusStatus(focus: RhineSlot): String =
+internal fun focusStatus(focus: RhineSlot): String =
     when (focus.kind) {
         RhineBlockKind.Real -> if (focus.item?.isCompleted == true) "● 已完成" else "○ 未完成"
         RhineBlockKind.Zero -> "${focus.column?.itemCount ?: 0} 项 · 0 号块"
@@ -1665,7 +1443,7 @@ private fun focusStatus(focus: RhineSlot): String =
  * glyphs still land.
  */
 @Composable
-private fun HudButton(
+internal fun HudButton(
     text: String,
     t: HudText,
     enabled: Boolean,
@@ -1687,7 +1465,7 @@ private fun HudButton(
 }
 
 @Composable
-private fun TickBar(count: Int, focus: Int, ink: Color, modifier: Modifier = Modifier) {
+internal fun TickBar(count: Int, focus: Int, ink: Color, modifier: Modifier = Modifier) {
     Canvas(modifier) {
         val n = count.coerceIn(2, 31)
         val step = size.width / (n - 1)
@@ -1701,27 +1479,5 @@ private fun TickBar(count: Int, focus: Int, ink: Color, modifier: Modifier = Mod
                 strokeWidth = (if (major) 1.6f else 1f) * density,
             )
         }
-    }
-}
-
-/** A glyph-only floor-coloured halo keeps face labels from crossing the HUD's readouts. */
-@Composable
-private fun HudReadout(
-    text: String,
-    style: TextStyle,
-    modifier: Modifier = Modifier,
-    maxLines: Int = Int.MAX_VALUE,
-    overflow: TextOverflow = TextOverflow.Clip,
-) {
-    val stroke = with(LocalDensity.current) { 1.5.dp.toPx() }
-    Box(modifier) {
-        Text(
-            text,
-            style = style.copy(color = RhineStyle().floor, drawStyle = Stroke(stroke)),
-            maxLines = maxLines,
-            overflow = overflow,
-            modifier = Modifier.clearAndSetSemantics {},
-        )
-        Text(text, style = style, maxLines = maxLines, overflow = overflow)
     }
 }
