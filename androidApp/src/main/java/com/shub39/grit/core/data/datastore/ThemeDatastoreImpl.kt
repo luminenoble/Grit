@@ -35,4 +35,13 @@ class ThemeDatastoreImpl(private val datastore: DataStore<Preferences>) : ThemeD
     override suspend fun setFontPref(font: Fonts) {
         datastore.edit { it[fontKey] = font.name }
     }
+
+    private val reduceTransparencyKey = booleanPreferencesKey("reduce_transparency")
+
+    override fun getReduceTransparencyFlow() =
+        datastore.data.map { prefs -> prefs[reduceTransparencyKey] ?: false }
+
+    override suspend fun setReduceTransparency(pref: Boolean) {
+        datastore.edit { it[reduceTransparencyKey] = pref }
+    }
 }

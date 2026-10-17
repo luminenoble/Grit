@@ -41,7 +41,8 @@ fun CategoryToggleButton(
         enabled = enabled,
         colors =
             ToggleButtonDefaults.toggleButtonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                // Unchecked chips are clear lenses on the glass tray.
+                containerColor = Color.White.copy(alpha = 0.45f),
                 contentColor = MaterialTheme.colorScheme.onSurface,
                 checkedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                 checkedContentColor = MaterialTheme.colorScheme.onSurface,

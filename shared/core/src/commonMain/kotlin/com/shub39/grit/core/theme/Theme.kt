@@ -15,4 +15,5 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.shub39.grit.core.theme
-data class Theme(val font: Fonts = Fonts.FIGTREE)
+/** [reduceTransparency] makes liquid glass opaque and turns off backdrop blur. */
+data class Theme(val font: Fonts = Fonts.FIGTREE, val reduceTransparency: Boolean = false)

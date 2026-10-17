@@ -18,6 +18,7 @@ package com.shub39.grit.shared.ui.theme
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import com.shub39.grit.core.theme.Theme
 import com.shub39.grit.shared.ui.toFontRes
@@ -53,6 +54,11 @@ fun GritTheme(theme: Theme = Theme(), content: @Composable () -> Unit) {
         colorScheme = RhineBaseColors,
         motionScheme = MotionScheme.expressive(),
         typography = provideTypography(theme.font.toFontRes()),
-        content = content,
-    )
+    ) {
+        CompositionLocalProvider(
+            LocalGlassMode provides
+                if (theme.reduceTransparency) GlassMode.Reduced else GlassMode.Standard,
+            content = content,
+        )
+    }
 }

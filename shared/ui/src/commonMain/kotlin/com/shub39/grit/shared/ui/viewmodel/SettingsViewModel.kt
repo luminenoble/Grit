@@ -197,6 +197,8 @@ class SettingsViewModel(
 
                 is ChangeFontPref -> themeDatastore.setFontPref(action.font)
 
+                is ChangeReduceTransparency -> themeDatastore.setReduceTransparency(action.pref)
+
                 is ChangeBiometricLock -> settingsDatastore.setBiometricPref(action.pref)
 
                 is ChangeReorderTasks -> settingsDatastore.setTaskReorderPref(action.pref)
@@ -276,6 +278,13 @@ class SettingsViewModel(
                     .getFontPrefFlow()
                     .onEach { flow ->
                         _state.update { it.copy(theme = it.theme.copy(font = flow)) }
+                    }
+                    .launchIn(this)
+
+                themeDatastore
+                    .getReduceTransparencyFlow()
+                    .onEach { pref ->
+                        _state.update { it.copy(theme = it.theme.copy(reduceTransparency = pref)) }
                     }
                     .launchIn(this)
 

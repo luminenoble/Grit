@@ -69,6 +69,7 @@ import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.core.tasks.Task
 import com.shub39.grit.core.tasks.TaskRepo
+import com.shub39.grit.shared.ui.theme.GlassTokens
 import com.shub39.grit.shared.ui.theme.RhineBaseColors
 import com.shub39.grit.shared.ui.theme.readableTitleColor
 import com.shub39.grit.widgets.WidgetSize
@@ -218,7 +219,7 @@ private fun Content(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(ImageProvider(R.drawable.widget_matte_bg))
+                .background(ImageProvider(R.drawable.widget_glass_bg))
                 .then(
                     if (roundedCornerSupported) GlanceModifier.cornerRadius(24.dp)
                     else GlanceModifier
@@ -265,7 +266,7 @@ private fun Content(
                             TextStyle(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = taskFontSize,
-                                color = GlanceTheme.colors.onSurfaceVariant,
+                                color = ColorProvider(GlassTokens.SecondaryText),
                             ),
                     )
                     Spacer(GlanceModifier.height(taskItemSpacing * 2))
@@ -278,8 +279,8 @@ private fun Content(
                                     GlanceModifier.fillMaxWidth()
                                         .background(
                                             ImageProvider(
-                                                if (!status) R.drawable.widget_matte_item
-                                                else R.drawable.widget_matte_item_done
+                                                if (!status) R.drawable.widget_glass_item
+                                                else R.drawable.widget_glass_item_done
                                             )
                                         )
                                         .then(
@@ -326,7 +327,7 @@ private fun Content(
                                         style =
                                             TextStyle(
                                                 fontSize = textSize.captionFontSize,
-                                                color = GlanceTheme.colors.onSurfaceVariant,
+                                                color = ColorProvider(GlassTokens.SecondaryText),
                                             ),
                                     )
                                 }

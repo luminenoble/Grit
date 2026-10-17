@@ -36,6 +36,14 @@ class ThemeDatastoreStub : ThemeDatastore {
     override suspend fun setFontPref(font: Fonts) {
         this.font.value = font
     }
+
+    private val reduceTransparency = MutableStateFlow(false)
+
+    override fun getReduceTransparencyFlow() = reduceTransparency.asStateFlow()
+
+    override suspend fun setReduceTransparency(pref: Boolean) {
+        reduceTransparency.value = pref
+    }
 }
 
 @Single(binds = [SettingsDatastore::class])

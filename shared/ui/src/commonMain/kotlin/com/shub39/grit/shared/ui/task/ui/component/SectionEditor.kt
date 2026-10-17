@@ -16,6 +16,7 @@
  */
 package com.shub39.grit.shared.ui.task.ui.component
 
+import com.shub39.grit.shared.ui.components.glass.GlassAlertDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -171,7 +172,7 @@ fun SectionEditor(
             }
         }
     } else
-        AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { if (!saving) onDismiss() },
             title = { Text(if (section.id == 0L) "新建 Section" else "编辑 Section") },
             text = fields,
@@ -179,7 +180,7 @@ fun SectionEditor(
             dismissButton = dismissButtons,
         )
     if (confirmDelete)
-        AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { if (!saving) confirmDelete = false },
             title = { Text("删除 Section") },
             text = { Text("删除「${title.ifBlank { "unname" }}」？") },

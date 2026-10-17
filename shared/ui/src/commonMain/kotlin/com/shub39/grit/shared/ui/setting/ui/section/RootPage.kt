@@ -17,6 +17,7 @@
 package com.shub39.grit.shared.ui.setting.ui.section
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -31,7 +32,6 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -52,7 +52,10 @@ import com.shub39.grit.shared.ui.components.ExpressiveSwitch
 import com.shub39.grit.shared.ui.components.detachedItemShape
 import com.shub39.grit.shared.ui.components.endItemShape
 import com.shub39.grit.shared.ui.components.leadingItemShape
-import com.shub39.grit.shared.ui.components.listItemColors
+import com.shub39.grit.shared.ui.components.GlassGroup
+import com.shub39.grit.shared.ui.components.glass.GlassSegmented
+import com.shub39.grit.shared.ui.components.glassItem
+import com.shub39.grit.shared.ui.components.glassListItemColors
 import com.shub39.grit.shared.ui.setting.SettingsAction
 import com.shub39.grit.shared.ui.setting.SettingsState
 import com.shub39.grit.shared.ui.setting.ui.component.LocalePickerSheet
@@ -105,18 +108,18 @@ fun RootPage(
                 ListItem(
                     headlineContent = { Text("Rhine 显示") },
                     supportingContent = { Text("字号、密度、块体与手机预览") },
-                    colors = listItemColors(),
+                    colors = glassListItemColors(),
                     modifier =
-                        Modifier.clip(detachedItemShape()).clickable { onNavigateToRhineDisplay() },
+                        Modifier.glassItem(detachedItemShape()).clickable { onNavigateToRhineDisplay() },
                 )
             }
             // Grit Plus
             item {
                 ListItem(
                     headlineContent = { Text(text = stringResource(Res.string.grit_plus)) },
-                    colors = listItemColors(),
+                    colors = glassListItemColors(),
                     modifier =
-                        Modifier.clip(detachedItemShape()).clickable { onNavigateToPaywall() },
+                        Modifier.glassItem(detachedItemShape()).clickable { onNavigateToPaywall() },
                     trailingContent = {
                         Icon(
                             imageVector = vectorResource(Res.drawable.arrow_forward),
@@ -136,7 +139,7 @@ fun RootPage(
 
             item {
                 ListItem(
-                    colors = listItemColors(),
+                    colors = glassListItemColors(),
                     leadingContent = {
                         Icon(
                             imageVector = vectorResource(Res.drawable.github),
@@ -171,7 +174,7 @@ fun RootPage(
                     },
                     headlineContent = { Text(text = "检查更新") },
                     modifier =
-                        Modifier.clip(detachedItemShape()).clickable(
+                        Modifier.glassItem(detachedItemShape()).clickable(
                             enabled = state.updateCheck !is UpdateCheckState.Checking
                         ) {
                             onAction(SettingsAction.OnCheckForUpdates)
@@ -181,7 +184,7 @@ fun RootPage(
 
             // General settings
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                GlassGroup {
                     ListItem(
                         headlineContent = { Text(stringResource(Res.string.pause_notifications)) },
                         supportingContent = {
@@ -195,7 +198,7 @@ fun RootPage(
                                 },
                             )
                         },
-                        colors = listItemColors(),
+                        colors = glassListItemColors(),
                     )
                     ListItem(
                         headlineContent = { Text(stringResource(Res.string.reorder_tasks)) },
@@ -208,52 +211,46 @@ fun RootPage(
                                 },
                             )
                         },
-                        colors = listItemColors(),
+                        colors = glassListItemColors(),
                     )
                     ListItem(
                         headlineContent = { Text(stringResource(Res.string.widget_text_size)) },
                         supportingContent = {
                             Column {
                                 Text(stringResource(Res.string.widget_text_size_desc))
-                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    WidgetTextSize.entries.forEach { size ->
-                                        ToggleButton(
-                                            checked = state.widgetTextSize == size,
-                                            onCheckedChange = {
-                                                onAction(SettingsAction.ChangeWidgetTextSize(size))
-                                            },
-                                        ) {
-                                            Text(stringResource(size.toStringRes()))
-                                        }
+                                val labels =
+                                    WidgetTextSize.entries.associateWith {
+                                        stringResource(it.toStringRes())
                                     }
-                                }
+                                GlassSegmented(
+                                    options = WidgetTextSize.entries,
+                                    selected = state.widgetTextSize,
+                                    onSelect = { onAction(SettingsAction.ChangeWidgetTextSize(it)) },
+                                    label = { labels.getValue(it) },
+                                    modifier = Modifier.padding(top = 6.dp),
+                                )
                             }
                         },
-                        colors = listItemColors(),
+                        colors = glassListItemColors(),
                     )
                     ListItem(
                         headlineContent = { Text("启动页面") },
                         supportingContent = {
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Sections.entries.forEach { page ->
-                                    ToggleButton(
-                                        checked = state.startingPage == page,
-                                        onCheckedChange = {
-                                            onAction(SettingsAction.ChangeStartingPage(page))
-                                        },
-                                    ) {
-                                        Text(
-                                            when (page) {
-                                                Sections.Tasks -> "Task"
-                                                Sections.Settings -> "Setting"
-                                                Sections.Rhine -> "Rhine"
-                                            }
-                                        )
+                            GlassSegmented(
+                                options = Sections.entries,
+                                selected = state.startingPage,
+                                onSelect = { onAction(SettingsAction.ChangeStartingPage(it)) },
+                                label = { page ->
+                                    when (page) {
+                                        Sections.Tasks -> "Task"
+                                        Sections.Settings -> "Setting"
+                                        Sections.Rhine -> "Rhine"
                                     }
-                                }
-                            }
+                                },
+                                modifier = Modifier.padding(top = 6.dp),
+                            )
                         },
-                        colors = listItemColors(),
+                        colors = glassListItemColors(),
                     )
                     if (state.isBiometricLockAvailable)
                         ListItem(
@@ -266,7 +263,7 @@ fun RootPage(
                                     },
                                 )
                             },
-                            colors = listItemColors(),
+                            colors = glassListItemColors(),
                         )
                     ListItem(
                         headlineContent = { Text(stringResource(Res.string.use_24Hr)) },
@@ -277,14 +274,14 @@ fun RootPage(
                                 onCheckedChange = { onAction(SettingsAction.ChangeIs24Hr(it)) },
                             )
                         },
-                        colors = listItemColors(),
+                        colors = glassListItemColors(),
                     )
                 }
             }
 
             // look and feel customizations
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                GlassGroup {
                     ListItem(
                         modifier =
                             Modifier.clip(leadingItemShape()).clickable {
@@ -306,12 +303,12 @@ fun RootPage(
                                 contentDescription = "Navigate",
                             )
                         },
-                        colors = listItemColors(),
+                        colors = glassListItemColors(),
                     )
 
                     ListItem(
                         modifier = Modifier.clip(endItemShape()).clickable { onNavigateToBackup() },
-                        colors = listItemColors(),
+                        colors = glassListItemColors(),
                         headlineContent = { Text(text = stringResource(Res.string.backup)) },
                         supportingContent = { Text(text = stringResource(Res.string.backup_desc)) },
                         trailingContent = {
@@ -332,9 +329,9 @@ fun RootPage(
 
             // Changelogs
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                GlassGroup {
                     ListItem(
-                        colors = listItemColors(),
+                        colors = glassListItemColors(),
                         leadingContent = {
                             Icon(
                                 imageVector = vectorResource(Res.drawable.info),
@@ -356,7 +353,7 @@ fun RootPage(
                     )
 
                     ListItem(
-                        colors = listItemColors(),
+                        colors = glassListItemColors(),
                         leadingContent = {
                             Icon(
                                 imageVector = vectorResource(Res.drawable.check_list),

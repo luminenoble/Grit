@@ -18,6 +18,7 @@
     <string name="add_category">添加分类</string>
     <string name="add">添加内容</string>
     <string name="look_and_feel">外观与风格</string>
+    <string name="look_and_feel_desc">字体与玻璃透明度</string>
     <string name="select_seed">选择种子色</string>
     <string name="select_seed_desc">选择生成调色板的基准颜色</string>
     <string name="backup">数据备份</string>

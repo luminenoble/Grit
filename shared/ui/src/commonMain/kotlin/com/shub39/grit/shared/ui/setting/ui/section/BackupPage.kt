@@ -16,6 +16,7 @@
  */
 package com.shub39.grit.shared.ui.setting.ui.section
 
+import com.shub39.grit.shared.ui.components.glass.GlassAlertDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,7 +27,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalIconButton
@@ -69,7 +69,7 @@ fun BackupPage(
     LaunchedEffect(Unit) { onAction(SettingsAction.OnResetBackupState) }
 
     state.restorePreview?.let { preview ->
-        AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { onAction(SettingsAction.OnCancelRestore) },
             title = { Text("替换现有数据") },
             text = {

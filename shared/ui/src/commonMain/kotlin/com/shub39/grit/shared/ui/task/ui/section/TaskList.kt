@@ -81,6 +81,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -98,7 +101,12 @@ import com.shub39.grit.shared.ui.task.TaskAction
 import com.shub39.grit.shared.ui.task.TaskState
 import com.shub39.grit.shared.ui.task.ui.component.CategoryToggleButton
 import com.shub39.grit.shared.ui.task.ui.component.TaskCard
+import com.shub39.grit.shared.ui.theme.GlassShapes
+import com.shub39.grit.shared.ui.theme.GlassTier
 import com.shub39.grit.shared.ui.theme.GritRadius
+import com.shub39.grit.shared.ui.theme.glassSource
+import com.shub39.grit.shared.ui.theme.glassSurface
+import com.shub39.grit.shared.ui.theme.rememberGlassBackdrop
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
 import com.shub39.grit.shared.ui.theme.flexFontRounded
 import com.shub39.grit.shared.ui.theme.parseAccentColor
@@ -129,12 +137,15 @@ fun TaskList(
     var editState by remember { mutableStateOf(false) }
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    // The FAB floats over the list, so it samples the page as its glass backdrop.
+    val backdrop = rememberGlassBackdrop()
 
     Column(
         modifier =
             Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
+                .glassSource(backdrop)
     ) {
         TaskListTopBar(
             state = state,
@@ -174,8 +185,9 @@ fun TaskList(
 
     MediumFloatingActionButton(
         onClick = onAddTask,
-        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
         modifier =
             Modifier.align(Alignment.BottomEnd)
                 .padding(16.dp)
@@ -188,6 +200,12 @@ fun TaskList(
                     alignment = Alignment.BottomEnd,
                     scaleAnimationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
                     alphaAnimationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+                )
+                .glassSurface(
+                    GlassTier.Thin,
+                    FloatingActionButtonDefaults.mediumShape,
+                    backdrop,
+                    tint = MaterialTheme.colorScheme.primary,
                 ),
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -231,10 +249,18 @@ private fun TaskListTopBar(
     onDeleteClick: () -> Unit,
     isExpanded: Boolean,
 ) {
+    Box(Modifier.fillMaxWidth()) {
+    // Glass fades in as content scrolls under the bar; at rest the bar is clear.
+    Box(
+        Modifier.matchParentSize()
+            .graphicsLayer { alpha = scrollBehavior.state.overlappedFraction }
+            .glassSurface(GlassTier.Regular, RectangleShape, shadow = false)
+    )
     LargeFlexibleTopAppBar(
         colors =
             TopAppBarDefaults.topAppBarColors(
-                scrolledContainerColor = MaterialTheme.colorScheme.surface
+                containerColor = Color.Transparent,
+                scrolledContainerColor = Color.Transparent,
             ),
         scrollBehavior = scrollBehavior,
         title = { Text(text = stringResource(Res.string.tasks), fontFamily = flexFontEmphasis()) },
@@ -291,6 +317,7 @@ private fun TaskListTopBar(
             }
         },
     )
+    }
 }
 
 @Composable
@@ -303,10 +330,15 @@ private fun CategorySelector(
     isExpanded: Boolean,
     onReorderModeChange: (Boolean) -> Unit,
 ) {
+    // Category chips sit in a glass tray.
     LazyRow(
-        modifier = Modifier.fillMaxWidth(),
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp)
+                .glassSurface(GlassTier.Thin, GlassShapes.Capsule)
+                .clip(GlassShapes.Capsule),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
-        contentPadding = PaddingValues(vertical = 8.dp, horizontal = 16.dp),
+        contentPadding = PaddingValues(vertical = 6.dp, horizontal = 8.dp),
     ) {
         if (!isExpanded) {
             // Virtual "Today" category: tasks flagged isToday across all categories.

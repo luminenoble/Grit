@@ -43,7 +43,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
@@ -60,7 +59,8 @@ import com.shub39.grit.shared.ui.navigation.fadeTransitionMetadata
 import com.shub39.grit.shared.ui.rhine.RhineScreen
 import com.shub39.grit.shared.ui.setting.ui.SettingsGraph
 import com.shub39.grit.shared.ui.task.ui.TasksPage
-import com.shub39.grit.shared.ui.theme.matteSurface
+import com.shub39.grit.shared.ui.theme.GlassTier
+import com.shub39.grit.shared.ui.theme.glassSurface
 import com.shub39.grit.shared.ui.viewmodel.SettingsViewModel
 import com.shub39.grit.shared.ui.viewmodel.TasksViewModel
 import org.jetbrains.compose.resources.painterResource
@@ -215,11 +215,7 @@ private fun AppNavRail(
         modifier =
             modifier
                 .padding(start = 12.dp, top = 12.dp, bottom = 12.dp)
-                .shadow(elevation = 6.dp, shape = railShape, clip = false)
-                .matteSurface(
-                    shape = railShape,
-                    fill = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 1f),
-                ),
+                .glassSurface(GlassTier.Thin, railShape),
         containerColor = Color.Transparent,
     ) {
         AppSections.mainRoutes.forEach { route ->
@@ -240,7 +236,10 @@ private fun AppNavRail(
     }
 }
 
-/** Floating liquid glass pill, morphing the selected item open like the iOS 26 tab bar. */
+/**
+ * Floating liquid glass pill, morphing the selected item open like the iOS 26 tab bar. Content does
+ * not scroll beneath it (Scaffold pads it away), so it has no backdrop to blur.
+ */
 @Composable
 private fun AppNavBar(
     currentRoute: NavKey,
@@ -256,12 +255,7 @@ private fun AppNavBar(
     ) {
         Row(
             modifier =
-                Modifier.shadow(elevation = 8.dp, shape = pill, clip = false)
-                    .matteSurface(
-                        shape = pill,
-                        fill = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 1f),
-                    )
-                    .padding(6.dp),
+                Modifier.glassSurface(GlassTier.Thin, pill).padding(6.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -271,7 +265,8 @@ private fun AppNavBar(
                 val itemBackground by
                     animateColorAsState(
                         targetValue =
-                            if (selected) MaterialTheme.colorScheme.primaryContainer
+                            // The selected item is a lens set into the glass pill.
+                            if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
                             else Color.Transparent,
                         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
                         label = "navItemBackground",

@@ -85,6 +85,13 @@ class MainViewModel(
                     }
                     .launchIn(this)
 
+                themeDatastore
+                    .getReduceTransparencyFlow()
+                    .onEach { pref ->
+                        _state.update { it.copy(theme = it.theme.copy(reduceTransparency = pref)) }
+                    }
+                    .launchIn(this)
+
                 settingsDatastore
                     .getStartingSectionPref()
                     .onEach { pref -> _state.update { it.copy(startingSection = pref) } }

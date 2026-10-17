@@ -16,6 +16,7 @@
  */
 package com.shub39.grit.shared.ui.rhine
 
+import com.shub39.grit.shared.ui.components.glass.GlassAlertDialog
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,7 +39,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -857,7 +857,7 @@ fun RhineScreen(
         }
         if (deleting)
             edit?.let { value ->
-                AlertDialog(
+                GlassAlertDialog(
                     onDismissRequest = { if (!saving) deleting = false },
                     title = { Text("确认删除") },
                     text = {

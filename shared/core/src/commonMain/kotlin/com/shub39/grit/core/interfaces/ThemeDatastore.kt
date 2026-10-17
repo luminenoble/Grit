@@ -23,4 +23,8 @@ interface ThemeDatastore {
     fun getFontPrefFlow(): Flow<Fonts>
 
     suspend fun setFontPref(font: Fonts)
+
+    fun getReduceTransparencyFlow(): Flow<Boolean>
+
+    suspend fun setReduceTransparency(pref: Boolean)
 }

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Liquid glass panel for the tasks widget. RemoteViews cannot blur the wallpaper, so the
+     material is a near-opaque warm tint (readable on any wallpaper), a top sheen, an inner light
+     rim and a faint outer hairline. See docs/视觉优化/01-全局液态玻璃设计系统.md section 6. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <solid android:color="#EBF4F0EA" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <gradient android:angle="270" android:centerY="0.4" android:startColor="#73FFFFFF"
+                android:centerColor="#00FFFFFF" android:endColor="#00FFFFFF" />
+        </shape>
+    </item>
+    <item android:bottom="1dp" android:left="1dp" android:right="1dp" android:top="1dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="23dp" />
+            <stroke android:width="1dp" android:color="#8CFFFFFF" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="24dp" />
+            <stroke android:width="1dp" android:color="#1F5B554B" />
+        </shape>
+    </item>
+</layer-list>

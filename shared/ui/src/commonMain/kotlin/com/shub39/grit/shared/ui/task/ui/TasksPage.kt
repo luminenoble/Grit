@@ -16,6 +16,7 @@
  */
 package com.shub39.grit.shared.ui.task.ui
 
+import com.shub39.grit.shared.ui.components.glass.GlassAlertDialog
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -237,7 +238,7 @@ fun TasksPage(state: TaskState, onAction: (TaskAction) -> Unit) {
     )
 
     if (state.error != null) {
-        androidx.compose.material3.AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { onAction(TaskAction.ClearError) },
             title = { androidx.compose.material3.Text("操作失败") },
             text = { androidx.compose.material3.Text(state.error) },

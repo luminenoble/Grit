@@ -41,7 +41,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.shub39.grit.shared.ui.theme.matteSurface
+import com.shub39.grit.shared.ui.theme.GlassTier
+import com.shub39.grit.shared.ui.theme.glassSurface
 
 @Composable
 fun GritBottomSheet(
@@ -70,12 +71,9 @@ fun GritBottomSheet(
         Column(
             modifier =
                 Modifier.fillMaxWidth()
-                    // Opaque fill: input surfaces need full readability; the sheen and
-                    // specular edge alone carry the glass look.
-                    .matteSurface(
-                        shape = sheetShape,
-                        fill = MaterialTheme.colorScheme.surfaceContainerLow,
-                    )
+                    // Thick glass: near-opaque so input stays readable; sheen and rim carry
+                    // the material. Sheets are separate windows, so there is no backdrop.
+                    .glassSurface(GlassTier.Thick, sheetShape)
                     .windowInsetsPadding(BottomSheetDefaults.windowInsets),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {

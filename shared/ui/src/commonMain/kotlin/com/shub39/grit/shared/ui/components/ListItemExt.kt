@@ -23,6 +23,18 @@ import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
+import com.shub39.grit.shared.ui.theme.GlassShapes
+import com.shub39.grit.shared.ui.theme.GlassTier
+import com.shub39.grit.shared.ui.theme.GlassTokens
+import com.shub39.grit.shared.ui.theme.glassSurface
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 
@@ -32,6 +44,55 @@ private const val END_CORNER_RADIUS = 16
 @Composable
 fun listItemColors(): ListItemColors {
     return ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
+}
+
+/** Rows laid on glass ([GlassGroup], [glassItem]) stay clear so the material shows through. */
+@Composable
+fun glassListItemColors(): ListItemColors =
+    ListItemDefaults.colors(containerColor = Color.Transparent)
+
+/** A standalone row on content-tier glass; clipped so its ripple follows [shape]. */
+@Composable
+fun Modifier.glassItem(shape: Shape): Modifier =
+    glassSurface(GlassTier.Content, shape, shadow = false).clip(shape)
+
+/**
+ * Settings group: one content-tier glass panel with hairlines between its rows, replacing a column
+ * of separately coloured rows.
+ */
+@Composable
+fun GlassGroup(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    val dividers = remember { mutableListOf<Float>() }
+    val inset = with(LocalDensity.current) { 16.dp.toPx() }
+    Layout(
+        content = content,
+        modifier =
+            modifier
+                .glassSurface(GlassTier.Content, GlassShapes.Card)
+                .clip(GlassShapes.Card)
+                .drawWithContent {
+                    drawContent()
+                    for (y in dividers)
+                        drawLine(
+                            GlassTokens.Hairline.copy(alpha = 0.18f),
+                            Offset(inset, y),
+                            Offset(size.width - inset, y),
+                            strokeWidth = 0.5.dp.toPx(),
+                        )
+                },
+    ) { measurables, constraints ->
+        val placeables = measurables.map { it.measure(constraints.copy(minHeight = 0)) }
+        val width = placeables.maxOfOrNull { it.width } ?: constraints.minWidth
+        layout(width, placeables.sumOf { it.height }) {
+            dividers.clear()
+            var y = 0
+            placeables.forEachIndexed { i, placeable ->
+                if (i > 0) dividers += y.toFloat()
+                placeable.place(0, y)
+                y += placeable.height
+            }
+        }
+    }
 }
 
 fun leadingItemShape(

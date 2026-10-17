@@ -44,6 +44,8 @@ sealed interface SettingsAction {
 
     data class ChangeFontPref(val font: Fonts) : SettingsAction
 
+    data class ChangeReduceTransparency(val pref: Boolean) : SettingsAction
+
     data class ChangeBiometricLock(val pref: Boolean) : SettingsAction
 
     data class ChangeWidgetTextSize(val size: WidgetTextSize) : SettingsAction

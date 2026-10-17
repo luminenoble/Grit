@@ -22,7 +22,7 @@
     <string name="look_and_feel">Look and Feel</string>
     <string name="select_seed">Select Seed color</string>
     <string name="select_seed_desc">Select color to generate palette from</string>
-    <string name="look_and_feel_desc">Choose the font used in the app</string>
+    <string name="look_and_feel_desc">Font and glass transparency</string>
     <string name="backup">Backup</string>
     <string name="backup_desc">Export or import your categories, tasks and sections</string>
     <string name="export">Export data</string>

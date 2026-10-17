@@ -16,6 +16,9 @@
  */
 package com.shub39.grit.shared.ui.task.ui.component
 
+import androidx.compose.ui.graphics.Color
+import com.shub39.grit.shared.ui.theme.GlassTier
+import com.shub39.grit.shared.ui.theme.glassSurface
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.basicMarquee
@@ -47,11 +50,12 @@ fun TaskCard(
     onSectionsChange: ((List<Section>) -> Unit)? = null,
 ) {
     var expanded by remember(task.id) { mutableStateOf(false) }
+    // Content-tier glass: opaque for reading, with the glass rim and a warm layered shadow.
     Card(
-        modifier = modifier,
+        modifier = modifier.glassSurface(GlassTier.Content, shape),
         shape = shape,
-        elevation = CardDefaults.cardElevation(2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(0.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         border =
             if (task.isCompleted) BorderStroke(1.5.dp, MaterialTheme.colorScheme.onSurface)
             else null,

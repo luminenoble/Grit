@@ -17,6 +17,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.settings.*
+import com.shub39.grit.shared.ui.components.ExpressiveSwitch
+import com.shub39.grit.shared.ui.components.glass.GlassButton
+import com.shub39.grit.shared.ui.components.glass.GlassButtonStyle
+import com.shub39.grit.shared.ui.components.glass.GlassSegmented
+import com.shub39.grit.shared.ui.components.glass.GlassSlider
+import com.shub39.grit.shared.ui.components.glass.GlassToolbar
 import com.shub39.grit.shared.ui.rhine.*
 
 /** The draft affects only this preview; cancel discards it, save writes one local preference. */
@@ -53,16 +59,21 @@ fun RhineDisplayPage(
             .windowInsetsPadding(com.shub39.grit.shared.ui.rhine.rhineSafeDrawingInsets())
             .imePadding()
     ) {
-        Row(
-            Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(onClick = onBack, enabled = !saving) { Text("取消") }
-            Text("Rhine 显示", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-            TextButton(onClick = { draft = RhineDisplayConfig() }, enabled = !saving) {
+        GlassToolbar(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)) {
+            GlassButton(onClick = onBack, enabled = !saving) { Text("取消") }
+            Text(
+                "Rhine 显示",
+                Modifier.weight(1f).padding(horizontal = 8.dp),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            GlassButton(onClick = { draft = RhineDisplayConfig() }, enabled = !saving) {
                 Text("恢复默认")
             }
-            Button(onClick = { onSave(draft) }, enabled = !saving) {
+            GlassButton(
+                onClick = { onSave(draft) },
+                enabled = !saving,
+                style = GlassButtonStyle.Prominent,
+            ) {
                 Text(if (saving) "保存中…" else "保存")
             }
         }
@@ -133,40 +144,39 @@ fun RhineDisplayPage(
                         .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    Row {
-                        listOf("密度/字号", "块体", "标记/效果").forEachIndexed { i, name ->
-                            TextButton(onClick = { tab = i }) { Text(name) }
-                        }
-                    }
+                    val tabs = listOf("密度/字号", "块体", "标记/效果")
+                    GlassSegmented(
+                        options = tabs.indices.toList(),
+                        selected = tab,
+                        onSelect = { tab = it },
+                        label = { tabs[it] },
+                    )
                     when (tab) {
                         0 -> {
                             Text("密度是视口目标，不限制真实数据数量。")
-                            Row {
-                                listOf(
+                            GlassSegmented(
+                                options =
+                                    listOf(
                                         RhineDensity.Loose,
                                         RhineDensity.Standard,
                                         RhineDensity.Compact,
-                                    )
-                                    .forEach { value ->
-                                        FilterChip(
-                                            selected = draft.density == value,
-                                            onClick = { draft = draft.preset(value) },
-                                            label = {
-                                                Text(
-                                                    when (value) {
-                                                        RhineDensity.Loose -> "宽松"
-                                                        RhineDensity.Standard -> "标准"
-                                                        else -> "紧凑"
-                                                    }
-                                                )
-                                            },
-                                        )
+                                        RhineDensity.Custom,
+                                    ),
+                                selected = draft.density,
+                                onSelect = { value ->
+                                    draft =
+                                        if (value == RhineDensity.Custom)
+                                            draft.copy(density = RhineDensity.Custom)
+                                        else draft.preset(value)
+                                },
+                                label = { value ->
+                                    when (value) {
+                                        RhineDensity.Loose -> "宽松"
+                                        RhineDensity.Standard -> "标准"
+                                        RhineDensity.Compact -> "紧凑"
+                                        RhineDensity.Custom -> "自定义尺寸"
                                     }
-                            }
-                            FilterChip(
-                                selected = draft.density == RhineDensity.Custom,
-                                onClick = { draft = draft.copy(density = RhineDensity.Custom) },
-                                label = { Text("自定义尺寸") },
+                                },
                             )
                             if (draft.density != RhineDensity.Custom) {
                                 ConfigSlider("目标沿列块数", draft.targetRows, 6f..24f) {
@@ -234,23 +244,18 @@ fun RhineDisplayPage(
                                 draft = draft.copy(reduceMotion = it)
                             }
                             Text("阴影质量")
-                            Row {
-                                RhineShadow.entries.forEach { value ->
-                                    FilterChip(
-                                        selected = draft.shadow == value,
-                                        onClick = { draft = draft.copy(shadow = value) },
-                                        label = {
-                                            Text(
-                                                when (value) {
-                                                    RhineShadow.Off -> "关闭"
-                                                    RhineShadow.Low -> "低"
-                                                    RhineShadow.Standard -> "标准"
-                                                }
-                                            )
-                                        },
-                                    )
-                                }
-                            }
+                            GlassSegmented(
+                                options = RhineShadow.entries,
+                                selected = draft.shadow,
+                                onSelect = { draft = draft.copy(shadow = it) },
+                                label = { value ->
+                                    when (value) {
+                                        RhineShadow.Off -> "关闭"
+                                        RhineShadow.Low -> "低"
+                                        RhineShadow.Standard -> "标准"
+                                    }
+                                },
+                            )
                             Text(
                                 "0 号始终保留名称与编辑标记。减少动画时保留焦点、拾起和目标反馈。默认长标题居中省略，滚动只作用于聚焦块。",
                                 style = MaterialTheme.typography.labelSmall,
@@ -285,13 +290,13 @@ private fun ConfigSlider(
     onChange: (Float) -> Unit,
 ) {
     Text("$name：${(value * 10).toInt() / 10f}", style = MaterialTheme.typography.labelMedium)
-    Slider(value = value, onValueChange = onChange, valueRange = range)
+    GlassSlider(value = value, onValueChange = onChange, valueRange = range)
 }
 
 @Composable
 private fun ConfigSwitch(name: String, value: Boolean, onChange: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(name, Modifier.weight(1f))
-        Switch(checked = value, onCheckedChange = onChange)
+        ExpressiveSwitch(checked = value, onCheckedChange = onChange)
     }
 }

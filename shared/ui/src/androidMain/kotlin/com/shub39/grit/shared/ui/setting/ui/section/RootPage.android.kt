@@ -23,10 +23,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalLocale
 import com.shub39.grit.shared.ui.components.detachedItemShape
-import com.shub39.grit.shared.ui.components.listItemColors
+import com.shub39.grit.shared.ui.components.glassItem
+import com.shub39.grit.shared.ui.components.glassListItemColors
 import grit.shared.ui.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -35,7 +35,7 @@ actual fun LazyListScope.languagePicker(onClick: () -> Unit) {
     if (Build.VERSION.SDK_INT >= 33) {
         item {
             ListItem(
-                colors = listItemColors(),
+                colors = glassListItemColors(),
                 leadingContent = {
                     Icon(
                         painter = painterResource(Res.drawable.language),
@@ -52,7 +52,7 @@ actual fun LazyListScope.languagePicker(onClick: () -> Unit) {
                         contentDescription = "Navigate",
                     )
                 },
-                modifier = Modifier.clip(detachedItemShape()).clickable { onClick() },
+                modifier = Modifier.glassItem(detachedItemShape()).clickable { onClick() },
             )
         }
     }

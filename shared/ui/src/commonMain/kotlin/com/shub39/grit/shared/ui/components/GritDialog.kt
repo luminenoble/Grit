@@ -30,7 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.shub39.grit.shared.ui.theme.matteSurface
+import com.shub39.grit.shared.ui.theme.GlassTier
+import com.shub39.grit.shared.ui.theme.glassSurface
 
 @Composable
 fun GritDialog(
@@ -48,10 +49,7 @@ fun GritDialog(
                     contentColor = MaterialTheme.colorScheme.onSurface,
                 ),
             modifier =
-                Modifier.matteSurface(
-                    shape = MaterialTheme.shapes.extraLarge,
-                    fill = MaterialTheme.colorScheme.surfaceContainerHigh,
-                ),
+                Modifier.glassSurface(GlassTier.Thick, MaterialTheme.shapes.extraLarge),
         ) {
             Column(
                 modifier = Modifier.padding(padding),

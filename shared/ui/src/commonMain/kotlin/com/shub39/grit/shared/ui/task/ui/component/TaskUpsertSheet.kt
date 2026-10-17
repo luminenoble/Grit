@@ -16,6 +16,7 @@
  */
 package com.shub39.grit.shared.ui.task.ui.component
 
+import com.shub39.grit.shared.ui.components.glass.GlassAlertDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
@@ -629,7 +630,7 @@ fun TaskUpsertSheetContent(
             onDismiss = { showColorPicker = false },
         )
     if (showUnsaved)
-        androidx.compose.material3.AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { showUnsaved = false },
             title = { Text("未保存的修改") },
             text = { Text("保存修改，或放弃后返回？") },
@@ -659,7 +660,7 @@ fun TaskUpsertSheetContent(
             },
         )
     if (showTaskDelete)
-        androidx.compose.material3.AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { showTaskDelete = false },
             title = { Text("删除任务") },
             text = { Text("删除「${task.title}」及其 ${task.sections.size} 条 Section？") },
@@ -678,7 +679,7 @@ fun TaskUpsertSheetContent(
         )
     movingSection?.let { item ->
         val target = targetPosition.toIntOrNull()
-        androidx.compose.material3.AlertDialog(
+        GlassAlertDialog(
             onDismissRequest = { movingSection = null },
             title = { Text("移动到第几项") },
             text = {
