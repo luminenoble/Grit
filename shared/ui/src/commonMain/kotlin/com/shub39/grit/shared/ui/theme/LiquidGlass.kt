@@ -105,6 +105,12 @@ object GlassTokens {
     val SecondaryText = Color(0xFF57534B)
     /** Destructive tinted glass. */
     val Danger = Color(0xFF8C3B32)
+    /** A selected lens raised off its tray: brighter than the tray, carried by its shadow. */
+    val Raised = Color(0xFFFFFDF9)
+    /** Finished content settles into a deeper beige, as in the widget's done rows. */
+    val Settled = Color(0xFFE3DCCE)
+    /** Done marks: a muted olive that reads on beige without shouting. */
+    val Done = Color(0xFF66704F)
 
     fun spec(tier: GlassTier): GlassSpec =
         when (tier) {

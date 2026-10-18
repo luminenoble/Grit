@@ -23,7 +23,10 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.shub39.grit.core.settings.RhineDisplayConfig
 import com.shub39.grit.core.settings.RhineImageFit
+import androidx.compose.runtime.saveable.SaverScope
+import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.core.tasks.IllustrationChange
+import com.shub39.grit.shared.ui.components.jsonSaver
 import com.shub39.grit.shared.ui.rhine.*
 import org.junit.Assert.*
 import org.junit.Test
@@ -113,6 +116,28 @@ class RhineIllustrationTest {
         val fresh = IllustrationDraft(null)
         fresh.remove()
         assertEquals(IllustrationChange.Keep, fresh.change)
+    }
+
+    @Test
+    fun editorStateSurvivesActivityRecreation() {
+        val scope = SaverScope { true }
+        val draft = IllustrationDraft("content://a")
+        draft.pick("content://b")
+        val saved = with(IllustrationDraft.Saver) { scope.save(draft) }!!
+        val back = IllustrationDraft.Saver.restore(saved)!!
+        assertEquals("content://a", back.initial)
+        assertEquals("content://b", back.current)
+        assertEquals(IllustrationChange.Set("content://b"), back.change)
+        // No draft: nothing is saved, so the screen starts without one.
+        assertNull(with(IllustrationDraft.Saver) { scope.save(null) })
+
+        val restore = RhineEditorRestore(session = 7, u = 0, v = 2, sections = true, id = 42)
+        val record = with(RhineEditorRestore.Saver) { scope.save(restore) }!!
+        assertEquals(restore, RhineEditorRestore.Saver.restore(record))
+
+        val category = Category(id = 3, name = "Draft name", description = "d")
+        val json = jsonSaver(Category.serializer())
+        assertEquals(category, json.restore(with(json) { scope.save(category) }!!))
     }
 
     @Test

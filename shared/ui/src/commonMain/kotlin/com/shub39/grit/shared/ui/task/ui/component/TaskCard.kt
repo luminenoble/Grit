@@ -18,9 +18,10 @@ package com.shub39.grit.shared.ui.task.ui.component
 
 import androidx.compose.ui.graphics.Color
 import com.shub39.grit.shared.ui.theme.GlassTier
+import com.shub39.grit.shared.ui.theme.GlassTokens
+import androidx.compose.ui.text.style.TextDecoration
 import com.shub39.grit.shared.ui.theme.glassSurface
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -50,15 +51,20 @@ fun TaskCard(
     onSectionsChange: ((List<Section>) -> Unit)? = null,
 ) {
     var expanded by remember(task.id) { mutableStateOf(false) }
-    // Content-tier glass: opaque for reading, with the glass rim and a warm layered shadow.
+    val done = task.isCompleted
+    // Content-tier glass: opaque for reading, with the glass rim and a warm layered shadow. A
+    // finished task settles into the deeper beige of the widget's done rows and loses its shadow.
     Card(
-        modifier = modifier.glassSurface(GlassTier.Content, shape),
+        modifier =
+            modifier.glassSurface(
+                GlassTier.Content,
+                shape,
+                tint = if (done) GlassTokens.Settled else null,
+                shadow = !done,
+            ),
         shape = shape,
         elevation = CardDefaults.cardElevation(0.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-        border =
-            if (task.isCompleted) BorderStroke(1.5.dp, MaterialTheme.colorScheme.onSurface)
-            else null,
     ) {
         Row(
             Modifier.fillMaxWidth().padding(12.dp),
@@ -72,12 +78,23 @@ fun TaskCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         task.title,
-                        color = readableTitleColor(task.titleColor),
-                        style = MaterialTheme.typography.titleMedium,
+                        color =
+                            readableTitleColor(task.titleColor).let {
+                                if (done) it.copy(alpha = it.alpha * 0.62f) else it
+                            },
+                        style =
+                            MaterialTheme.typography.titleMedium.copy(
+                                textDecoration = if (done) TextDecoration.LineThrough else null
+                            ),
                         modifier = Modifier.weight(1f),
                     )
-                    if (task.isCompleted)
-                        Icon(vectorResource(Res.drawable.check_circle), "已完成", Modifier.size(18.dp))
+                    if (done)
+                        Icon(
+                            vectorResource(Res.drawable.check_circle),
+                            "已完成",
+                            Modifier.size(20.dp),
+                            tint = GlassTokens.Done,
+                        )
                 }
                 if (task.description.isNotBlank())
                     Text(task.description, style = MaterialTheme.typography.bodySmall, maxLines = 1)

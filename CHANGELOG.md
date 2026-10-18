@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.1.1
+
+- Selected categories show as a raised bright chip with bold text instead of a black outline; finished tasks settle into a darker card with a struck-through title and an olive check mark
+- Rhine: picking an image no longer closes the editor when the gallery opens full screen or in portrait; the editor stays open so you can still save or cancel
+- Rhine: fixed a draft name from a previous editor appearing on another category or task after the screen was recreated
+
 ## 6.1.0
 
 - Restyled the Task page, Settings, dialogs, sheets and the task widget with a warm liquid glass material, with a Reduce transparency switch in Look and Feel

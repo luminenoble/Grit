@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import com.shub39.grit.shared.ui.components.glass.GlassButton
@@ -44,6 +46,45 @@ sealed interface RhineEdit {
     data class TaskDraft(val value: Task, val categories: List<Category>) : RhineEdit
 
     data class SectionDraft(val value: Section) : RhineEdit
+}
+
+/** Database id of the edited object; 0 for a new one. */
+fun RhineEdit.storedId(): Long =
+    when (this) {
+        is RhineEdit.CategoryDraft -> value.id
+        is RhineEdit.TaskDraft -> value.id
+        is RhineEdit.SectionDraft -> value.id
+    }
+
+/**
+ * An open Category/Task editor, saved so it can reopen after the activity is recreated: editor
+ * [session], the edited slot ([u], [v]) on the Section layer or not, and the object's [id] (0 when
+ * new), checked again on reopening so a changed slot never opens a different object.
+ */
+data class RhineEditorRestore(
+    val session: Long,
+    val u: Int,
+    val v: Int,
+    val sections: Boolean,
+    val id: Long,
+) {
+    companion object {
+        val Saver: Saver<RhineEditorRestore?, Any> =
+            listSaver<RhineEditorRestore?, Any>(
+                save = { it?.let { r -> listOf(r.session, r.u, r.v, r.sections, r.id) } ?: emptyList() },
+                restore = { saved ->
+                    if (saved.size < 5) null
+                    else
+                        RhineEditorRestore(
+                            saved[0] as Long,
+                            saved[1] as Int,
+                            saved[2] as Int,
+                            saved[3] as Boolean,
+                            saved[4] as Long,
+                        )
+                },
+            )
+    }
 }
 
 /**

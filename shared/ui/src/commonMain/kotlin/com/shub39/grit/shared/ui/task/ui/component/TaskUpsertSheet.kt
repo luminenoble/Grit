@@ -61,6 +61,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.shub39.grit.shared.ui.components.jsonSaver
+import kotlinx.serialization.builtins.ListSerializer
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -102,6 +106,24 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 
 /** A section being edited, with a stable [uid] independent of its list position. */
 private data class SectionItem(val uid: Int, val section: Section)
+
+private val SectionListSaver = jsonSaver(ListSerializer(Section.serializer()))
+
+private val SectionItemsSaver =
+    listSaver<List<SectionItem>, Any>(
+        save = { items ->
+            listOf(
+                items.map { it.uid }.toIntArray(),
+                with(SectionListSaver) { save(items.map { it.section }) }!!,
+            )
+        },
+        restore = { saved ->
+            val uids = saved[0] as IntArray
+            SectionListSaver.restore(saved[1] as String)!!.mapIndexed { i, section ->
+                SectionItem(uids[i], section)
+            }
+        },
+    )
 
 @Composable
 expect fun TaskUpsertSheet(
@@ -155,7 +177,13 @@ fun TaskUpsertSheetContent(
     extraDirty: Boolean = false,
 ) {
     val originalTask = remember(task.id) { task }
-    var newTask by remember(task.id) { mutableStateOf(task) }
+    // The draft is saved with the screen, so a recreated activity (e.g. a gallery app opened in
+    // another orientation) keeps it. Hosts that reuse this sheet for different objects must key it
+    // by the editing session.
+    var newTask by
+        rememberSaveable(task.id, stateSaver = jsonSaver(Task.serializer())) {
+            mutableStateOf(task)
+        }
 
     val textFieldState =
         rememberTextFieldState(
@@ -164,10 +192,11 @@ fun TaskUpsertSheetContent(
         )
 
     // Sections get a stable local uid so drag reorder and deletion animate correctly.
-    var sectionUidCounter by remember { mutableStateOf(task.sections.size) }
-    var sectionItems by remember {
-        mutableStateOf(task.sections.mapIndexed { index, step -> SectionItem(index, step) })
-    }
+    var sectionUidCounter by rememberSaveable { mutableStateOf(task.sections.size) }
+    var sectionItems by
+        rememberSaveable(stateSaver = SectionItemsSaver) {
+            mutableStateOf(task.sections.mapIndexed { index, step -> SectionItem(index, step) })
+        }
     // Sections are edited in a dedicated dialog (large enough for the full text) instead of
     // inline, so the row only needs to show the name and offer edit/reorder actions.
     var editingSection by remember { mutableStateOf<SectionItem?>(null) }

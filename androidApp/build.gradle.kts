@@ -26,8 +26,8 @@ plugins {
 }
 
 val appName = "Grhinet"
-val appVersionCode = 6100
-val appVersionName = "6.1.0"
+val appVersionCode = 6110
+val appVersionName = "6.1.1"
 
 android {
     namespace = "com.shub39.grit"

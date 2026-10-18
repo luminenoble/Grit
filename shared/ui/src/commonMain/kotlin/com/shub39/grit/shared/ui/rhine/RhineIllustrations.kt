@@ -52,7 +52,13 @@ import com.shub39.grit.shared.ui.components.glass.GlassButtonStyle
 import com.shub39.grit.shared.ui.theme.GlassShapes
 import com.shub39.grit.shared.ui.theme.GlassTokens
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.shub39.grit.core.tasks.IllustrationOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -71,18 +77,35 @@ val LocalRhineIllustrationRepo = staticCompositionLocalOf<RhineIllustrationRepo?
 @Composable
 fun rememberIllustrationDraft(owner: IllustrationOwner, id: Long): IllustrationDraft? {
     val repo = LocalRhineIllustrationRepo.current ?: return null
-    val draft by
-        produceState<IllustrationDraft?>(null, owner, id, repo) {
-            value = IllustrationDraft(if (id == 0L) null else repo.illustration(owner, id))
+    // Saved with the screen: a gallery app may recreate the activity before the pick returns.
+    var draft by
+        rememberSaveable(owner, id, stateSaver = IllustrationDraft.Saver) {
+            mutableStateOf<IllustrationDraft?>(null)
         }
-    DisposableEffect(draft) {
-        val current = draft
+    LaunchedEffect(owner, id, repo) {
+        if (draft == null)
+            draft = IllustrationDraft(if (id == 0L) null else repo.illustration(owner, id))
+    }
+    ReleaseOnClose(draft, repo)
+    return draft
+}
+
+/**
+ * Releases [draft]'s picked-but-unsaved images when its editor closes. Not when the whole screen is
+ * destroyed: the draft is saved and comes back with the recreated screen, and the next app start
+ * releases whatever is left over.
+ */
+@Composable
+fun ReleaseOnClose(draft: IllustrationDraft?, repo: RhineIllustrationRepo?) {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(draft, repo) {
         onDispose {
+            if (draft == null || repo == null) return@onDispose
+            if (lifecycle.currentState == Lifecycle.State.DESTROYED) return@onDispose
             // The screen's scope is gone by now; releasing grants is quick and must still run.
-            if (current != null) CoroutineScope(Dispatchers.Default).launch { current.discard(repo) }
+            CoroutineScope(Dispatchers.Default).launch { draft.discard(repo) }
         }
     }
-    return draft
 }
 
 /** Decodes a picked image to at most [maxEdgePx] on its long edge; null when unreadable. */
@@ -224,11 +247,26 @@ fun illustrationRects(imageSize: IntSize, area: Rect, fit: RhineImageFit): Pair<
  * survives a restart once saved); [discard] releases the ones that end up unused.
  */
 @Stable
-class IllustrationDraft(val initial: String?) {
-    var current by mutableStateOf(initial)
+class IllustrationDraft(
+    val initial: String?,
+    current: String? = initial,
+    picked: List<String> = emptyList(),
+) {
+    var current by mutableStateOf(current)
         private set
 
-    private val picked = mutableListOf<String>()
+    private val picked = picked.toMutableList()
+
+    companion object {
+        val Saver: Saver<IllustrationDraft?, Any> =
+            listSaver<IllustrationDraft?, String?>(
+                save = { draft -> draft?.let { listOf(it.initial, it.current) + it.picked } ?: emptyList() },
+                restore = { saved ->
+                    if (saved.size < 2) null
+                    else IllustrationDraft(saved[0], saved[1], saved.drop(2).filterNotNull())
+                },
+            )
+    }
 
     val change: IllustrationChange
         get() =

@@ -1,5 +1,13 @@
 [
   {
+    "version": "6.1.1",
+    "changes": [
+      "Selected categories show as a raised bright chip with bold text instead of a black outline; finished tasks settle into a darker card with a struck-through title and an olive check mark",
+      "Rhine: picking an image no longer closes the editor when the gallery opens full screen or in portrait; the editor stays open so you can still save or cancel",
+      "Rhine: fixed a draft name from a previous editor appearing on another category or task after the screen was recreated"
+    ]
+  },
+  {
     "version": "6.1.0",
     "changes": [
       "Restyled the Task page, Settings, dialogs, sheets and the task widget with a warm liquid glass material, with a Reduce transparency switch in Look and Feel",
@@ -74,14 +82,6 @@
     "version": "5.9.25",
     "changes": [
       "Fix Hebrew Translations not applied by Language Picker"
-    ]
-  },
-  {
-    "version": "5.9.24",
-    "changes": [
-      "Updated Translations",
-      "Added ability to choose export locations for backups",
-      "Miscellaneous UI improvements"
     ]
   }
 ]

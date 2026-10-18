@@ -52,6 +52,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.shub39.grit.shared.ui.components.jsonSaver
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -96,7 +98,11 @@ fun CategoryUpsertSheet(
     /** Extra field shown first in the form (e.g. the illustration picker). */
     extra: (@Composable () -> Unit)? = null,
 ) {
-    var newCategory by remember { mutableStateOf(category) }
+    // Saveable like the name field below, so a recreated activity keeps the whole draft. Hosts that
+    // reuse this sheet for different objects must key it by the editing session.
+    var newCategory by rememberSaveable(stateSaver = jsonSaver(Category.serializer())) {
+        mutableStateOf(category)
+    }
     var colorPickerDialog by remember { mutableStateOf(false) }
 
     val textFieldState =

@@ -46,6 +46,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -152,7 +154,23 @@ fun RhineScreen(
     /** Live editor draft, mirrored onto the raised preview block. */
     var draft by remember { mutableStateOf<RhineEdit?>(null) }
     val illustrations = LocalRhineIllustrationRepo.current
-    var illustrationDraft by remember { mutableStateOf<IllustrationDraft?>(null) }
+    // Saved with the screen: a full-screen gallery app can recreate the activity before the
+    // picked image comes back, and the open editor then reopens with its draft (below).
+    var illustrationDraft by
+        rememberSaveable(stateSaver = IllustrationDraft.Saver) {
+            mutableStateOf<IllustrationDraft?>(null)
+        }
+    /**
+     * Bumped for every editor opened. The editor is keyed by it, so form state saved for one object
+     * can never be restored into an editor opened later for another one.
+     */
+    var editorSession by rememberSaveable { mutableStateOf(0L) }
+    /** The open Category/Task editor, to reopen it after the activity is recreated. */
+    var editorRestore by
+        rememberSaveable(stateSaver = RhineEditorRestore.Saver) {
+            mutableStateOf<RhineEditorRestore?>(null)
+        }
+    val latestInput = rememberUpdatedState(input)
     val illustrationCache = rememberRhineImageDecoder().let { remember(it) { RhineIllustrationCache(it) } }
     androidx.compose.runtime.DisposableEffect(illustrationCache) {
         onDispose { illustrationCache.clear() }
@@ -469,6 +487,7 @@ fun RhineScreen(
                 director.reset()
                 draft = null
                 edit = null
+                editorRestore = null
                 deleting = false
                 adjustment.clear()
                 upper.transientSnapshot = null
@@ -486,24 +505,24 @@ fun RhineScreen(
         }
     }
     /** Reads the stored object (or a new draft) that [slot] edits. */
-    suspend fun loadEdit(slot: RhineSlot): RhineEdit {
+    suspend fun loadEdit(slot: RhineSlot, layer: RhineLayer = input.layer): RhineEdit {
         val repo = repo!!
         return when {
-            slot.kind == RhineBlockKind.AddParent && input.layer == RhineLayer.Categories ->
+            slot.kind == RhineBlockKind.AddParent && layer == RhineLayer.Categories ->
                 RhineEdit.CategoryDraft(Category(name = ""))
             slot.kind == RhineBlockKind.AddParent ->
                 RhineEdit.TaskDraft(
                     Task(categoryId = session.categoryId!!, title = ""),
                     repo.getCategories().filter { it.id == session.categoryId },
                 )
-            slot.kind == RhineBlockKind.Placeholder && input.layer == RhineLayer.Categories ->
+            slot.kind == RhineBlockKind.Placeholder && layer == RhineLayer.Categories ->
                 RhineEdit.TaskDraft(
                     Task(categoryId = slot.column!!.id, title = ""),
                     repo.getCategories().filter { it.id == slot.column.id },
                 )
             slot.kind == RhineBlockKind.Placeholder ->
                 RhineEdit.SectionDraft(Section(taskId = slot.column!!.id))
-            slot.kind == RhineBlockKind.Zero && input.layer == RhineLayer.Categories ->
+            slot.kind == RhineBlockKind.Zero && layer == RhineLayer.Categories ->
                 RhineEdit.CategoryDraft(
                     requireNotNull(repo.getCategories().firstOrNull { it.id == slot.column!!.id }) {
                         "类别已不存在"
@@ -526,6 +545,7 @@ fun RhineScreen(
             illustrations?.let { repo -> scope.launch { d.discard(repo) } }
         }
         illustrationDraft = null
+        editorRestore = null
         edit = null
         draft = null
         deleting = false
@@ -538,6 +558,8 @@ fun RhineScreen(
      * runs once the default framing is restored.
      */
     fun exitEditor(exit: RhineExit, targetBrowser: RhineBrowser = browser, after: () -> Unit = {}) {
+        // Leaving for good: a recreated activity must not reopen this editor.
+        editorRestore = null
         director.job?.cancel()
         director.exit = exit
         director.ms = 0f
@@ -565,6 +587,7 @@ fun RhineScreen(
         when (director.stage) {
             RhineStage.EditorEnter -> {
                 director.job?.cancel()
+                editorRestore = null
                 loading = false
                 val token = director.epoch
                 director.job =
@@ -643,6 +666,8 @@ fun RhineScreen(
             // Category / Task: cinematic entry into the split editor.
             val token = director.begin(RhineStage.EditorEnter, slot)
             draft = null
+            editorSession += 1
+            val layer = input.layer
             val creating =
                 slot.kind == RhineBlockKind.Placeholder || slot.kind == RhineBlockKind.AddParent
             director.job =
@@ -680,7 +705,17 @@ fun RhineScreen(
                     loading = false
                     if (token != director.epoch) return@launch
                     loaded
-                        .onSuccess { edit = it }
+                        .onSuccess {
+                            edit = it
+                            editorRestore =
+                                RhineEditorRestore(
+                                    editorSession,
+                                    slot.u,
+                                    slot.v,
+                                    layer == RhineLayer.Sections,
+                                    it.storedId(),
+                                )
+                        }
                         .onFailure {
                             notice = it.message ?: "读取失败，请重试"
                             director.playTo(0f, reduced)
@@ -692,6 +727,7 @@ fun RhineScreen(
                 }
         } else {
             // Sections keep their own editor without the cinematic transition.
+            editorSession += 1
             loading = true
             scope.launch {
                 try {
@@ -716,6 +752,7 @@ fun RhineScreen(
             return
         val slot = input.slot(input.focusU.roundToInt(), input.focusV)
         if (slot.column == null) return
+        editorSession += 1
         loading = true
         scope.launch {
             try {
@@ -838,6 +875,52 @@ fun RhineScreen(
                 saving = false
             }
         }
+    }
+    // After the activity was recreated (e.g. by a gallery app opened in portrait), reopen the editor
+    // that was open, already raised and turned, with its saved draft. Its form state comes back by
+    // itself because the editor is keyed by the same session.
+    LaunchedEffect(Unit) {
+        val restore = editorRestore
+        if (restore == null || repo == null) {
+            illustrationDraft = null
+            return@LaunchedEffect
+        }
+        val layer = if (restore.sections) RhineLayer.Sections else RhineLayer.Categories
+        val ready =
+            withTimeoutOrNull(5000) {
+                snapshotFlow { latestInput.value }
+                    .first { it.layer == layer && it.columns.isNotEmpty() }
+            }
+        val slot = ready?.slot(restore.u, restore.v)
+        val loaded =
+            slot?.let {
+                try {
+                    loadEdit(it, layer)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    null
+                }
+            }
+        if (slot == null || loaded == null || loaded.storedId() != restore.id || edit != null) {
+            editorRestore = null
+            illustrationDraft = null
+            if (loaded == null || loaded.storedId() != restore.id) notice = "对象已变化，编辑已关闭"
+            return@LaunchedEffect
+        }
+        director.begin(RhineStage.EditorEnter, slot)
+        director.ms = RhineMotionSpec.EditorMs.toFloat()
+        director.stage = RhineStage.Editing
+        if (illustrationDraft == null) {
+            val owner =
+                if (loaded is RhineEdit.CategoryDraft) IllustrationOwner.Category
+                else IllustrationOwner.Task
+            illustrationDraft =
+                IllustrationDraft(
+                    if (restore.id == 0L) null else illustrations?.illustration(owner, restore.id)
+                )
+        }
+        edit = loaded
     }
     DraftBackHandler(enabled = (edit == null && !loading) || director.active) {
         when (director.stage) {
@@ -1081,6 +1164,7 @@ fun RhineScreen(
             )
         val cinematic = director.stage != RhineStage.Idle && director.stage != RhineStage.NavEnter
         edit?.takeIf { it is RhineEdit.SectionDraft || cinematic }?.let { value ->
+          key(editorSession) {
             RhineEditor(
                 value,
                 saving,
@@ -1112,6 +1196,7 @@ fun RhineScreen(
                     },
                 extraDirty = illustrationDraft?.change?.let { it != IllustrationChange.Keep } == true,
             )
+          }
         }
         if (deleting)
             edit?.let { value ->
