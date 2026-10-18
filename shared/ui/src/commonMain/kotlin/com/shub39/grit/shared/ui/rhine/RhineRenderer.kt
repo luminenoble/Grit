@@ -72,6 +72,16 @@ fun DrawScope.drawRhineScene(
     val d = layout.projection.density
     val pad = 8f * d
     val raised = layout.raised
+    // A column-start block with an illustration shows its whole long face; the decoration blocks
+    // in front of the column start (the only blocks that can cover it) turn see-through instead
+    // of moving, so the arrangement stays as it is (docs/视觉优化/03 section 5).
+    val opened = ArrayList<Triple<RhineBlock, ImageBitmap, Rect>>(2)
+    for (block in layout.blocks) {
+        if (block === raised || !showsIllustration(block.slot, false)) continue
+        val image = illustration(block.slot, false) ?: continue
+        val area = illustrationArea(block.frontFrame.copy(height = block.height), style, pad)
+        if (area != null) opened += Triple(block, image, area)
+    }
     fun drawOne(block: RhineBlock) {
         val center = centrality(block)
         // A block floating off the floor has no contact shadow.
@@ -90,9 +100,12 @@ fun DrawScope.drawRhineScene(
         // Side face: the column label, and below it the illustration where one applies.
         val column = slot.column
         val isRaised = block === raised
+        val open = opened.firstOrNull { it.first === block }
+        val face = if (open != null) block.frontFrame.copy(height = block.height) else block.frontFrame
         val image =
-            if (showsIllustration(slot, isRaised)) illustration(slot, isRaised) else null
-        val area = image?.let { illustrationArea(block.frontFrame, style, pad) }
+            open?.second
+                ?: if (isRaised && showsIllustration(slot, true)) illustration(slot, true) else null
+        val area = open?.third ?: image?.let { illustrationArea(face, style, pad) }
         if (
             column != null &&
                 (slot.showsSideLabel ||
@@ -100,8 +113,7 @@ fun DrawScope.drawRhineScene(
         ) {
             drawFaceText(
                 frame =
-                    if (area != null) block.frontFrame.copy(height = area.top - 3f * d)
-                    else block.frontFrame,
+                    if (area != null) face.copy(height = area.top - 3f * d) else face,
                 text = labels.sideLabel(column),
                 color =
                     style.readableFace(
@@ -119,7 +131,7 @@ fun DrawScope.drawRhineScene(
 
         if (image != null && area != null)
             drawFaceImage(
-                block.frontFrame,
+                face,
                 image,
                 area,
                 display.illustrationFit,
@@ -171,9 +183,18 @@ fun DrawScope.drawRhineScene(
             )
     }
     // Context blocks fade as one layer so overlapping faces never show through each other.
-    withAlphaLayer(contextAlpha) { for (block in layout.blocks) drawOne(block) }
+    withAlphaLayer(contextAlpha) {
+        for (block in layout.blocks) {
+            if (block.slot.u < 0 && opened.any { block.overlaps(it.first.front) })
+                withAlphaLayer(SeeThroughAlpha) { drawOne(block) }
+            else drawOne(block)
+        }
+    }
     if (raised != null && layout.raisedClear) withAlphaLayer(raisedAlpha) { drawOne(raised) }
 }
+
+/** Opacity of a decoration block standing in front of an illustrated column start. */
+private const val SeeThroughAlpha = 0.28f
 
 private inline fun DrawScope.withAlphaLayer(alpha: Float, draw: () -> Unit) {
     if (alpha <= 0f) return

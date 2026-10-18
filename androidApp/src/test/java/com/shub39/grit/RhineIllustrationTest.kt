@@ -16,7 +16,9 @@
  */
 package com.shub39.grit
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.shub39.grit.core.settings.RhineDisplayConfig
@@ -60,6 +62,34 @@ class RhineIllustrationTest {
         assertFalse(showsIllustration(input.slot(2, 0), raised = false))
         assertFalse(showsIllustration(input.slot(0, 1), raised = false)) // add-parent column
         assertTrue(showsIllustration(input.slot(1, 0), raised = true))
+    }
+
+    @Test
+    fun onlyBlocksBeforeTheColumnStartCanCoverItsFace() {
+        // The arrangement is unchanged: the wall still rises in front of the 0 block, so the
+        // renderer turns exactly those decoration blocks see-through instead.
+        val input = rhineSample(RhineSample.Standard)
+        val geometry = RhineGeometry()
+        val p = RhineProjection(geometry, 2.625f, Size(2400f, 1080f), RhineCamera(0f, 1f))
+        val layout = layoutScene(input.copy(focusU = 0f, cameraV = 1f), p)
+        val zero = layout.blocks.first { it.slot.u == 0 && it.slot.v == 1 }
+        val before = layout.blocks.first { it.slot.u == -1 && it.slot.v == 1 }
+        assertTrue(before.height > geometry.baseHeight * 2.625f)
+        assertTrue(zero.frontVisible < zero.height)
+        assertTrue(before.overlaps(zero.front))
+        // Only blocks drawn after it (painter's order) can cover it.
+        val covering =
+            layout.blocks.drop(layout.blocks.indexOf(zero) + 1).filter { it.overlaps(zero.front) }
+        assertTrue(covering.isNotEmpty())
+        assertTrue("covering ${covering.map { it.slot }}", covering.all { it.slot.u < 0 })
+    }
+
+    @Test
+    fun separatedQuadsDoNotOverlap() {
+        val square = listOf(Offset(0f, 0f), Offset(10f, 0f), Offset(10f, 10f), Offset(0f, 10f))
+        assertTrue(quadsOverlap(square, square.map { it + Offset(5f, 5f) }))
+        assertFalse(quadsOverlap(square, square.map { it + Offset(10f, 0f) })) // shared edge
+        assertFalse(quadsOverlap(square, square.map { it + Offset(11f, 11f) }))
     }
 
     @Test

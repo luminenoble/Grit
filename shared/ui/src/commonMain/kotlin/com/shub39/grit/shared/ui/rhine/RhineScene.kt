@@ -271,13 +271,9 @@ fun layoutScene(
             // Heights follow the temporary positions too, so committing the permutation cannot
             // transfer the peak to the object that used to occupy the destination.
             val weight = columnLiftWeight(0, input.cameraV - previewV)
-            // Nothing before a column's start (u < 0) rises: the wall begins at the 0 block, whose
-            // long face stays open to show the column illustration (docs/视觉优化/03 section 5).
             fun height(at: Float) =
-                if (at < 0f) g.baseHeight * d
-                else
-                    (g.baseHeight +
-                        (g.heightOf(0, 0, 0, input.focusU - at) - g.baseHeight) * weight) * d
+                (g.baseHeight + (g.heightOf(0, 0, 0, input.focusU - at) - g.baseHeight) * weight) *
+                    d
             val h = height(previewU) + if (picked) lift * d else 0f
             val hFront = height(previewU - 1f)
             val visible = h - hFront + g.gapU * d / projection.slopeU
@@ -447,6 +443,25 @@ fun pointInQuad(p: Offset, quad: List<Offset>): Boolean {
     }
     return true
 }
+
+/** Whether two convex quads overlap (separating axis test), independent of winding. */
+fun quadsOverlap(a: List<Offset>, b: List<Offset>): Boolean {
+    fun separated(edges: List<Offset>): Boolean {
+        for (i in edges.indices) {
+            val e = edges[(i + 1) % edges.size] - edges[i]
+            val axis = Offset(-e.y, e.x)
+            val pa = a.map { it.x * axis.x + it.y * axis.y }
+            val pb = b.map { it.x * axis.x + it.y * axis.y }
+            if (pa.max() <= pb.min() || pb.max() <= pa.min()) return true
+        }
+        return false
+    }
+    return !separated(a) && !separated(b)
+}
+
+/** Whether any visible face of this block covers part of [quad]. */
+fun RhineBlock.overlaps(quad: List<Offset>): Boolean =
+    quadsOverlap(top, quad) || quadsOverlap(front, quad) || quadsOverlap(cap, quad)
 
 /** Optional developer observer; normal business screens do not install one. */
 fun interface RhineDrawObserver {
