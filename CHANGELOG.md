@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.1.0
+
+- Restyled the Task page, Settings, dialogs, sheets and the task widget with a warm liquid glass material, with a Reduce transparency switch in Look and Feel
+- Rhine: replaced the right-side focus panel with a bottom glass toolbar; search and position panels are glass overlays
+- Rhine: opening a Category now lifts the block and turns the camera before fading into its Tasks
+- Rhine: editing opens a split view with a live 3D preview of the block beside a glass editor, with lift, turn and return animations
+- Optional gallery images for Categories and Tasks, picked in the Rhine editor or the Task page and shown on the block's side face; images stay on the device and are not part of backups
+- Added an image fit setting (top-left crop, centre crop or whole image) to the Rhine display settings
+
 ## 6.0.8
 
 - Renamed the app to Grhinet; all other functionality and styling are unchanged
