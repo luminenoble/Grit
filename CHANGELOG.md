@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.1.2
+
+- Rhine: tasks with an image now show it in the category view as a strip along the side of their block, in place of the repeated category name; the category's own image is unchanged
+
 ## 6.1.1
 
 - Selected categories show as a raised bright chip with bold text instead of a black outline; finished tasks settle into a darker card with a struck-through title and an olive check mark

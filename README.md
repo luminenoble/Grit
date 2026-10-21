@@ -2,7 +2,7 @@
 
 基于 [Grit](https://github.com/shub39/Grit) 修改的 Android 工作记录应用，保留原项目的 GPL-3.0 许可。
 
-正式版：[Grhinet 6.1.1](https://github.com/luminenoble/Grit/releases/tag/6.1.1) · [下载 APK](https://github.com/luminenoble/Grit/releases/download/6.1.1/Grhinet-6.1.1-foss.apk)。Task、设置、对话框和小组件采用暖色液态玻璃；Rhine 使用底部玻璃工具栏、抬升转向动画、分屏编辑器，并支持为类别和任务添加本机图片。设计与验收见 [docs/视觉优化](docs/视觉优化/README.md)。
+正式版：[Grhinet 6.1.2](https://github.com/luminenoble/Grit/releases/tag/6.1.2) · [下载 APK](https://github.com/luminenoble/Grit/releases/download/6.1.2/Grhinet-6.1.2-foss.apk)。Task、设置、对话框和小组件采用暖色液态玻璃；Rhine 使用底部玻璃工具栏、抬升转向动画、分屏编辑器，并支持为类别和任务添加本机图片。设计与验收见 [docs/视觉优化](docs/视觉优化/README.md)。
 
 数据以 Category → Task → Section 组织：类别和任务有独立描述及文字颜色，Section 支持工作内容、完成日期和手动排序。保留任务手动完成、今天视图、提醒、任务小组件和 JSON 备份。
 
