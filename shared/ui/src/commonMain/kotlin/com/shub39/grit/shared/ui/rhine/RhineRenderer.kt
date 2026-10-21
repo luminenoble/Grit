@@ -67,63 +67,86 @@ fun DrawScope.drawRhineScene(
     raisedAlpha: Float = 1f,
     /** Decoded illustration for a block (slot, raised), when it has one. */
     illustration: (RhineSlot, Boolean) -> ImageBitmap? = { _, _ -> null },
+    /** Fade-in (0..1) of the focused Task's whole illustration. */
+    reveal: Float = 0f,
+    /**
+     * Draws the blurred backdrop at full size behind frosted glass faces; null draws matte blocks.
+     */
+    glass: (DrawScope.() -> Unit)? = null,
 ) {
     drawRect(style.floor)
     val d = layout.projection.density
     val pad = 8f * d
     val raised = layout.raised
-    // A column-start block with an illustration shows its whole long face; the decoration blocks
-    // in front of the column start (the only blocks that can cover it) turn see-through instead
-    // of moving, so the arrangement stays as it is (docs/视觉优化/03 section 5).
-    val opened = ArrayList<Triple<RhineBlock, ImageBitmap, Rect>>(2)
-    for (block in layout.blocks) {
-        if (block === raised || !showsIllustration(block.slot, false)) continue
-        val image = illustration(block.slot, false) ?: continue
-        val area = illustrationArea(block.frontFrame.copy(height = block.height), style, pad)
-        if (area != null) opened += Triple(block, image, area)
+    val opened = openedFaces(layout, input, style, pad, illustration, reveal)
+    val task = opened.firstOrNull { it.block.slot.kind == RhineBlockKind.Real }
+    // Blocks in front of an opened face turn see-through instead of moving, so the arrangement
+    // stays as it is: decorations before a column start (D11), and clear glass in front of the
+    // focused Task (docs/视觉优化/05).
+    fun bodyAlpha(block: RhineBlock): Float {
+        val slot = block.slot
+        if (
+            task != null &&
+                slot.v == task.block.slot.v &&
+                slot.u < task.block.slot.u &&
+                block.overlaps(task.block.front)
+        )
+            return 1f - (1f - ClearGlassAlpha) * task.alpha
+        return if (
+            slot.u < 0 &&
+                opened.any {
+                    it.block.slot.kind == RhineBlockKind.Zero && block.overlaps(it.block.front)
+                }
+        )
+            SeeThroughAlpha
+        else 1f
     }
     fun drawOne(block: RhineBlock) {
         val center = centrality(block)
-        // A block floating off the floor has no contact shadow.
-        if (display.shadow != com.shub39.grit.core.settings.RhineShadow.Off && block.base == 0f)
-            drawShadow(
-                block,
-                style,
-                center,
-                display.shadow == com.shub39.grit.core.settings.RhineShadow.Low,
-                facePath,
-            )
-        drawBlock(block, style, center, facePath)
         val slot = block.slot
         val focused = slot.v == input.focusV && slot.u.toFloat() == input.focusU
-
-        // Side face: the column label, and below it the illustration where one applies. A stored
-        // item's label only repeats its column's name, so an illustrated item shows a strip of its
-        // image there instead, in whatever part of the face is not hidden.
         val column = slot.column
         val isRaised = block === raised
-        val open = opened.firstOrNull { it.first === block }
+        val open = opened.firstOrNull { it.block === block }
         val face = if (open != null) block.frontFrame.copy(height = block.height) else block.frontFrame
-        val strip =
-            if (!isRaised && showsIllustrationStrip(slot))
-                illustration(slot, false)?.let { image ->
-                    illustrationStripArea(face.width, face.height, pad, d)?.let { image to it }
-                }
-            else null
         val image =
-            strip?.first
-                ?: open?.second
+            open?.image
                 ?: if (isRaised && showsIllustration(slot, true)) illustration(slot, true) else null
-        val area = strip?.second ?: open?.third ?: image?.let { illustrationArea(face, style, pad) }
+        val area = open?.area ?: image?.let { illustrationArea(face, style, pad) }
+
+        // Body: shadow, faces and illustration. It may turn see-through; its text never fades.
+        withAlphaLayer(bodyAlpha(block)) {
+            // A block floating off the floor has no contact shadow.
+            if (display.shadow != com.shub39.grit.core.settings.RhineShadow.Off && block.base == 0f)
+                drawShadow(
+                    block,
+                    style,
+                    center,
+                    display.shadow == com.shub39.grit.core.settings.RhineShadow.Low,
+                    facePath,
+                )
+            drawBlock(block, style, center, facePath, glass)
+            if (image != null && area != null)
+                drawFaceImage(
+                    face,
+                    image,
+                    area,
+                    display.illustrationFit,
+                    style.frontAt(center),
+                    style.frontLowAt(center),
+                    style.edge,
+                    open?.alpha ?: 1f,
+                )
+        }
+
+        // Side face: the column label, above the illustration where one applies.
         if (
-            strip == null &&
-                column != null &&
+            column != null &&
                 (slot.showsSideLabel ||
                     (display.placeholderNames && slot.kind == RhineBlockKind.Placeholder))
         ) {
             drawFaceText(
-                frame =
-                    if (area != null) face.copy(height = area.top - 3f * d) else face,
+                frame = if (area != null) face.copy(height = area.top - 3f * d) else face,
                 text = labels.sideLabel(column),
                 color =
                     style.readableFace(
@@ -138,19 +161,6 @@ fun DrawScope.drawRhineScene(
                 scrollSeconds = if (focused && display.scrollFocusedTitle) titlePhase else 0f,
             )
         }
-
-        if (image != null && area != null)
-            drawFaceImage(
-                face,
-                image,
-                area,
-                // A strip is far wider than any photo: its middle band shows the subject.
-                if (strip != null) com.shub39.grit.core.settings.RhineImageFit.CropCenter
-                else display.illustrationFit,
-                style.frontAt(center),
-                style.frontLowAt(center),
-                style.edge,
-            )
 
         // Top face: item index and title.
         val top =
@@ -195,18 +205,103 @@ fun DrawScope.drawRhineScene(
             )
     }
     // Context blocks fade as one layer so overlapping faces never show through each other.
-    withAlphaLayer(contextAlpha) {
-        for (block in layout.blocks) {
-            if (block.slot.u < 0 && opened.any { block.overlaps(it.first.front) })
-                withAlphaLayer(SeeThroughAlpha) { drawOne(block) }
-            else drawOne(block)
-        }
-    }
+    withAlphaLayer(contextAlpha) { for (block in layout.blocks) drawOne(block) }
     if (raised != null && layout.raisedClear) withAlphaLayer(raisedAlpha) { drawOne(raised) }
+}
+
+/**
+ * What frosted glass faces show, blurred (docs/视觉优化/05): the floor, contact shadows, top and end
+ * faces and the opened illustrations, but no long side faces, so a face shows the light behind it
+ * rather than a copy of itself.
+ */
+fun DrawScope.drawRhineBackdrop(
+    layout: RhineLayout,
+    input: RhineSceneInput,
+    style: RhineStyle,
+    display: com.shub39.grit.core.settings.RhineDisplayConfig,
+    illustration: (RhineSlot, Boolean) -> ImageBitmap?,
+    reveal: Float,
+    path: Path,
+) {
+    drawRect(style.floor)
+    for (block in layout.blocks) {
+        if (block.base == 0f) drawShadow(block, style, centrality(block), true, path)
+        drawPath(block.top.toPath(path), style.top)
+        drawPath(block.cap.toPath(path), style.cap)
+    }
+    for (open in openedFaces(layout, input, style, 8f * density, illustration, reveal)) {
+        val center = centrality(open.block)
+        drawFaceImage(
+            open.block.frontFrame.copy(height = open.block.height),
+            open.image,
+            open.area,
+            display.illustrationFit,
+            style.frontAt(center),
+            style.frontLowAt(center),
+            style.edge,
+            open.alpha,
+        )
+    }
+}
+
+/** A long face drawn at full height with its illustration, faded in by [alpha]. */
+private class OpenFace(
+    val block: RhineBlock,
+    val image: ImageBitmap,
+    val area: Rect,
+    val alpha: Float,
+)
+
+/**
+ * Column starts with an illustration open their whole long face (docs/视觉优化/03 section 5); so does
+ * the focused Task once [reveal] starts, and it wins over a column start standing in front of it,
+ * which fades its own image out as the Task's fades in.
+ */
+private fun DrawScope.openedFaces(
+    layout: RhineLayout,
+    input: RhineSceneInput,
+    style: RhineStyle,
+    pad: Float,
+    illustration: (RhineSlot, Boolean) -> ImageBitmap?,
+    reveal: Float,
+): List<OpenFace> {
+    val raised = layout.raised
+    fun open(block: RhineBlock, alpha: Float): OpenFace? {
+        val image = illustration(block.slot, false) ?: return null
+        val area = illustrationArea(block.frontFrame.copy(height = block.height), style, pad)
+        return area?.let { OpenFace(block, image, it, alpha) }
+    }
+    val task =
+        if (reveal <= 0f) null
+        else
+            layout.blocks
+                .firstOrNull {
+                    it !== raised &&
+                        it.slot.kind == RhineBlockKind.Real &&
+                        it.slot.v == input.focusV &&
+                        it.slot.u.toFloat() == input.focusU
+                }
+                ?.let { open(it, reveal) }
+    val opened = ArrayList<OpenFace>(3)
+    for (block in layout.blocks) {
+        if (block === raised || !showsIllustration(block.slot, false)) continue
+        val inFront =
+            task != null && block.slot.v == task.block.slot.v && block.overlaps(task.block.front)
+        val alpha = if (inFront) 1f - task!!.alpha else 1f
+        if (alpha > 0f) open(block, alpha)?.let { opened += it }
+    }
+    task?.let { opened += it }
+    return opened
 }
 
 /** Opacity of a decoration block standing in front of an illustrated column start. */
 private const val SeeThroughAlpha = 0.28f
+
+/** Opacity of the blocks in front of the focused Task's illustration once it is shown. */
+private const val ClearGlassAlpha = 0.3f
+
+/** Tint opacity of a frosted long face over the blurred backdrop. */
+private const val GlassFront = 0.74f
 
 private inline fun DrawScope.withAlphaLayer(alpha: Float, draw: () -> Unit) {
     if (alpha <= 0f) return
@@ -255,9 +350,20 @@ private fun DrawScope.drawShadow(
     drawPath(inner.toPath(path), style.shadow.copy(alpha = alpha * 0.55f))
 }
 
-private fun DrawScope.drawBlock(block: RhineBlock, style: RhineStyle, center: Float, path: Path) {
+private fun DrawScope.drawBlock(
+    block: RhineBlock,
+    style: RhineStyle,
+    center: Float,
+    path: Path,
+    glass: (DrawScope.() -> Unit)?,
+) {
     val d = density
+    // Frosted glass: the long face shows the blurred backdrop under a warm tint that keeps it
+    // opaque, so blocks behind come through as soft light, never as sharp edges. Top and end faces
+    // only take the tint; blocks at the borders, pale and under the depth blur anyway, stay matte.
+    val glassy = glass != null && center > 0.08f
     val front = block.front
+    if (glassy) clipPath(front.toPath(path)) { glass!!() }
     drawPath(
         front.toPath(path),
         Brush.linearGradient(
@@ -265,7 +371,21 @@ private fun DrawScope.drawBlock(block: RhineBlock, style: RhineStyle, center: Fl
             start = front[3],
             end = front[0],
         ),
+        alpha = if (glassy) GlassFront else 1f,
     )
+    if (glassy) {
+        // Sheen down from the lit top edge, and a fine rim light along it.
+        drawPath(
+            front.toPath(path),
+            Brush.linearGradient(
+                0f to style.highlight.copy(alpha = 0.32f),
+                0.45f to Color.Transparent,
+                start = front[3],
+                end = front[0],
+            ),
+        )
+        drawLine(style.highlight.copy(alpha = 0.7f), front[3], front[2], strokeWidth = 0.8f * d)
+    }
     val cap = block.cap
     drawPath(block.cap.toPath(path), style.cap)
     // Round fitting on the end face, a fixed distance below the top edge.
@@ -408,6 +528,7 @@ private fun DrawScope.drawFaceImage(
     shadeTop: Color,
     shadeBottom: Color,
     edge: Color,
+    alpha: Float = 1f,
 ) {
     val (src, dst) = illustrationRects(IntSize(image.width, image.height), area, fit)
     val corner = CornerRadius(2f * density)
@@ -419,16 +540,24 @@ private fun DrawScope.drawFaceImage(
                 srcSize = src.second,
                 dstOffset = IntOffset(dst.left.roundToInt(), dst.top.roundToInt()),
                 dstSize = IntSize(dst.width.roundToInt(), dst.height.roundToInt()),
+                alpha = alpha,
                 filterQuality = FilterQuality.Medium,
             )
             drawRect(
                 Brush.verticalGradient(listOf(shadeTop, shadeBottom), area.top, area.bottom),
                 topLeft = area.topLeft,
                 size = area.size,
-                alpha = 0.18f,
+                alpha = 0.18f * alpha,
             )
         }
-        drawRoundRect(edge, area.topLeft, area.size, corner, style = Stroke(0.5f * density))
+        drawRoundRect(
+            edge,
+            area.topLeft,
+            area.size,
+            corner,
+            style = Stroke(0.5f * density),
+            alpha = alpha,
+        )
     }
 }
 

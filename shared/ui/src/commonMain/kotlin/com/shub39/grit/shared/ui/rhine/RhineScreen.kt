@@ -62,6 +62,21 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.unit.IntSize
+import com.shub39.grit.shared.ui.blurPossible
+import com.shub39.grit.shared.ui.theme.GlassMode
+import com.shub39.grit.shared.ui.theme.LocalGlassMode
+import kotlin.math.ceil
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
@@ -94,8 +109,6 @@ import grit.shared.ui.generated.resources.Res
 import grit.shared.ui.generated.resources.montserrat
 import kotlin.math.roundToInt
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.Font
@@ -999,58 +1012,51 @@ fun RhineScreen(
         overview.values.forEach { launch { illustrationCache.load(it, overviewBucket) } }
         editorUri?.let { launch { illustrationCache.load(it, editorBucket) } }
     }
-    // Tasks on the first layer show theirs as strips on their side faces (docs/视觉优化/04): look
-    // up the loaded window (it only changes in chunks), decode only the ones on screen, small.
-    val stripIds =
-        remember(input.layer, input.columns) {
-            if (input.layer != RhineLayer.Categories) emptySet()
-            else input.columns.flatMapTo(HashSet()) { c -> c.items.values.map { it.id } }
-        }
-    val strips by
-        remember(illustrations, stripIds) {
+    // The focused Task on the first layer shows its whole illustration once the camera rests
+    // (docs/视觉优化/05). Its neighbours are read and decoded ahead, so stepping reveals at once.
+    val focusU = input.focusU.roundToInt()
+    val nearTasks =
+        if (input.layer != RhineLayer.Categories) emptySet()
+        else
+            input.columns
+                .getOrNull(input.focusV)
+                ?.items
+                ?.filterKeys { it in focusU - 3..focusU + 3 }
+                ?.values
+                ?.mapTo(HashSet()) { it.id } ?: emptySet()
+    val taskImages by
+        remember(illustrations, nearTasks) {
                 illustrations
-                    ?.takeIf { stripIds.isNotEmpty() }
-                    ?.illustrationsFlow(IllustrationOwner.Task, stripIds)
+                    ?.takeIf { nearTasks.isNotEmpty() }
+                    ?.illustrationsFlow(IllustrationOwner.Task, nearTasks)
                     ?: kotlinx.coroutines.flow.flowOf(emptyMap())
             }
             .collectAsState(emptyMap())
     // The collected map outlives a layer switch; Section IDs must never look up Task images.
-    fun stripUri(item: RhineItem, layer: RhineLayer) =
-        if (layer == RhineLayer.Categories) strips[item.id] else null
-    val stripBucket = IllustrationBuckets.first()
-    LaunchedEffect(strips, illustrationCache) {
-        if (strips.isEmpty()) return@LaunchedEffect
-        snapshotFlow {
-                val window =
-                    RhineProjection(geometry, density, viewport, browser.camera).visibleSlots()
-                latestInput.value.columns
-                    .subList(
-                        window.minV.coerceIn(0, latestInput.value.columns.size),
-                        (window.maxV + 1).coerceIn(0, latestInput.value.columns.size),
-                    )
-                    .flatMapTo(HashSet()) { c ->
-                        c.items.values
-                            .filter { it.index in window.minU..window.maxU }
-                            .mapNotNull { stripUri(it, latestInput.value.layer) }
-                    }
-            }
-            .distinctUntilChanged()
-            .collectLatest { uris ->
-                delay(100)
-                coroutineScope {
-                    uris.forEach { launch { illustrationCache.load(it, stripBucket) } }
-                }
-                // Keep the large column-start images most recent, so strips never evict them.
-                overview.values.forEach { illustrationCache.load(it, overviewBucket) }
-            }
+    fun taskImage(item: RhineItem, layer: RhineLayer) =
+        if (layer == RhineLayer.Categories)
+            taskImages[item.id]?.let { illustrationCache.bitmap(it, overviewBucket) }
+        else null
+    LaunchedEffect(taskImages, overviewBucket) {
+        taskImages.values.forEach { launch { illustrationCache.load(it, overviewBucket) } }
+    }
+    val revealed =
+        input
+            .takeIf { it.focusU == focusU.toFloat() && !transition && !director.active }
+            ?.slot(focusU, input.focusV)
+            ?.item
+            ?.takeIf { adjustment.move == null && taskImage(it, input.layer) != null }
+            ?.id
+    val reveal = remember { androidx.compose.animation.core.Animatable(0f) }
+    LaunchedEffect(revealed, reduced) {
+        reveal.snapTo(0f)
+        if (revealed != null)
+            reveal.animateTo(1f, androidx.compose.animation.core.tween(if (reduced) 0 else 280))
     }
     val illustrationOf: (RhineSlot, Boolean) -> androidx.compose.ui.graphics.ImageBitmap? =
         { slot, raised ->
             if (raised) editorUri?.let { illustrationCache.bitmap(it, editorBucket) }
-            else if (showsIllustrationStrip(slot))
-                slot.item
-                    ?.let { stripUri(it, input.layer) }
-                    ?.let { illustrationCache.bitmap(it, stripBucket) }
+            else if (slot.kind == RhineBlockKind.Real) slot.item?.let { taskImage(it, input.layer) }
             else
                 slot.column
                     ?.takeIf { slot.kind == RhineBlockKind.Zero }
@@ -1086,6 +1092,7 @@ fun RhineScreen(
             reduced = reduced,
             transition = frameOf,
             illustration = illustrationOf,
+            reveal = { reveal.value },
         )
         Box(
             Modifier.fillMaxSize()
@@ -1322,8 +1329,24 @@ fun RhineCanvas(
     transition: () -> Pair<RhineFrame, RhineRaise?> = { RhineFrame() to null },
     /** Decoded illustration for a block (slot, raised), read at draw time. */
     illustration: (RhineSlot, Boolean) -> androidx.compose.ui.graphics.ImageBitmap? = { _, _ -> null },
+    /** Fade-in of the focused Task's illustration, read at draw time. */
+    reveal: () -> Float = { 0f },
 ) {
     val measurer = rememberTextMeasurer(cacheSize = 384)
+    // Frosted glass blocks and depth blur (docs/视觉优化/05). Without blur, with Reduce transparency
+    // or with low shadows the blocks stay matte, as before.
+    val glassOn =
+        blurPossible() &&
+            LocalGlassMode.current == GlassMode.Standard &&
+            display.shadow == com.shub39.grit.core.settings.RhineShadow.Standard
+    val frostLayer = rememberGraphicsLayer()
+    // The blurred backdrop, rendered once per frame so each glass face only composites a texture.
+    val frostCache =
+        rememberGraphicsLayer().apply {
+            compositingStrategy = androidx.compose.ui.graphics.layer.CompositingStrategy.Offscreen
+        }
+    val sceneLayer = rememberGraphicsLayer()
+    val depthLayer = rememberGraphicsLayer()
     val facePath = remember { androidx.compose.ui.graphics.Path() }
     val drawObserver = LocalRhineDrawObserver.current
     val density = LocalDensity.current.density
@@ -1569,21 +1592,90 @@ fun RhineCanvas(
                 raise,
             )
         drawObserver?.drawn(layout)
-        drawRhineScene(
-            layout,
-            drawing,
-            style,
-            labels,
-            measurer,
-            display,
-            titlePhase,
-            facePath,
-            contextAlpha = frame.contextAlpha,
-            raisedAlpha = frame.selectedAlpha,
-            illustration = illustration,
+        val revealed = reveal()
+        fun DrawScope.scene(glass: (DrawScope.() -> Unit)?) =
+            drawRhineScene(
+                layout,
+                drawing,
+                style,
+                labels,
+                measurer,
+                display,
+                titlePhase,
+                facePath,
+                contextAlpha = frame.contextAlpha,
+                raisedAlpha = frame.selectedAlpha,
+                illustration = illustration,
+                reveal = revealed,
+                glass = glass,
+            )
+        if (!glassOn) {
+            scene(null)
+            return@Canvas
+        }
+        // Both blurs run on quarter-size layers: one for what glass faces show, one over the
+        // finished scene for depth. Nothing is drawn while the scene rests.
+        val small =
+            IntSize(ceil(size.width * GlassScale).toInt(), ceil(size.height * GlassScale).toInt())
+        // Recording from inside this draw must not hand this scope over as its own density.
+        val recordDensity = androidx.compose.ui.unit.Density(density, fontScale)
+        frostLayer.renderEffect =
+            BlurEffect(FrostBlur.toPx() * GlassScale, FrostBlur.toPx() * GlassScale, TileMode.Clamp)
+        frostLayer.record(recordDensity, layoutDirection, small) {
+            scale(GlassScale, GlassScale, Offset.Zero) {
+                drawRhineBackdrop(layout, drawing, style, display, illustration, revealed, facePath)
+            }
+        }
+        frostCache.record(
+            recordDensity,
+            layoutDirection,
+            IntSize(size.width.toInt(), size.height.toInt()),
+        ) {
+            scale(1f / GlassScale, 1f / GlassScale, Offset.Zero) { drawLayer(frostLayer) }
+        }
+        sceneLayer.record(
+            recordDensity,
+            layoutDirection,
+            IntSize(size.width.toInt(), size.height.toInt()),
+        ) {
+            scene { drawLayer(frostCache) }
+        }
+        drawLayer(sceneLayer)
+        depthLayer.renderEffect =
+            BlurEffect(DepthBlur.toPx() * GlassScale, DepthBlur.toPx() * GlassScale, TileMode.Clamp)
+        depthLayer.record(recordDensity, layoutDirection, small) {
+            scale(GlassScale, GlassScale, Offset.Zero) { drawLayer(sceneLayer) }
+        }
+        // Sharp around the focused block, blurring towards the far columns and the borders.
+        val focus =
+            layout.blocks
+                .firstOrNull {
+                    it.slot.v == drawing.focusV && it.slot.u.toFloat() == drawing.focusU
+                }
+                ?.let { b -> b.top.reduce { a, c -> a + c } / 4f }
+                ?: Offset(size.width * geometry.anchor.x, size.height * geometry.anchor.y)
+        drawIntoCanvas { it.saveLayer(Rect(Offset.Zero, size), Paint()) }
+        scale(1f / GlassScale, 1f / GlassScale, Offset.Zero) { drawLayer(depthLayer) }
+        drawRect(
+            Brush.radialGradient(
+                0f to Color.Transparent,
+                0.38f to Color.Transparent,
+                1f to Color.Black.copy(alpha = 0.9f),
+                center = focus,
+                radius = size.width * 0.62f,
+            ),
+            blendMode = BlendMode.DstIn,
         )
+        drawIntoCanvas { it.restore() }
     }
 }
+
+/** Glass blurs work on layers this fraction of the scene size. */
+private const val GlassScale = 0.25f
+
+/** Blur behind frosted glass faces, and of the far scene. */
+private val FrostBlur = 14.dp
+private val DepthBlur = 6.dp
 
 /** Text styles of the HUD; Montserrat for Latin, system fallback for Chinese. */
 internal class HudText(val family: FontFamily, val ink: Color) {

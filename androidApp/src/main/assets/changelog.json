@@ -1,5 +1,11 @@
 [
   {
+    "version": "6.1.3",
+    "changes": [
+      "Rhine: blocks are now frosted warm glass with a soft depth blur towards the distance; the focused task shows its whole image like the category block, seen through the glass blocks in front, replacing the thin strips from 6.1.2"
+    ]
+  },
+  {
     "version": "6.1.2",
     "changes": [
       "Rhine: tasks with an image now show it in the category view as a strip along the side of their block, in place of the repeated category name; the category's own image is unchanged"
@@ -70,18 +76,6 @@
     "changes": [
       "Updated Translations",
       "Miscellaneous Bug Fixes and Improvements"
-    ]
-  },
-  {
-    "version": "6.0.0",
-    "changes": [
-      "Added new Consistency Stat in Habit Analytics",
-      "Redesigned Weekly Comparison Stat, Displays weekly comparison up to 1 year",
-      "Miscellaneous UI improvements #291",
-      "Monthly Progress Stat can be expanded to a calendar view, up to January 2024",
-      "Fixed Habits being created with no selected days",
-      "Updated Translations",
-      "Thanks to everyone for 1000+ stars on GitHub 🙏"
     ]
   }
 ]

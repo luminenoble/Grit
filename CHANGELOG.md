@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.1.3
+
+- Rhine: blocks are now frosted warm glass with a soft depth blur towards the distance; the focused task shows its whole image like the category block, seen through the glass blocks in front, replacing the thin strips from 6.1.2
+
 ## 6.1.2
 
 - Rhine: tasks with an image now show it in the category view as a strip along the side of their block, in place of the repeated category name; the category's own image is unchanged
