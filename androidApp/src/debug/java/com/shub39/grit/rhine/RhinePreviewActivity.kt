@@ -229,6 +229,16 @@ class RhinePreviewActivity : FragmentActivity() {
                     applicationContext,
                     db,
                 )
+            // e.g. "c2=file:///…/a.jpg;t2001=file:///…/b.jpg": c = Category ID, t = Task ID.
+            intent.getStringExtra("illustrate")?.split(';')?.forEach { entry ->
+                val (owner, uri) = entry.split('=', limit = 2)
+                illustrationRepo.setIllustration(
+                    if (owner.startsWith('c')) IllustrationOwner.Category
+                    else IllustrationOwner.Task,
+                    owner.drop(1).toLong(),
+                    uri,
+                )
+            }
             val tasksModel =
                 if (intent.getBooleanExtra("enableTaskPage", false)) {
                     androidx.lifecycle.ViewModelProvider.create(

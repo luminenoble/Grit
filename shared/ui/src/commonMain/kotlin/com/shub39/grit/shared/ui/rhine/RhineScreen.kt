@@ -94,6 +94,8 @@ import grit.shared.ui.generated.resources.Res
 import grit.shared.ui.generated.resources.montserrat
 import kotlin.math.roundToInt
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.Font
@@ -997,9 +999,58 @@ fun RhineScreen(
         overview.values.forEach { launch { illustrationCache.load(it, overviewBucket) } }
         editorUri?.let { launch { illustrationCache.load(it, editorBucket) } }
     }
+    // Tasks on the first layer show theirs as strips on their side faces (docs/视觉优化/04): look
+    // up the loaded window (it only changes in chunks), decode only the ones on screen, small.
+    val stripIds =
+        remember(input.layer, input.columns) {
+            if (input.layer != RhineLayer.Categories) emptySet()
+            else input.columns.flatMapTo(HashSet()) { c -> c.items.values.map { it.id } }
+        }
+    val strips by
+        remember(illustrations, stripIds) {
+                illustrations
+                    ?.takeIf { stripIds.isNotEmpty() }
+                    ?.illustrationsFlow(IllustrationOwner.Task, stripIds)
+                    ?: kotlinx.coroutines.flow.flowOf(emptyMap())
+            }
+            .collectAsState(emptyMap())
+    // The collected map outlives a layer switch; Section IDs must never look up Task images.
+    fun stripUri(item: RhineItem, layer: RhineLayer) =
+        if (layer == RhineLayer.Categories) strips[item.id] else null
+    val stripBucket = IllustrationBuckets.first()
+    LaunchedEffect(strips, illustrationCache) {
+        if (strips.isEmpty()) return@LaunchedEffect
+        snapshotFlow {
+                val window =
+                    RhineProjection(geometry, density, viewport, browser.camera).visibleSlots()
+                latestInput.value.columns
+                    .subList(
+                        window.minV.coerceIn(0, latestInput.value.columns.size),
+                        (window.maxV + 1).coerceIn(0, latestInput.value.columns.size),
+                    )
+                    .flatMapTo(HashSet()) { c ->
+                        c.items.values
+                            .filter { it.index in window.minU..window.maxU }
+                            .mapNotNull { stripUri(it, latestInput.value.layer) }
+                    }
+            }
+            .distinctUntilChanged()
+            .collectLatest { uris ->
+                delay(100)
+                coroutineScope {
+                    uris.forEach { launch { illustrationCache.load(it, stripBucket) } }
+                }
+                // Keep the large column-start images most recent, so strips never evict them.
+                overview.values.forEach { illustrationCache.load(it, overviewBucket) }
+            }
+    }
     val illustrationOf: (RhineSlot, Boolean) -> androidx.compose.ui.graphics.ImageBitmap? =
         { slot, raised ->
             if (raised) editorUri?.let { illustrationCache.bitmap(it, editorBucket) }
+            else if (showsIllustrationStrip(slot))
+                slot.item
+                    ?.let { stripUri(it, input.layer) }
+                    ?.let { illustrationCache.bitmap(it, stripBucket) }
             else
                 slot.column
                     ?.takeIf { slot.kind == RhineBlockKind.Zero }

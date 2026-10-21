@@ -209,6 +209,24 @@ fun showsIllustration(slot: RhineSlot, raised: Boolean): Boolean =
     raised || (slot.kind == RhineBlockKind.Zero && slot.column != null)
 
 /**
+ * Stored items (Tasks on the first layer) show their illustration as a strip on the visible part of
+ * their side face, in place of the column label they would repeat (docs/视觉优化/04).
+ */
+fun showsIllustrationStrip(slot: RhineSlot): Boolean =
+    slot.kind == RhineBlockKind.Real && slot.item != null && slot.column != null
+
+/**
+ * Face-local strip for an item's illustration on a visible side face of [width] × [height] px:
+ * [pad] at the sides, 2 dp above and below. Null under 6 × 48 dp, where it would only read as a
+ * line; the face then keeps its label.
+ */
+fun illustrationStripArea(width: Float, height: Float, pad: Float, density: Float): Rect? {
+    val gap = 2f * density
+    val area = Rect(pad, gap, width - pad, height - gap)
+    return area.takeIf { it.height >= 6f * density && it.width >= 48f * density }
+}
+
+/**
  * Source and destination rectangles for an image of [imageSize] in [area] (face-local px), never
  * stretched. [RhineImageFit.CropTopStart] fills and crops from the top-left corner.
  */

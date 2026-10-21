@@ -88,6 +88,77 @@ class RhineIllustrationTest {
     }
 
     @Test
+    fun onlyStoredItemsShowStrips() {
+        val column = RhineColumn(1, 1, "A", itemCount = 1, items = mapOf(1 to RhineItem(9, 1, "t")))
+        val input = RhineSceneInput(RhineLayer.Categories, listOf(column), 0, 0f)
+        assertTrue(showsIllustrationStrip(input.slot(1, 0)))
+        assertFalse(showsIllustrationStrip(input.slot(0, 0))) // column start: the large image
+        assertFalse(showsIllustrationStrip(input.slot(2, 0))) // placeholder
+        assertFalse(showsIllustrationStrip(input.slot(0, 1))) // add-parent column
+        assertFalse(showsIllustrationStrip(input.slot(-1, 0))) // decoration
+    }
+
+    @Test
+    fun stripsFitTheVisibleFaceOrStayAway() {
+        val d = 2.625f
+        val pad = 8f * d
+        // A side column's slat shows 13 dp above its neighbour: a 9 dp strip.
+        val side = illustrationStripArea(207f * d, 13f * d, pad, d)!!
+        assertEquals(9f * d, side.height, 0.01f)
+        assertEquals(pad, side.left, 0.01f)
+        // Under 6 dp would only read as a line; the label stays instead.
+        assertNull(illustrationStripArea(207f * d, 9.9f * d, pad, d))
+        assertNull(illustrationStripArea(60f * d, 20f * d, pad, d))
+    }
+
+    @Test
+    fun nothingDrawnLaterCoversAStrip() {
+        // Strips use only the part of the face left visible, so the arrangement and every other
+        // block's faces stay exactly as they are.
+        val input = rhineSample(RhineSample.Standard)
+        val d = 2.625f
+        for (focus in listOf(0, 3, 6)) {
+            val p =
+                RhineProjection(
+                    RhineGeometry(),
+                    d,
+                    Size(2400f, 1080f),
+                    RhineCamera(focus.toFloat(), 1f),
+                )
+            val layout =
+                layoutScene(input.copy(focusU = focus.toFloat(), focusV = 1, cameraV = 1f), p)
+            var strips = 0
+            layout.blocks.forEachIndexed { i, block ->
+                if (!showsIllustrationStrip(block.slot)) return@forEachIndexed
+                val f = block.frontFrame
+                val area =
+                    illustrationStripArea(f.width, f.height, 8f * d, d) ?: return@forEachIndexed
+                strips++
+                // Inset by 1 px so faces that merely share an edge do not count.
+                val quad =
+                    listOf(
+                        f.map(area.left + 1, area.top + 1),
+                        f.map(area.right - 1, area.top + 1),
+                        f.map(area.right - 1, area.bottom - 1),
+                        f.map(area.left + 1, area.bottom - 1),
+                    )
+                // A taller column in front may hide a slat's end, strip and all, as it hides the
+                // label; but no neighbour in the same column, and nothing on the raised centre one.
+                val covering =
+                    layout.blocks.drop(i + 1).filter {
+                        (it.slot.v == block.slot.v || block.slot.v == 1) && it.overlaps(quad)
+                    }
+                assertTrue(
+                    "focus $focus ${block.slot.u},${block.slot.v}: " +
+                        covering.map { it.slot.u to it.slot.v },
+                    covering.isEmpty(),
+                )
+            }
+            assertTrue(strips > 10)
+        }
+    }
+
+    @Test
     fun separatedQuadsDoNotOverlap() {
         val square = listOf(Offset(0f, 0f), Offset(10f, 0f), Offset(10f, 10f), Offset(0f, 10f))
         assertTrue(quadsOverlap(square, square.map { it + Offset(5f, 5f) }))

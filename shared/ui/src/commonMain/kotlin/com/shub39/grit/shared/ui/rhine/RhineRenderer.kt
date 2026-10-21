@@ -97,17 +97,27 @@ fun DrawScope.drawRhineScene(
         val slot = block.slot
         val focused = slot.v == input.focusV && slot.u.toFloat() == input.focusU
 
-        // Side face: the column label, and below it the illustration where one applies.
+        // Side face: the column label, and below it the illustration where one applies. A stored
+        // item's label only repeats its column's name, so an illustrated item shows a strip of its
+        // image there instead, in whatever part of the face is not hidden.
         val column = slot.column
         val isRaised = block === raised
         val open = opened.firstOrNull { it.first === block }
         val face = if (open != null) block.frontFrame.copy(height = block.height) else block.frontFrame
+        val strip =
+            if (!isRaised && showsIllustrationStrip(slot))
+                illustration(slot, false)?.let { image ->
+                    illustrationStripArea(face.width, face.height, pad, d)?.let { image to it }
+                }
+            else null
         val image =
-            open?.second
+            strip?.first
+                ?: open?.second
                 ?: if (isRaised && showsIllustration(slot, true)) illustration(slot, true) else null
-        val area = open?.third ?: image?.let { illustrationArea(face, style, pad) }
+        val area = strip?.second ?: open?.third ?: image?.let { illustrationArea(face, style, pad) }
         if (
-            column != null &&
+            strip == null &&
+                column != null &&
                 (slot.showsSideLabel ||
                     (display.placeholderNames && slot.kind == RhineBlockKind.Placeholder))
         ) {
@@ -134,7 +144,9 @@ fun DrawScope.drawRhineScene(
                 face,
                 image,
                 area,
-                display.illustrationFit,
+                // A strip is far wider than any photo: its middle band shows the subject.
+                if (strip != null) com.shub39.grit.core.settings.RhineImageFit.CropCenter
+                else display.illustrationFit,
                 style.frontAt(center),
                 style.frontLowAt(center),
                 style.edge,
