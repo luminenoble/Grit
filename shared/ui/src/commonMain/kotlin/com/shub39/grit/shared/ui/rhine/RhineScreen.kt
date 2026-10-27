@@ -65,6 +65,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -1344,33 +1346,27 @@ fun RhineCanvas(
     reveal: () -> Float = { 0f },
 ) {
     val measurer = rememberTextMeasurer(cacheSize = 384)
-    // Transparent glass blocks, with everything but the selected block blurred (docs/Rhine.md
-    // §7.1). Without blur, with Reduce transparency or with low shadows the blocks stay matte and
-    // sharp.
+    // Frosted glass blocks: crisp outlines over a blurred backdrop (docs/Rhine.md §7.1). Without
+    // blur, with Reduce transparency or with low shadows the blocks stay matte.
     val glassOn =
         blurPossible() &&
             LocalGlassMode.current == GlassMode.Standard &&
             display.shadow == com.shub39.grit.core.settings.RhineShadow.Standard
-    val sceneLayer = rememberGraphicsLayer()
-    val nearLayer = rememberGraphicsLayer()
-    val farLayer = rememberGraphicsLayer()
+    val backdropLayer = rememberGraphicsLayer()
+    val grain = remember { rhineGrain() }
     val facePath = remember { androidx.compose.ui.graphics.Path() }
     val drawObserver = LocalRhineDrawObserver.current
     val density = LocalDensity.current.density
     val labels =
         remember(input.layer, display) {
             RhineLabels(
-                zeroTop = { slot ->
+                zeroTitle = { slot ->
                     val c = slot.column
                     if (c == null) ""
                     else "${if (display.parentNumbers(input.layer)) "00  " else ""}✎  " + c.title
                 },
-                addParentTop =
+                addParentTitle =
                     if (input.layer == RhineLayer.Categories) "+  新建 Category" else "+  新建 Task",
-                sideLabel = { c ->
-                    (if (display.parentNumbers(input.layer)) indexLabel(c.index) + "  " else "") +
-                        c.title
-                },
             )
         }
     val currentInput by rememberUpdatedState(input)
@@ -1632,15 +1628,16 @@ fun RhineCanvas(
                 reveal = revealed,
                 glass = glassOn,
                 pass = pass,
+                grain = grain,
             )
-        // Everything but the selected block, with the backdrop faded in over the posed context.
-        fun DrawScope.context() {
-            if (backdrop < 1f) scene(RhinePass.Blurred)
+        // The posed scene, with the backdrop array faded in over it.
+        fun DrawScope.context(pass: RhinePass) {
+            if (backdrop < 1f) scene(pass)
             if (backdropLayout == null) return
             drawIntoCanvas {
                 it.saveLayer(Rect(Offset.Zero, size), Paint().apply { alpha = backdrop })
             }
-            scene(RhinePass.Blurred, backdropLayout)
+            scene(pass, backdropLayout)
             drawIntoCanvas { it.restore() }
         }
         if (!glassOn) {
@@ -1648,72 +1645,52 @@ fun RhineCanvas(
                 scene(RhinePass.All)
                 return@Canvas
             }
-            context()
+            context(RhinePass.Context)
             drawRect(style.floor.copy(alpha = MatteBackdropVeil * backdrop))
-            scene(RhinePass.Sharp)
+            scene(RhinePass.Selected)
             return@Canvas
         }
-        // The scene without the selected block is recorded once and blurred twice on reduced
-        // layers: lightly around the selection, more towards the far columns and the borders. The
-        // selected block is then drawn sharp on top, so pictures and text behind or in front of it
-        // never cross it.
-        val full = IntSize(size.width.toInt(), size.height.toInt())
+        // Frosted glass, two layers. The backdrop (everything light passes through) is recorded on
+        // a half-size layer, blurred and a little more saturated; the editor's backdrop array lives
+        // only here, more lightly blurred. Over it, in a layer of its own, every block draws its
+        // sharp surface after clearing what it covers, so the backdrop shows only through glass.
         // Recording from inside this draw must not hand this scope over as its own density.
         val recordDensity = androidx.compose.ui.unit.Density(density, fontScale)
-        sceneLayer.record(recordDensity, layoutDirection, full) { context() }
-        fun blurred(
-            layer: androidx.compose.ui.graphics.layer.GraphicsLayer,
-            scale: Float,
-            blur: Dp,
+        val blur = FrostBlur + (BackdropBlur - FrostBlur) * backdrop
+        backdropLayer.renderEffect =
+            BlurEffect(blur.toPx() * FrostScale, blur.toPx() * FrostScale, TileMode.Clamp)
+        backdropLayer.colorFilter =
+            ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(FrostSaturation) })
+        backdropLayer.record(
+            recordDensity,
+            layoutDirection,
+            IntSize(ceil(size.width * FrostScale).toInt(), ceil(size.height * FrostScale).toInt()),
         ) {
-            layer.renderEffect =
-                BlurEffect(blur.toPx() * scale, blur.toPx() * scale, TileMode.Clamp)
-            layer.record(
-                recordDensity,
-                layoutDirection,
-                IntSize(ceil(size.width * scale).toInt(), ceil(size.height * scale).toInt()),
-            ) {
-                scale(scale, scale, Offset.Zero) { drawLayer(sceneLayer) }
-            }
+            scale(FrostScale, FrostScale, Offset.Zero) { context(RhinePass.Backdrop) }
         }
-        blurred(nearLayer, NearScale, NearBlur)
-        blurred(farLayer, FarScale, FarBlur + (BackdropBlur - FarBlur) * backdrop)
-        scale(1f / NearScale, 1f / NearScale, Offset.Zero) { drawLayer(nearLayer) }
-        val focus =
-            layout.raised?.let { b -> b.top.reduce { a, c -> a + c } / 4f }
-                ?: layout.blocks
-                    .firstOrNull {
-                        it.slot.v == drawing.focusV && it.slot.u == drawing.focusU.roundToInt()
-                    }
-                    ?.let { b -> b.top.reduce { a, c -> a + c } / 4f }
-                ?: Offset(size.width * geometry.anchor.x, size.height * geometry.anchor.y)
-        drawIntoCanvas { it.saveLayer(Rect(Offset.Zero, size), Paint()) }
-        scale(1f / FarScale, 1f / FarScale, Offset.Zero) { drawLayer(farLayer) }
-        // The far blur takes over from 30 % of the radius out, and everywhere in the backdrop.
-        val inner = Color.Black.copy(alpha = backdrop)
-        drawRect(
-            Brush.radialGradient(
-                0f to inner,
-                0.3f to inner,
-                1f to Color.Black,
-                center = focus,
-                radius = size.width * 0.7f,
-            ),
-            blendMode = BlendMode.DstIn,
-        )
-        drawIntoCanvas { it.restore() }
+        scale(1f / FrostScale, 1f / FrostScale, Offset.Zero) { drawLayer(backdropLayer) }
         if (backdrop > 0f) drawRect(style.floor.copy(alpha = GlassBackdropVeil * backdrop))
-        scene(RhinePass.Sharp)
+        drawIntoCanvas { it.saveLayer(Rect(Offset.Zero, size), Paint()) }
+        // The scene the editor rose from fades out over the backdrop array.
+        if (backdrop < 1f) {
+            if (backdrop > 0f)
+                drawIntoCanvas {
+                    it.saveLayer(Rect(Offset.Zero, size), Paint().apply { alpha = 1f - backdrop })
+                }
+            scene(RhinePass.Context)
+            if (backdrop > 0f) drawIntoCanvas { it.restore() }
+        }
+        scene(RhinePass.Selected)
+        drawIntoCanvas { it.restore() }
     }
 }
 
-/** Blur layers are drawn at these fractions of the scene size. */
-private const val NearScale = 0.5f
-private const val FarScale = 0.25f
+/** The frosted backdrop is drawn at this fraction of the scene size. */
+private const val FrostScale = 0.5f
 
-/** Blur of the blocks around the selection, of the far scene and of the editor's backdrop. */
-private val NearBlur = 1.5.dp
-private val FarBlur = 5.dp
+/** Blur and saturation of what is seen through the glass, and blur of the editor's backdrop. */
+private val FrostBlur = 8.dp
+private const val FrostSaturation = 1.35f
 private val BackdropBlur = 3.dp
 
 /** Floor-coloured veil over the editor's backdrop: lighter on blurred glass than on sharp matte. */

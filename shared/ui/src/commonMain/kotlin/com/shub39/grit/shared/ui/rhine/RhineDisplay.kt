@@ -12,8 +12,8 @@ fun RhineDisplayConfig.geometry(widthDp: Float, heightDp: Float): RhineGeometry 
     val scaleV = if (custom) 1f else (widthDp / (2400f / 2.625f)) * (3f / c.targetColumns)
     return RhineGeometry(
         blockLength = if (custom) c.length else (207f * scaleV).coerceIn(100f, 360f),
-        blockDepth = if (custom) c.depth else (18f * scaleU).coerceIn(12f, 64f),
-        gapU = if (custom) c.gapU else (16f * scaleU).coerceIn(8f, 40f),
+        blockDepth = if (custom) c.depth else (8f * scaleU).coerceIn(4f, 16f),
+        gapU = if (custom) c.gapU else (24f * scaleU).coerceIn(8f, 40f),
         gapV = if (custom) c.gapV else (12f * scaleV).coerceIn(6f, 40f),
         baseHeight = c.base,
         centerLift = c.center,
@@ -22,8 +22,7 @@ fun RhineDisplayConfig.geometry(widthDp: Float, heightDp: Float): RhineGeometry 
     )
 }
 
-fun RhineDisplayConfig.style() =
-    RhineStyle(topTextSize = normalized().topSp.sp, sideTextSize = normalized().sideSp.sp)
+fun RhineDisplayConfig.style() = RhineStyle(titleTextSize = normalized().topSp.sp)
 
 fun RhineDisplayConfig.itemNumbers(layer: RhineLayer) =
     if (layer == RhineLayer.Categories) taskNumbers else sectionNumbers

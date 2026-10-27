@@ -109,12 +109,38 @@ class RhineGeometryTest {
     }
 
     @Test
-    fun everyLabelledBlockKeepsItsSideLabel() {
-        val input = rhineSample(RhineSample.Standard)
-        for (u in 0..8) assertTrue(input.slot(u, 1).showsSideLabel)
-        assertTrue(input.slot(6, 0).showsSideLabel)
-        assertFalse(input.slot(-1, 1).showsSideLabel)
-        assertFalse(input.slot(0, input.columnCount).showsSideLabel)
+    fun blocksTakeTheirColumnColourNotTheirOwn() {
+        val gradient = "#C0392B,#1E6FD9"
+        val input =
+            RhineSceneInput(
+                RhineLayer.Categories,
+                listOf(
+                    RhineColumn(
+                        1,
+                        1,
+                        "coloured",
+                        gradient,
+                        itemCount = 1,
+                        items = mapOf(1 to RhineItem(11, 1, "own colour", "#00FF00")),
+                    ),
+                    RhineColumn(
+                        2,
+                        2,
+                        "plain",
+                        itemCount = 1,
+                        items = mapOf(1 to RhineItem(21, 1, "t")),
+                    ),
+                ),
+                focusV = 0,
+                focusU = 1f,
+            )
+        val stops = listOf(Color(0xFFC0392B), Color(0xFF1E6FD9))
+        assertEquals(stops, input.slot(0, 0).tintColors())
+        assertEquals(stops, input.slot(1, 0).tintColors())
+        assertEquals(stops, input.slot(2, 0).tintColors())
+        assertNull(input.slot(-1, 0).tintColors())
+        assertNull(input.slot(1, 1).tintColors())
+        assertNull(input.slot(0, input.columnCount).tintColors())
     }
 
     @Test

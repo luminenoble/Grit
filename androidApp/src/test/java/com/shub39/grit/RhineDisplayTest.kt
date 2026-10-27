@@ -12,7 +12,8 @@ class RhineDisplayTest {
         val c = RhineDisplayConfig()
         assertEquals(RhineGeometry(), c.geometry(2400f / 2.625f, 1080f / 2.625f))
         assertEquals(8f, c.topSp, 0f)
-        assertEquals(7f, c.sideSp, 0f)
+        assertEquals(8f, c.depth, 0f)
+        assertEquals(24f, c.gapU, 0f)
         assertFalse(c.scrollFocusedTitle)
         assertFalse(c.placeholderNames)
         assertEquals(c, RhineDisplayConfig.decode(c.encode()))
@@ -26,14 +27,14 @@ class RhineDisplayTest {
                     depth = Float.POSITIVE_INFINITY,
                     peak = -1f,
                     topSp = 0f,
-                    sideSp = 12f,
                 )
                 .normalized()
         assertEquals(207f, c.length, 0f)
-        assertEquals(18f, c.depth, 0f)
+        assertEquals(8f, c.depth, 0f)
         assertEquals(70f, c.peak, 0f)
         assertEquals(8f, c.topSp, 0f)
-        assertEquals(12f, c.sideSp, 0f)
+        // A depth saved before blocks became thin falls back to the new default.
+        assertEquals(8f, RhineDisplayConfig(depth = 18f).normalized().depth, 0f)
         assertEquals(
             RhineDisplayConfig(),
             RhineDisplayConfig.decode("{\"version\":2,\"topSp\":12}"),
@@ -56,12 +57,12 @@ class RhineDisplayTest {
             RhineDisplayConfig(
                 density = RhineDensity.Custom,
                 length = 250f,
-                depth = 32f,
+                depth = 12f,
                 targetRows = 20f,
             )
         val p = c.preset(RhineDensity.Compact)
         assertEquals(250f, p.length, 0f)
-        assertEquals(32f, p.depth, 0f)
+        assertEquals(12f, p.depth, 0f)
         val custom = p.preset(RhineDensity.Custom)
         assertEquals(250f, custom.geometry(700f, 300f).blockLength, 0f)
         assertEquals(16f, custom.targetRows, 0f)
@@ -91,7 +92,7 @@ class RhineDisplayTest {
                 RhineDisplayConfig(
                     density = RhineDensity.Custom,
                     length = 100f,
-                    depth = 12f,
+                    depth = 4f,
                     gapU = 8f,
                     gapV = 6f,
                     base = 8f,
@@ -102,7 +103,7 @@ class RhineDisplayTest {
                 RhineDisplayConfig(
                     density = RhineDensity.Custom,
                     length = 360f,
-                    depth = 64f,
+                    depth = 16f,
                     gapU = 40f,
                     gapV = 40f,
                     base = 48f,

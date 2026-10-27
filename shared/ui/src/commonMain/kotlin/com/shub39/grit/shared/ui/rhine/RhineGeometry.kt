@@ -36,10 +36,13 @@ import kotlin.math.sin
 data class RhineGeometry(
     /** Block extent along V (the long side carrying the titles). */
     val blockLength: Float = 207f,
-    /** Block extent along U. */
-    val blockDepth: Float = 18f,
-    /** Seam along U; also how much of a long face shows above a same-height neighbour. */
-    val gapU: Float = 16f,
+    /** Block extent along U: thin, like a disc. */
+    val blockDepth: Float = 8f,
+    /**
+     * Seam along U; also how much of a long face shows above a same-height neighbour (`gapU /
+     * slopeU`). Wide enough that the title on a long face stays readable behind the peak.
+     */
+    val gapU: Float = 24f,
     val gapV: Float = 12f,
     /** Height of every non-center block. */
     val baseHeight: Float = 16f,

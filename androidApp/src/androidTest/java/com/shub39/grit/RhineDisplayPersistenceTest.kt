@@ -54,7 +54,7 @@ class RhineDisplayPersistenceTest {
             val c =
                 RhineDisplayConfig()
                     .preset(RhineDensity.Compact)
-                    .copy(topSp = 12f, sideSp = 9f, taskNumbers = false, reduceMotion = true)
+                    .copy(topSp = 12f, taskNumbers = false, reduceMotion = true)
             store.setRhineDisplay(c)
             assertEquals(c, store.getRhineDisplay().first())
             scope.coroutineContext[Job]!!.cancelAndJoin()

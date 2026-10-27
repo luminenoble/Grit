@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.2.3
+
+- Rhine: blocks are frosted glass with crisp outlines and edges; only what you see through the glass is blurred, instead of blurring whole blocks
+- Rhine: each block's title now sits on its long face with the picture, and blocks are thinner, like discs; the top face no longer carries text and the parent name is no longer repeated on every block
+- Rhine: every block in a column takes the colour of its first block (the category, or the task on the section layer), gradients included, spread evenly over the block; this replaces the rainbow sheen
+- Rhine display settings: one title size instead of top and side sizes; block depth now ranges 4–16 dp (default 8) and the gap along a column defaults to 24 dp
+- Tasks widget: gradient title colours now show as a gradient instead of only the first colour
+
 ## 6.2.2
 
 - Rhine: every block with a picture shows it, not only the selected one; blocks away from the selection are blurred more lightly than before

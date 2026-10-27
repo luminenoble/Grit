@@ -119,10 +119,6 @@ data class RhineSlot(
     val item: RhineItem? = null,
 )
 
-/** Every zero and real block carries its parent label on the side face. */
-val RhineSlot.showsSideLabel: Boolean
-    get() = column != null && (kind == RhineBlockKind.Zero || kind == RhineBlockKind.Real)
-
 /** Local 2D frame of a face: `screen = origin + x * xAxis + y * yAxis`, size in local px. */
 @Immutable
 data class FaceFrame(
@@ -141,7 +137,7 @@ data class RhineBlock(
     val slot: RhineSlot,
     val height: Float,
     val top: List<Offset>,
-    /** Long face at the column-start side, facing the lower right. Carries the column label. */
+    /** Long face at the column-start side, facing the lower right. Carries the title and picture. */
     val front: List<Offset>,
     /** End cap facing the lower left. */
     val cap: List<Offset>,
@@ -420,9 +416,9 @@ fun RhineProjection.block(
                 project(u1, v1, 0f),
                 project(u1, v0, 0f),
             ),
-        // Top-face text reads along V; its "down" points towards the column start (-U).
+        // The top face runs along V; its "down" points towards the column start (-U).
         topFrame = FaceFrame(project(u1, v0, top0), eV, -eU, length, depth),
-        // Front-face text reads along V; its "down" points to the floor.
+        // The title on the long face reads along V; its "down" points to the floor.
         frontFrame = FaceFrame(project(u0, v0, top0), eV, -eZ, length, frontVisible),
         frontVisible = frontVisible,
         base = z0,

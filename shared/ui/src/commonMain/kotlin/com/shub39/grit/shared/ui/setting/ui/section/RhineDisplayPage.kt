@@ -186,11 +186,8 @@ fun RhineDisplayPage(
                                     draft = draft.copy(targetColumns = it)
                                 }
                             } else Text("自定义按 dp 固定尺寸；可见数量由左侧预览计算。")
-                            ConfigSlider("顶面字号 sp", draft.topSp, 6f..20f) {
+                            ConfigSlider("标题字号 sp", draft.topSp, 6f..20f) {
                                 draft = draft.copy(topSp = it)
-                            }
-                            ConfigSlider("侧面字号 sp", draft.sideSp, 6f..20f) {
-                                draft = draft.copy(sideSp = it)
                             }
                             Text(
                                 "字号跟随系统字体缩放；几何尺寸只使用 dp。",
@@ -202,7 +199,7 @@ fun RhineDisplayPage(
                             ConfigSlider("块长 dp", draft.length, 100f..360f) {
                                 draft = draft.copy(density = RhineDensity.Custom, length = it)
                             }
-                            ConfigSlider("块深 dp", draft.depth, 12f..64f) {
+                            ConfigSlider("块深 dp", draft.depth, 4f..16f) {
                                 draft = draft.copy(density = RhineDensity.Custom, depth = it)
                             }
                             ConfigSlider("基础高 dp", draft.base, 8f..48f) {

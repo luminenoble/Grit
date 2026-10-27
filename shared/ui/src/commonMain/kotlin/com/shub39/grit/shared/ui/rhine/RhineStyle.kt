@@ -24,7 +24,10 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.shub39.grit.shared.ui.theme.parseTitleColors
 
-/** Material and text defaults for the Rhine scene. Text colors never tint the blocks. */
+/**
+ * Material and text defaults for the Rhine scene. Blocks take their column's colour
+ * (docs/Rhine.md §7.3); title colours only ever change the text.
+ */
 @Immutable
 data class RhineStyle(
     // Sampled from docs/Rhine_reference.png.
@@ -32,7 +35,7 @@ data class RhineStyle(
     val top: Color = Color(0xFFEDE9E6),
     val topFar: Color = Color(0xFFE7E2DD),
     /**
-     * Long side face carrying the column label. Shading is graded across the screen: [front] /
+     * Long face carrying the title and picture. Shading is graded across the screen: [front] /
      * [frontLow] at the centre, easing to [frontEdge] / [frontLowEdge] towards the borders.
      */
     val front: Color = Color(0xFFB3A99D),
@@ -49,53 +52,46 @@ data class RhineStyle(
     val shadowAlphaEdge: Float = 0.03f,
     /** Small round fitting near the far end of each long face. */
     val marker: Color = Color(0xFF8A8C8D),
+    /** Share of the column colour mixed into the opaque matte faces. */
+    val matteTintAlpha: Float = 0.30f,
     /**
-     * Transparent glass blocks (docs/Rhine.md §7.1): each face is a clear veil over whatever stands
-     * behind it, the end face a little deeper as it turns from the light, and the edges catch the
-     * light as a fine white rim.
+     * Frosted glass (docs/Rhine.md §7.1), the sharp surface: the column colour, then a milky white
+     * over each face, brightest on the top that faces the light, with a soft light from above and a
+     * little shade at the foot of the long face, and a fine grain.
      */
-    val glassTop: Color = Color(0xB8FFFFFF),
-    val glassTopFar: Color = Color(0x94FBF8F4),
-    val glassFront: Color = Color(0x6BFFFFFF),
-    val glassFrontLow: Color = Color(0x42B4AA9E),
-    val glassCap: Color = Color(0x85ACA194),
-    val glassRim: Color = Color(0xF2FFFFFF),
-    val glassEdge: Color = Color(0x59574B3F),
+    val tintAlpha: Float = 0.30f,
+    val frostFront: Color = Color(0x4DFFFFFF),
+    val frostTop: Color = Color(0xC7FFFFFF),
+    val frostCap: Color = Color(0x22FFFFFF),
+    val capShade: Color = Color(0x1F5B4B3A),
+    val frontLight: Color = Color(0x3DFFFFFF),
+    val footShade: Color = Color(0x24463828),
+    val grainAlpha: Float = 0.05f,
+    /** White laid over a picture on glass that is not selected. */
+    val imageVeil: Float = 0.10f,
+    /** Lit edges, and the fine outline in a darkened column colour (or this warm grey). */
+    val rim: Color = Color(0xF2FFFFFF),
+    val glassEdge: Color = Color(0x73574B3F),
+    val edgeInk: Color = Color(0xFF28201A),
     /**
-     * Thin-film sheen over the glass, like light on a disc: clear glass with one narrow band of
-     * cyan, violet, rose and amber per run.
+     * Frosted glass, the backdrop: what light passes through the surfaces, blurred as a whole.
+     * The column colour is denser here, as it is seen through more than one pane.
      */
-    val sheen: List<Pair<Float, Color>> =
-        listOf(
-            0f to Color(0x00FFFFFF),
-            0.34f to Color(0x00FFFFFF),
-            0.44f to Color(0x3D8FE0EE),
-            0.53f to Color(0x38B9A2F0),
-            0.62f to Color(0x38F4A6C8),
-            0.71f to Color(0x33F6D49C),
-            0.82f to Color(0x00FFFFFF),
-            1f to Color(0x00FFFFFF),
-        ),
-    /** Window reflection on the glass, at its brightest. */
-    val glint: Color = Color(0x8CFFFFFF),
-    /** Prismatic line inside the lit edge of the long face. */
-    val prism: List<Color> =
-        listOf(
-            Color(0x9978D6F0),
-            Color(0x99A592F2),
-            Color(0x99F29AC2),
-            Color(0x99F5CF8A),
-            Color(0x998FE3B8),
-        ),
-    /** Default text on the light top face. */
+    val backdropFront: Color = Color(0x4DB0A69A),
+    val backdropTop: Color = Color(0x99FFFFFF),
+    val backdropCap: Color = Color(0x66968B7E),
+    val backdropTintAlpha: Float = 0.42f,
+    /** Outline of the focused block's long face. */
+    val focusLine: Color = Color(0x8C221F1A),
+    /** Default text on glass and on the light matte top. */
     val text: Color = Color(0xFF221F1A),
-    /** Default text on the dark side face. */
+    /** Default text on the dark matte long face. */
     val sideText: Color = Color(0xFFF8F4EE),
     val mutedText: Color = Color(0xFF8C857A),
     /** HUD ink. */
     val ink: Color = Color(0xFF100E06),
-    val topTextSize: TextUnit = 8.sp,
-    val sideTextSize: TextUnit = 7.sp,
+    /** The block title, on the long face. */
+    val titleTextSize: TextUnit = 8.sp,
 ) {
     /**
      * Text colours for a stored title colour, exactly as the user chose them (one colour, or the
@@ -112,6 +108,18 @@ data class RhineStyle(
     fun shadowAlphaAt(center: Float): Float =
         shadowAlphaEdge + (shadowAlphaCenter - shadowAlphaEdge) * center
 }
+
+/**
+ * Colour stops a block is tinted with: its column's colour, that is the colour of the column's 0
+ * block (docs/Rhine.md §7.3). Null for decorations, the new-column slot and uncoloured columns.
+ */
+fun RhineSlot.tintColors(): List<Color>? =
+    when (kind) {
+        RhineBlockKind.Zero,
+        RhineBlockKind.Real,
+        RhineBlockKind.Placeholder -> parseTitleColors(column?.titleColor)
+        else -> null
+    }
 
 fun contrast(a: Color, b: Color): Float {
     val la = a.luminance() + 0.05f

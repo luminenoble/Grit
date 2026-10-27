@@ -17,12 +17,19 @@
 package com.shub39.grit.widgets.all_tasks_widget
 
 import android.content.Context
+import android.graphics.Paint
 import android.os.Build
+import android.text.TextPaint
+import android.util.TypedValue
+import android.widget.RemoteViews
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -33,7 +40,9 @@ import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.LocalContext
 import androidx.glance.LocalSize
+import androidx.glance.appwidget.AndroidRemoteViews
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
@@ -59,7 +68,6 @@ import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
-import androidx.glance.text.TextDecoration
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.shub39.grit.R
@@ -69,12 +77,14 @@ import com.shub39.grit.core.settings.WidgetTextSize
 import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.core.tasks.Task
 import com.shub39.grit.core.tasks.TaskRepo
+import com.shub39.grit.core.tasks.titleColorStops
 import com.shub39.grit.shared.ui.theme.GlassTokens
 import com.shub39.grit.shared.ui.theme.RhineBaseColors
 import com.shub39.grit.shared.ui.theme.titleColor
 import com.shub39.grit.widgets.WidgetSize
 import com.shub39.grit.widgets.bodyFontSize
 import com.shub39.grit.widgets.captionFontSize
+import com.shub39.grit.widgets.gradientTitle
 import com.shub39.grit.widgets.itemPadding
 import com.shub39.grit.widgets.itemSpacing
 import kotlinx.coroutines.flow.first
@@ -196,6 +206,39 @@ class AllTasksWidget : GlanceAppWidget(), KoinComponent {
     }
 }
 
+/**
+ * A Task title in its stored colour, a gradient included (docs/项目概览.md §5): Glance text has no
+ * gradient brush, so the title is a plain TextView whose glyphs each carry their share of it.
+ */
+@Composable
+@GlanceComposable
+private fun TaskTitle(
+    title: String,
+    color: String?,
+    fontSize: TextUnit,
+    width: Dp,
+    modifier: GlanceModifier = GlanceModifier,
+) {
+    val context = LocalContext.current
+    val metrics = context.resources.displayMetrics
+    val stops = titleColorStops(color)?.map { it or 0xFF000000.toInt() }
+    val sizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, fontSize.value, metrics)
+    val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { textSize = sizePx }
+    val views =
+        RemoteViews(context.packageName, R.layout.widget_task_title).apply {
+            setTextViewTextSize(R.id.widget_task_title, TypedValue.COMPLEX_UNIT_SP, fontSize.value)
+            setTextColor(
+                R.id.widget_task_title,
+                stops?.first() ?: titleColor(null).toArgb(),
+            )
+            setTextViewText(
+                R.id.widget_task_title,
+                gradientTitle(title, stops.orEmpty(), paint, (width.value * metrics.density).toInt()),
+            )
+        }
+    AndroidRemoteViews(views, modifier)
+}
+
 @Composable
 @GlanceComposable
 private fun Content(
@@ -294,8 +337,12 @@ private fun Content(
                                         )
                                         .clickable { onUpdateTaskStatus(task) }
                             ) {
-                                Text(
-                                    text = task.title,
+                                TaskTitle(
+                                    title = task.title,
+                                    color = task.titleColor,
+                                    fontSize = taskFontSize,
+                                    // List, item and title paddings on both sides.
+                                    width = size.width - 16.dp - taskTextPadding * 4,
                                     modifier =
                                         GlanceModifier.fillMaxWidth()
                                             .padding(
@@ -304,13 +351,6 @@ private fun Content(
                                                     if (task.sections.isEmpty()) taskTextPadding
                                                     else taskTextPadding / 2,
                                             ),
-                                    style =
-                                        TextStyle(
-                                            fontSize = taskFontSize,
-                                            color = ColorProvider(titleColor(task.titleColor)),
-                                            textDecoration = TextDecoration.None,
-                                        ),
-                                    maxLines = 2,
                                 )
 
                                 // Surface step progress (e.g. "2/5 sections") on the widget.
