@@ -32,8 +32,8 @@ import org.junit.Test
 
 /**
  * Database v1 → v2 only adds rhine_illustrations, v2 → v3 a nullable Section title colour: stored
- * data survives, and illustrations follow their owners through the cascading keys (docs/视觉优化/03
- * sections 3, 9; docs/视觉优化/06).
+ * data survives, and illustrations follow their owners through the cascading keys (docs/项目概览.md
+ * §2).
  */
 class RhineIllustrationMigrationTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()

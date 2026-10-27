@@ -201,7 +201,7 @@ class RhineIllustrationCache(
 }
 
 /**
- * Which blocks can show an illustration (docs/视觉优化/07): column starts (0), i.e. the Category on
+ * Which blocks can show an illustration (docs/Rhine.md §9): column starts (0), i.e. the Category on
  * the first layer and the Task on the second, every real item block (Tasks on the first layer;
  * Sections have none), and the raised block of an editor or of a create/delete transition.
  */

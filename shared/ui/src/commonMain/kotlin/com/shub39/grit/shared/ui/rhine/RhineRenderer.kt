@@ -55,9 +55,9 @@ data class RhineLabels(
 )
 
 /**
- * Which blocks a draw covers. With transparent glass (docs/视觉优化/06) the scene is drawn twice: a
- * [Blurred] pass of everything but the selected block, blurred as a whole, and a [Sharp] pass of
- * the selected block alone on top. [All] draws the scene in one go.
+ * Which blocks a draw covers. With transparent glass (docs/Rhine.md §7.1) the scene is drawn
+ * twice: a [Blurred] pass of everything but the selected block, blurred as a whole, and a [Sharp]
+ * pass of the selected block alone on top. [All] draws the scene in one go.
  */
 enum class RhinePass {
     All,
@@ -89,7 +89,7 @@ fun DrawScope.drawRhineScene(
     val pad = 8f * d
     val raised = layout.raised
     // Matte blocks hide the faces behind them, so the focused Task's whole picture is revealed by
-    // turning the blocks in front of it into clear glass (docs/视觉优化/05). Glass needs none of
+    // turning the blocks in front of it into clear glass (docs/Rhine.md §7.2). Glass needs none of
     // this: the selected block is drawn sharp over everything.
     val task =
         if (glass || reveal <= 0f) null
@@ -233,9 +233,9 @@ fun DrawScope.drawRhineScene(
 }
 
 /**
- * How sharply [block] is drawn over the blurred scene (docs/视觉优化/06): 1 for the selected block,
- * which is the raised block while one is lifted and otherwise the block under the camera. As the
- * camera travels, sharpness passes from one block to the next within [SharpReach] of a slot.
+ * How sharply [block] is drawn over the blurred scene (docs/Rhine.md §7.1): 1 for the selected
+ * block, which is the raised block while one is lifted and otherwise the block under the camera. As
+ * the camera travels, sharpness passes from one block to the next within [SharpReach] of a slot.
  */
 fun sharpness(layout: RhineLayout, input: RhineSceneInput, block: RhineBlock): Float {
     val raised = layout.raised
@@ -257,7 +257,7 @@ private class OpenFace(
 )
 
 /**
- * Every block with an illustration opens its whole long face (docs/视觉优化/07): column starts and,
+ * Every block with an illustration opens its whole long face (docs/Rhine.md §9): column starts and,
  * on the first layer, the Tasks. While the focused [task] is revealed, the faces standing in front
  * of it fade their own picture out as its picture comes through, by [reveal].
  */
@@ -374,7 +374,7 @@ private fun DrawScope.drawBlock(block: RhineBlock, style: RhineStyle, center: Fl
 }
 
 /**
- * A transparent glass block (docs/视觉优化/06, 07): every face is a clear veil, so blocks behind and
+ * A transparent glass block (docs/Rhine.md §7.1): every face is a clear veil, so blocks behind and
  * their pictures show through, with a fine crease along each edge. Over the veil lies a thin-film
  * sheen: pastel bands running along each face, whose phase follows the block's place on screen, so
  * they slide from block to block as the camera moves, like light on a turning disc.

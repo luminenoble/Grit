@@ -89,7 +89,7 @@ data class RhineEditorRestore(
 
 /**
  * Category/Task editor: the right part of a split screen on thick glass, drawn in the Rhine window
- * so the scene on the left keeps showing the raised block (docs/视觉优化/02 section 7). Sections keep
+ * so the scene on the left keeps showing the raised block (docs/Rhine.md §6). Sections keep
  * their own editor. [panelAlpha] follows the entry/exit transition (read at layer time); [onDraft] reports the live draft
  * for the preview block. [extra] is shown first in the form.
  */
@@ -219,7 +219,7 @@ fun rhineEditorPanelFraction(widthDp: Float, fontScale: Float): Float =
 
 /**
  * Label-carrying stand-in for the edited object: a column-start (0) block showing the draft's own
- * name and colour, whatever slot the edit started from (docs/视觉优化/02 section 4.3).
+ * name and colour, whatever slot the edit started from (docs/Rhine.md §6).
  */
 fun rhineDraftSlot(edit: RhineEdit?, base: RhineSlot, index: Int): RhineSlot {
     val (id, title, color) =

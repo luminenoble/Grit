@@ -570,7 +570,7 @@ fun RhineScreen(
         director.reset()
     }
     /**
-     * Descent and clockwise return (docs/视觉优化/02 section 8). The browser camera glides from
+     * Descent and clockwise return (docs/Rhine.md §6). The browser camera glides from
      * [RhineExit.from] to [RhineExit.to] alongside, so data windows and the peak follow; [after]
      * runs once the default framing is restored.
      */
@@ -992,7 +992,7 @@ fun RhineScreen(
     val frameOf: () -> Pair<RhineFrame, RhineRaise?> = {
         framer.frame(director, browser.camera) { rhineDraftSlot(currentDraft, it, draftIndex) }
     }
-    // Illustrations (docs/视觉优化/07): every illustrated block in view shows its picture, i.e. the
+    // Illustrations (docs/Rhine.md §9): every illustrated block in view shows its picture, i.e. the
     // column starts and, on the first layer, the Tasks of the centre column and three columns either
     // side, plus the edited block. Blocks around the selection are decoded at full size, the
     // blurred rest at the smallest size.
@@ -1048,7 +1048,7 @@ fun RhineScreen(
         }
     }
     // Matte blocks reveal the focused Task's whole illustration once the camera rests
-    // (docs/视觉优化/05).
+    // (docs/Rhine.md §7.2).
     val revealed =
         input
             .takeIf { it.focusU == focusU.toFloat() && !transition && !director.active }
@@ -1344,8 +1344,9 @@ fun RhineCanvas(
     reveal: () -> Float = { 0f },
 ) {
     val measurer = rememberTextMeasurer(cacheSize = 384)
-    // Transparent glass blocks, with everything but the selected block blurred (docs/视觉优化/06).
-    // Without blur, with Reduce transparency or with low shadows the blocks stay matte and sharp.
+    // Transparent glass blocks, with everything but the selected block blurred (docs/Rhine.md
+    // §7.1). Without blur, with Reduce transparency or with low shadows the blocks stay matte and
+    // sharp.
     val glassOn =
         blurPossible() &&
             LocalGlassMode.current == GlassMode.Standard &&
@@ -1599,7 +1600,7 @@ fun RhineCanvas(
             )
         drawObserver?.drawn(layout)
         // While editing, the overview's block array stands behind the raised block as a backdrop
-        // (docs/视觉优化/07): the context crossfades from the turned, zoomed scene into the array
+        // (docs/Rhine.md §6): the context crossfades from the turned, zoomed scene into the array
         // as it stood before the editor opened, veiled by the floor colour and, on glass, blurred.
         val backdrop = frame.backdrop
         val backdropLayout =

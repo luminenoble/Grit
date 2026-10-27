@@ -24,7 +24,7 @@ import kotlin.random.Random
 import org.junit.Assert.*
 import org.junit.Test
 
-/** docs/视觉优化/02 section 5.6: the pose must leave the confirmed baseline untouched. */
+/** docs/Rhine.md §5: the pose must leave the confirmed baseline untouched. */
 class RhinePoseTest {
     private val geometry = RhineGeometry()
     private val screen = Size(2400f, 1080f)

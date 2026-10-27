@@ -31,7 +31,7 @@ import com.shub39.grit.shared.ui.rhine.*
 import org.junit.Assert.*
 import org.junit.Test
 
-/** docs/视觉优化/03: fitting, visibility, decode sizes, drafts and settings compatibility. */
+/** docs/Rhine.md §9: fitting, visibility, decode sizes, drafts and settings compatibility. */
 class RhineIllustrationTest {
     private val area = Rect(10f, 20f, 210f, 120f) // 200 × 100
 

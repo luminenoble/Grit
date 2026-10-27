@@ -50,7 +50,7 @@ data class RhineStyle(
     /** Small round fitting near the far end of each long face. */
     val marker: Color = Color(0xFF8A8C8D),
     /**
-     * Transparent glass blocks (docs/视觉优化/06, 07): each face is a clear veil over whatever stands
+     * Transparent glass blocks (docs/Rhine.md §7.1): each face is a clear veil over whatever stands
      * behind it, the end face a little deeper as it turns from the light, and the edges catch the
      * light as a fine white rim.
      */

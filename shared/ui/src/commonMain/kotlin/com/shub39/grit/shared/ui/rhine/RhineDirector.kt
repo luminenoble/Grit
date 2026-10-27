@@ -27,7 +27,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import kotlinx.coroutines.Job
 
-/** Transition stages; see the state machine in docs/视觉优化/02 section 9. */
+/** Transition stages; see the state machine in docs/Rhine.md §5. */
 enum class RhineStage {
     Idle,
     /** Category → Task: lift and turn, then fade into the Section layer. */

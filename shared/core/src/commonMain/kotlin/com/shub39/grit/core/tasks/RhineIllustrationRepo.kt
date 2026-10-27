@@ -38,7 +38,7 @@ sealed interface IllustrationChange {
 /**
  * Optional gallery illustration per Category and Task, stored apart from the business model: the
  * value is a device-local content URI, so it is not part of the JSON backup. Rows disappear with
- * their owner. See docs/视觉优化/03-Rhine图片与最终验收.md.
+ * their owner. See docs/Rhine.md §9.
  */
 interface RhineIllustrationRepo {
     /** Illustrations of the given owners only; never reads the whole table for a view. */

@@ -28,7 +28,7 @@ import kotlin.math.atan2
 @Immutable data class WorldPoint(val u: Float, val v: Float, val z: Float)
 
 /**
- * Camera pose on top of the fixed reference basis (docs/视觉优化/02 section 5):
+ * Camera pose on top of the fixed reference basis (docs/Rhine.md §5):
  * `screen + zoom · B_k · Rz(yaw) · (p − pivot)`, where `B_k` scales the vertical screen component of
  * the horizontal axes by [kh] and of Z by [kz]. A positive [yaw] turns the scene clockwise on screen,
  * i.e. the camera orbits counterclockwise seen from above. [pivot] null means the camera focus at
@@ -86,7 +86,7 @@ fun RhineGeometry.viewAzimuth(): Float {
     return atan2(slopeV, slopeU)
 }
 
-/** Editor and navigation targets, relative to the geometry (docs/视觉优化/02 sections 3–5). */
+/** Editor and navigation targets, relative to the geometry (docs/Rhine.md §5). */
 object RhineMotionSpec {
     const val NavYawFraction = 0.5f
     const val EditorYawFraction = 0.8f
@@ -112,7 +112,7 @@ data class RhineFrame(
     val liftDp: Float = 0f,
     /**
      * How far every block except the selected one has receded into a blurred, veiled backdrop
-     * behind it (editor, docs/视觉优化/07): 0 in the overview, 1 while editing.
+     * behind it (editor, docs/Rhine.md §6): 0 in the overview, 1 while editing.
      */
     val backdrop: Float = 0f,
     /** Opacity of the whole scene (navigation fades). */

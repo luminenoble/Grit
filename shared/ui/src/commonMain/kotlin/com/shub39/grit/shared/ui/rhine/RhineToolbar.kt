@@ -45,7 +45,7 @@ import com.shub39.grit.shared.ui.theme.GlassTokens
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-/** How much room the bottom toolbar may take; see docs/视觉优化/02 section 1.3. */
+/** How much room the bottom toolbar may take; see docs/Rhine.md §4. */
 enum class RhineToolbarProfile {
     /** Two-line focus readout, 52 dp. */
     Full,

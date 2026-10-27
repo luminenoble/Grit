@@ -55,7 +55,7 @@ import com.shub39.grit.shared.ui.blurPossible
 import kotlin.math.ceil
 
 /**
- * Liquid glass material, see docs/视觉优化/01-全局液态玻璃设计系统.md.
+ * Liquid glass material, see docs/项目概览.md §4.
  *
  * Glass belongs to the control and navigation layer floating above content. A surface is built from
  * up to six layers: the blurred backdrop (only where a [GlassBackdrop] is available, blur is
