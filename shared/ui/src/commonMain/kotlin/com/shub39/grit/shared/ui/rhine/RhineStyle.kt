@@ -52,21 +52,21 @@ data class RhineStyle(
     val shadowAlphaEdge: Float = 0.03f,
     /** Small round fitting near the far end of each long face. */
     val marker: Color = Color(0xFF8A8C8D),
-    /** Share of the column colour mixed into the opaque matte faces. */
-    val matteTintAlpha: Float = 0.30f,
+    /**
+     * Strength of the column colour (docs/Rhine.md §7.3): on the glass surface, and mixed into the
+     * opaque matte faces.
+     */
+    val tint: Float = 0.3f,
     /**
      * Frosted glass (docs/Rhine.md §7.1), the sharp surface: the column colour, then a milky white
-     * over each face, brightest on the top that faces the light, with a soft light from above and a
-     * little shade at the foot of the long face, and a fine grain.
+     * ([frost] on the long face) over each face, brightest on the top that faces the light, with a
+     * soft light from above and a little shade at the foot of the long face, and a fine [grain].
      */
-    val tintAlpha: Float = 0.30f,
-    val frostFront: Color = Color(0x4DFFFFFF),
-    val frostTop: Color = Color(0xC7FFFFFF),
-    val frostCap: Color = Color(0x22FFFFFF),
+    val frost: Float = 0.3f,
     val capShade: Color = Color(0x1F5B4B3A),
     val frontLight: Color = Color(0x3DFFFFFF),
     val footShade: Color = Color(0x24463828),
-    val grainAlpha: Float = 0.05f,
+    val grain: Float = 0.05f,
     /** White laid over a picture on glass that is not selected. */
     val imageVeil: Float = 0.10f,
     /** Lit edges, and the fine outline in a darkened column colour (or this warm grey). */
@@ -80,7 +80,6 @@ data class RhineStyle(
     val backdropFront: Color = Color(0x4DB0A69A),
     val backdropTop: Color = Color(0x99FFFFFF),
     val backdropCap: Color = Color(0x66968B7E),
-    val backdropTintAlpha: Float = 0.42f,
     /** Outline of the focused block's long face. */
     val focusLine: Color = Color(0x8C221F1A),
     /** Default text on glass and on the light matte top. */
@@ -107,6 +106,20 @@ data class RhineStyle(
 
     fun shadowAlphaAt(center: Float): Float =
         shadowAlphaEdge + (shadowAlphaCenter - shadowAlphaEdge) * center
+
+    /** Milky white over the long face, the top (brightest) and the end face. */
+    val frostFront: Color
+        get() = Color.White.copy(alpha = frost)
+
+    val frostTop: Color
+        get() = Color.White.copy(alpha = (frost + 0.48f).coerceAtMost(0.94f))
+
+    val frostCap: Color
+        get() = Color.White.copy(alpha = frost * 0.45f)
+
+    /** The column colour in the backdrop: denser, as it is seen through more than one pane. */
+    val backdropTint: Float
+        get() = (tint * 1.4f).coerceAtMost(0.9f)
 }
 
 /**

@@ -53,6 +53,14 @@ data class RhineDisplayConfig(
     val shadow: RhineShadow = RhineShadow.Standard,
     /** How block illustrations fill their area; never stretched. */
     val illustrationFit: RhineImageFit = RhineImageFit.CropTopStart,
+    /** Frosted glass: blur (dp) and saturation of what is seen through the glass. */
+    val frostBlur: Float = 8f,
+    val frostSaturation: Float = 1.35f,
+    /** Frosted glass: milky white over the faces, and the strength of its grain. */
+    val frost: Float = 0.3f,
+    val grain: Float = 0.05f,
+    /** Strength of the column colour on the blocks, glass and matte. */
+    val tint: Float = 0.3f,
 ) {
     fun normalized(): RhineDisplayConfig {
         if (version != 1) return RhineDisplayConfig()
@@ -70,6 +78,11 @@ data class RhineDisplayConfig(
             spread = spread.valid(1f..8f, 4.5f),
             gapU = gapU.valid(8f..40f, 24f),
             gapV = gapV.valid(6f..40f, 12f),
+            frostBlur = frostBlur.valid(0f..16f, 8f),
+            frostSaturation = frostSaturation.valid(1f..1.8f, 1.35f),
+            frost = frost.valid(0f..0.6f, 0.3f),
+            grain = grain.valid(0f..0.16f, 0.05f),
+            tint = tint.valid(0f..0.7f, 0.3f),
         )
     }
 

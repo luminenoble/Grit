@@ -1656,11 +1656,17 @@ fun RhineCanvas(
         // sharp surface after clearing what it covers, so the backdrop shows only through glass.
         // Recording from inside this draw must not hand this scope over as its own density.
         val recordDensity = androidx.compose.ui.unit.Density(density, fontScale)
-        val blur = FrostBlur + (BackdropBlur - FrostBlur) * backdrop
+        val frost = display.normalized()
+        val blur = (frost.frostBlur + (BackdropBlur - frost.frostBlur) * backdrop).dp.toPx()
         backdropLayer.renderEffect =
-            BlurEffect(blur.toPx() * FrostScale, blur.toPx() * FrostScale, TileMode.Clamp)
+            if (blur < 0.5f) null
+            else BlurEffect(blur * FrostScale, blur * FrostScale, TileMode.Clamp)
         backdropLayer.colorFilter =
-            ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(FrostSaturation) })
+            if (frost.frostSaturation == 1f) null
+            else
+                ColorFilter.colorMatrix(
+                    ColorMatrix().apply { setToSaturation(frost.frostSaturation) }
+                )
         backdropLayer.record(
             recordDensity,
             layoutDirection,
@@ -1688,10 +1694,11 @@ fun RhineCanvas(
 /** The frosted backdrop is drawn at this fraction of the scene size. */
 private const val FrostScale = 0.5f
 
-/** Blur and saturation of what is seen through the glass, and blur of the editor's backdrop. */
-private val FrostBlur = 8.dp
-private const val FrostSaturation = 1.35f
-private val BackdropBlur = 3.dp
+/**
+ * Blur (dp) of the editor's backdrop. The blur and saturation of what is seen through the glass are
+ * display settings (`RhineDisplayConfig.frostBlur`, `frostSaturation`).
+ */
+private const val BackdropBlur = 3f
 
 /** Floor-coloured veil over the editor's backdrop: lighter on blurred glass than on sharp matte. */
 private const val GlassBackdropVeil = 0.1f

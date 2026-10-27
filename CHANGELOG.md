@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.2.4
+
+- Rhine display settings: a new Material page with column colour strength, background blur, background saturation, frost whiteness and grain, previewed live
+- Tasks widget: no longer switches text size on its own; it draws at the chosen size from the first frame
+- Tasks widget: tasks with sections show their step count again, and their rows no longer have a blank gap
+
 ## 6.2.3
 
 - Rhine: blocks are frosted glass with crisp outlines and edges; only what you see through the glass is blurred, instead of blurring whole blocks

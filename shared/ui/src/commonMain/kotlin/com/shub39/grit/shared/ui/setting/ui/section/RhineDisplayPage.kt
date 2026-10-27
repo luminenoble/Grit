@@ -144,7 +144,7 @@ fun RhineDisplayPage(
                         .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    val tabs = listOf("密度/字号", "块体", "标记/效果")
+                    val tabs = listOf("密度/字号", "块体", "材质", "标记/效果")
                     GlassSegmented(
                         options = tabs.indices.toList(),
                         selected = tab,
@@ -221,6 +221,36 @@ fun RhineDisplayPage(
                                 draft = draft.copy(density = RhineDensity.Custom, gapV = it)
                             }
                         }
+                        2 -> {
+                            ConfigSlider("列颜色浓度", draft.tint, 0f..0.7f, decimals = 2) {
+                                draft = draft.copy(tint = it)
+                            }
+                            Text(
+                                "每列取 0 号块的颜色铺满整块，玻璃与哑光都生效。",
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                            ConfigSlider("背后模糊 dp", draft.frostBlur, 0f..16f) {
+                                draft = draft.copy(frostBlur = it)
+                            }
+                            ConfigSlider(
+                                "背后饱和度",
+                                draft.frostSaturation,
+                                1f..1.8f,
+                                decimals = 2,
+                            ) {
+                                draft = draft.copy(frostSaturation = it)
+                            }
+                            ConfigSlider("磨砂白度", draft.frost, 0f..0.6f, decimals = 2) {
+                                draft = draft.copy(frost = it)
+                            }
+                            ConfigSlider("颗粒", draft.grain, 0f..0.16f, decimals = 2) {
+                                draft = draft.copy(grain = it)
+                            }
+                            Text(
+                                "模糊、饱和度、白度与颗粒只作用于磨砂玻璃（Android 12 及以上、阴影质量为“标准”、未开启“降低透明度”）。块的外形始终清楚，只有隔着玻璃看到的后方被模糊。",
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
                         else -> {
                             ConfigSwitch("Category 序号", draft.categoryNumbers) {
                                 draft = draft.copy(categoryNumbers = it)
@@ -267,7 +297,7 @@ fun RhineDisplayPage(
                                 },
                             )
                             Text(
-                                "插图显示在 0 号块侧面名称下方，保持比例、不拉伸。",
+                                "插图显示在块长侧面的标题下方，保持比例、不拉伸。",
                                 style = MaterialTheme.typography.labelSmall,
                             )
                             Text(
@@ -301,9 +331,14 @@ private fun ConfigSlider(
     name: String,
     value: Float,
     range: ClosedFloatingPointRange<Float>,
+    decimals: Int = 1,
     onChange: (Float) -> Unit,
 ) {
-    Text("$name：${(value * 10).toInt() / 10f}", style = MaterialTheme.typography.labelMedium)
+    val step = if (decimals == 2) 100 else 10
+    Text(
+        "$name：${kotlin.math.round(value * step) / step}",
+        style = MaterialTheme.typography.labelMedium,
+    )
     GlassSlider(value = value, onValueChange = onChange, valueRange = range)
 }
 

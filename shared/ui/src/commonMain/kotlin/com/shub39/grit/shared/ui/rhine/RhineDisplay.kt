@@ -22,7 +22,10 @@ fun RhineDisplayConfig.geometry(widthDp: Float, heightDp: Float): RhineGeometry 
     )
 }
 
-fun RhineDisplayConfig.style() = RhineStyle(titleTextSize = normalized().topSp.sp)
+fun RhineDisplayConfig.style(): RhineStyle {
+    val c = normalized()
+    return RhineStyle(titleTextSize = c.topSp.sp, tint = c.tint, frost = c.frost, grain = c.grain)
+}
 
 fun RhineDisplayConfig.itemNumbers(layer: RhineLayer) =
     if (layer == RhineLayer.Categories) taskNumbers else sectionNumbers

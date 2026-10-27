@@ -52,6 +52,31 @@ class RhineDisplayTest {
     }
 
     @Test
+    fun materialSettingsDefaultToThePreviewValuesAndReachTheStyle() {
+        val c = RhineDisplayConfig()
+        assertEquals(8f, c.frostBlur, 0f)
+        assertEquals(1.35f, c.frostSaturation, 0f)
+        assertEquals(0.3f, c.frost, 0f)
+        assertEquals(0.05f, c.grain, 0f)
+        assertEquals(0.3f, c.tint, 0f)
+        assertEquals(RhineStyle(), c.style())
+        val bad =
+            RhineDisplayConfig(frostBlur = 40f, frostSaturation = 0.5f, frost = Float.NaN, tint = 2f)
+                .normalized()
+        assertEquals(8f, bad.frostBlur, 0f)
+        assertEquals(1.35f, bad.frostSaturation, 0f)
+        assertEquals(0.3f, bad.frost, 0f)
+        assertEquals(0.3f, bad.tint, 0f)
+        // Settings saved before these existed keep the defaults.
+        assertEquals(0.3f, RhineDisplayConfig.decode("{\"version\":1,\"topSp\":10}").tint, 0f)
+        val style = RhineDisplayConfig(tint = 0.6f, frost = 0.5f, grain = 0f).style()
+        assertEquals(0.6f, style.tint, 0f)
+        assertEquals(0.84f, style.backdropTint, 1e-6f)
+        assertEquals(0.94f, style.frostTop.alpha, 0.01f)
+        assertEquals(0f, style.grain, 0f)
+    }
+
+    @Test
     fun switchingModesDoesNotOverwriteCustomDimensionsOrViewportTargets() {
         val c =
             RhineDisplayConfig(

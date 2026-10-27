@@ -409,7 +409,7 @@ private fun DrawScope.drawBlock(
         top.toPath(path),
         Brush.linearGradient(listOf(style.top, style.topFar), start = top[0], end = top[3]),
     )
-    if (tint != null) tintBlock(block, tint, style.matteTintAlpha * tintWeight, path)
+    if (tint != null) tintBlock(block, tint, style.tint * tintWeight, path)
     // Hard creases: every visible edge in the darker edge colour, then a thin highlight set just
     // inside the near top edge, so the slats read with crisp corners as in the reference.
     val crease = 0.9f * d
@@ -436,7 +436,7 @@ private fun DrawScope.drawBackdropBlock(
     drawPath(block.front.toPath(path), style.backdropFront)
     drawPath(block.top.toPath(path), style.backdropTop)
     drawPath(block.cap.toPath(path), style.backdropCap)
-    if (tint != null) tintBlock(block, tint, style.backdropTintAlpha * tintWeight, path)
+    if (tint != null) tintBlock(block, tint, style.backdropTint * tintWeight, path)
 }
 
 /**
@@ -453,9 +453,9 @@ private fun DrawScope.drawFrostedBlock(
     path: Path,
 ) {
     val d = density
-    if (tint != null) tintBlock(block, tint, style.tintAlpha * tintWeight, path)
+    if (tint != null) tintBlock(block, tint, style.tint * tintWeight, path)
     drawPath(block.front.toPath(path), style.frostFront)
-    if (grain != null) drawPath(path, grain, alpha = style.grainAlpha)
+    if (grain != null && style.grain > 0f) drawPath(path, grain, alpha = style.grain)
     drawPath(block.top.toPath(path), style.frostTop)
     drawPath(block.cap.toPath(path), style.frostCap)
     drawPath(path, style.capShade)

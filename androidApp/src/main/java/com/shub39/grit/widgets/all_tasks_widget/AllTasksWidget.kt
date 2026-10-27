@@ -21,6 +21,7 @@ import android.graphics.Paint
 import android.os.Build
 import android.text.TextPaint
 import android.util.TypedValue
+import android.view.View
 import android.widget.RemoteViews
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,7 +30,6 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -87,6 +87,7 @@ import com.shub39.grit.widgets.captionFontSize
 import com.shub39.grit.widgets.gradientTitle
 import com.shub39.grit.widgets.itemPadding
 import com.shub39.grit.widgets.itemSpacing
+import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -108,12 +109,16 @@ class AllTasksWidget : GlanceAppWidget(), KoinComponent {
         val settings = get<SettingsDatastore>()
         val data = repo.getTasksFlow()
         val initialData = data.first()
+        // Read the stored size before the first frame: starting from a default made every new
+        // widget session draw at Medium first and then jump to the chosen size.
+        val textSizes = settings.getWidgetTextSizeFlow()
+        val initialTextSize = textSizes.first()
 
         provideContent {
             val scope = rememberCoroutineScope()
             val size = LocalSize.current
             val tasks by data.collectAsState(initialData)
-            val textSize by settings.getWidgetTextSizeFlow().collectAsState(WidgetTextSize.MEDIUM)
+            val textSize by textSizes.collectAsState(initialTextSize)
 
             val widgetScope = currentState<Preferences>()[scopeKey] ?: SCOPE_ALL
             val scopedTasks =
@@ -207,34 +212,69 @@ class AllTasksWidget : GlanceAppWidget(), KoinComponent {
 }
 
 /**
- * A Task title in its stored colour, a gradient included (docs/项目概览.md §5): Glance text has no
- * gradient brush, so the title is a plain TextView whose glyphs each carry their share of it.
+ * One task row (docs/项目概览.md §5): glass background, the title in its stored colour (gradients
+ * included) and the step count, all in one layout of our own. Glance text takes no gradient brush,
+ * so the title is a TextView whose glyphs each carry their share of it; and Glance misplaces a
+ * RemoteViews nested inside its own background container, losing the row's other children, so the
+ * whole row is ours.
  */
 @Composable
 @GlanceComposable
-private fun TaskTitle(
-    title: String,
-    color: String?,
-    fontSize: TextUnit,
-    width: Dp,
+private fun TaskRow(
+    task: Task,
+    textSize: WidgetTextSize,
+    titleWidth: Dp,
     modifier: GlanceModifier = GlanceModifier,
 ) {
     val context = LocalContext.current
     val metrics = context.resources.displayMetrics
-    val stops = titleColorStops(color)?.map { it or 0xFF000000.toInt() }
-    val sizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, fontSize.value, metrics)
-    val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { textSize = sizePx }
+    fun px(dp: Dp) = (dp.value * metrics.density).roundToInt()
+    val pad = textSize.itemPadding
+    val titleSp = textSize.bodyFontSize.value
+    val stops = titleColorStops(task.titleColor)?.map { it or 0xFF000000.toInt() }
+    val paint =
+        TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, titleSp, metrics)
+        }
+    val steps = task.sections.size
+    val titlePad = if (steps == 0) pad else pad / 2
     val views =
-        RemoteViews(context.packageName, R.layout.widget_task_title).apply {
-            setTextViewTextSize(R.id.widget_task_title, TypedValue.COMPLEX_UNIT_SP, fontSize.value)
-            setTextColor(
-                R.id.widget_task_title,
-                stops?.first() ?: titleColor(null).toArgb(),
+        RemoteViews(context.packageName, R.layout.widget_task_row).apply {
+            setInt(
+                R.id.widget_task_row,
+                "setBackgroundResource",
+                if (task.isCompleted) R.drawable.widget_glass_item_done
+                else R.drawable.widget_glass_item,
             )
+            setViewPadding(
+                R.id.widget_task_row,
+                px(pad),
+                px(textSize.itemSpacing),
+                px(pad),
+                px(textSize.itemSpacing),
+            )
+            setViewPadding(R.id.widget_task_title, px(pad), px(titlePad), px(pad), px(titlePad))
+            setTextViewTextSize(R.id.widget_task_title, TypedValue.COMPLEX_UNIT_SP, titleSp)
+            setTextColor(R.id.widget_task_title, stops?.first() ?: titleColor(null).toArgb())
             setTextViewText(
                 R.id.widget_task_title,
-                gradientTitle(title, stops.orEmpty(), paint, (width.value * metrics.density).toInt()),
+                gradientTitle(task.title, stops.orEmpty(), paint, px(titleWidth)),
             )
+            // Step progress, e.g. "2/5 sections".
+            if (steps > 0) {
+                setViewVisibility(R.id.widget_task_steps, View.VISIBLE)
+                setViewPadding(R.id.widget_task_steps, px(pad), 0, px(pad), px(pad / 2))
+                setTextViewTextSize(
+                    R.id.widget_task_steps,
+                    TypedValue.COMPLEX_UNIT_SP,
+                    textSize.captionFontSize.value,
+                )
+                setTextColor(R.id.widget_task_steps, GlassTokens.SecondaryText.toArgb())
+                setTextViewText(
+                    R.id.widget_task_steps,
+                    "${task.sections.count { it.isCompleted }}/$steps sections",
+                )
+            }
         }
     AndroidRemoteViews(views, modifier)
 }
@@ -314,64 +354,19 @@ private fun Content(
                     )
                     Spacer(GlanceModifier.height(taskItemSpacing * 2))
                     taskGroup.value.forEach { task ->
-                        val status = task.isCompleted
-
-                        Column {
-                            Column(
+                        // The row is the column's only child; the gap below is padding, not a
+                        // sibling of the row.
+                        Column(GlanceModifier.fillMaxWidth().padding(bottom = taskItemSpacing)) {
+                            TaskRow(
+                                task = task,
+                                textSize = textSize,
+                                // List, row and title paddings on both sides.
+                                titleWidth = size.width - 16.dp - taskTextPadding * 4,
                                 modifier =
-                                    GlanceModifier.fillMaxWidth()
-                                        .background(
-                                            ImageProvider(
-                                                if (!status) R.drawable.widget_glass_item
-                                                else R.drawable.widget_glass_item_done
-                                            )
-                                        )
-                                        .then(
-                                            if (roundedCornerSupported)
-                                                GlanceModifier.cornerRadius(16.dp)
-                                            else GlanceModifier
-                                        )
-                                        .padding(
-                                            horizontal = taskTextPadding,
-                                            vertical = taskItemSpacing,
-                                        )
-                                        .clickable { onUpdateTaskStatus(task) }
-                            ) {
-                                TaskTitle(
-                                    title = task.title,
-                                    color = task.titleColor,
-                                    fontSize = taskFontSize,
-                                    // List, item and title paddings on both sides.
-                                    width = size.width - 16.dp - taskTextPadding * 4,
-                                    modifier =
-                                        GlanceModifier.fillMaxWidth()
-                                            .padding(
-                                                horizontal = taskTextPadding,
-                                                vertical =
-                                                    if (task.sections.isEmpty()) taskTextPadding
-                                                    else taskTextPadding / 2,
-                                            ),
-                                )
-
-                                // Surface step progress (e.g. "2/5 sections") on the widget.
-                                if (task.sections.isNotEmpty()) {
-                                    val doneSteps = task.sections.count { it.isCompleted }
-                                    Text(
-                                        text = "$doneSteps/${task.sections.size} sections",
-                                        modifier =
-                                            GlanceModifier.padding(
-                                                start = taskTextPadding,
-                                                bottom = taskTextPadding / 2,
-                                            ),
-                                        style =
-                                            TextStyle(
-                                                fontSize = textSize.captionFontSize,
-                                                color = ColorProvider(GlassTokens.SecondaryText),
-                                            ),
-                                    )
-                                }
-                            }
-                            Spacer(GlanceModifier.height(taskItemSpacing))
+                                    GlanceModifier.fillMaxWidth().clickable {
+                                        onUpdateTaskStatus(task)
+                                    },
+                            )
                         }
                     }
                 }
