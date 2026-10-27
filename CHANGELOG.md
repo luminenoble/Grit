@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.2.2
+
+- Rhine: every block with a picture shows it, not only the selected one; blocks away from the selection are blurred more lightly than before
+- Rhine: glass blocks catch the light like a disc, with a soft rainbow sheen that slides as you move, a window glint and bright edges
+- Rhine editor: the lifted block has the same glass look, and the block array stays behind it as a softly blurred background
+
 ## 6.2.1
 
 - Text colours now show exactly as picked; the automatic darkening that changed chosen colours is gone

@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
@@ -74,11 +75,10 @@ fun DrawScope.drawRhineScene(
         com.shub39.grit.core.settings.RhineDisplayConfig(),
     titlePhase: Float = 0f,
     facePath: Path = Path(),
-    contextAlpha: Float = 1f,
     raisedAlpha: Float = 1f,
     /** Decoded illustration for a block (slot, raised), when it has one. */
     illustration: (RhineSlot, Boolean) -> ImageBitmap? = { _, _ -> null },
-    /** Fade-in (0..1) of the focused Task's whole illustration. */
+    /** Fade-in (0..1) of the focused Task's whole illustration through the matte blocks in front. */
     reveal: Float = 0f,
     /** Transparent glass blocks instead of matte ones. */
     glass: Boolean = false,
@@ -88,20 +88,26 @@ fun DrawScope.drawRhineScene(
     val d = layout.projection.density
     val pad = 8f * d
     val raised = layout.raised
-    val opened = openedFaces(layout, input, style, pad, illustration, reveal)
-    val task = opened.firstOrNull { it.block.slot.kind == RhineBlockKind.Real }
+    // Matte blocks hide the faces behind them, so the focused Task's whole picture is revealed by
+    // turning the blocks in front of it into clear glass (docs/视觉优化/05). Glass needs none of
+    // this: the selected block is drawn sharp over everything.
+    val task =
+        if (glass || reveal <= 0f) null
+        else
+            layout.blocks.firstOrNull {
+                it !== raised &&
+                    it.slot.kind == RhineBlockKind.Real &&
+                    it.slot.v == input.focusV &&
+                    it.slot.u.toFloat() == input.focusU &&
+                    illustration(it.slot, false) != null
+            }
+    val opened = openedFaces(layout, style, pad, illustration, task, reveal)
     // Blocks in front of an opened face turn see-through instead of moving, so the arrangement
     // stays as it is: decorations before a column start (D11), and clear glass in front of the
-    // focused Task (docs/视觉优化/05).
+    // focused Task.
     fun bodyAlpha(block: RhineBlock): Float {
         val slot = block.slot
-        if (
-            task != null &&
-                slot.v == task.block.slot.v &&
-                slot.u < task.block.slot.u &&
-                block.overlaps(task.block.front)
-        )
-            return 1f - (1f - ClearGlassAlpha) * task.alpha
+        if (task != null && task.hides(block)) return 1f - (1f - ClearGlassAlpha) * reveal
         return if (
             slot.u < 0 &&
                 opened.any {
@@ -111,6 +117,7 @@ fun DrawScope.drawRhineScene(
             SeeThroughAlpha
         else 1f
     }
+    val glint = if (glass) glintBrush(style) else null
     fun drawOne(block: RhineBlock) {
         val center = centrality(block)
         val slot = block.slot
@@ -148,6 +155,8 @@ fun DrawScope.drawRhineScene(
                     if (glass) style.glassEdge else style.edge,
                     open?.alpha ?: 1f,
                 )
+            // The light lies on the glass, over the picture.
+            if (glint != null) drawGlassLight(block, style, glint, facePath)
         }
 
         // Side face: the column label, above the illustration where one applies. Light glass takes
@@ -218,10 +227,7 @@ fun DrawScope.drawRhineScene(
             RhinePass.Blurred -> 1f - sharpness(layout, input, block)
             RhinePass.Sharp -> sharpness(layout, input, block)
         }
-    // Context blocks fade as one layer so overlapping faces never show through each other.
-    withAlphaLayer(contextAlpha) {
-        for (block in layout.blocks) withAlphaLayer(share(block)) { drawOne(block) }
-    }
+    for (block in layout.blocks) withAlphaLayer(share(block)) { drawOne(block) }
     if (raised != null && layout.raisedClear)
         withAlphaLayer(raisedAlpha * share(raised)) { drawOne(raised) }
 }
@@ -251,51 +257,38 @@ private class OpenFace(
 )
 
 /**
- * Column starts with an illustration open their whole long face (docs/视觉优化/03 section 5); so does
- * the focused Task once [reveal] starts, and it wins over a column start standing in front of it,
- * which fades its own image out as the Task's fades in.
+ * Every block with an illustration opens its whole long face (docs/视觉优化/07): column starts and,
+ * on the first layer, the Tasks. While the focused [task] is revealed, the faces standing in front
+ * of it fade their own picture out as its picture comes through, by [reveal].
  */
 private fun DrawScope.openedFaces(
     layout: RhineLayout,
-    input: RhineSceneInput,
     style: RhineStyle,
     pad: Float,
     illustration: (RhineSlot, Boolean) -> ImageBitmap?,
+    task: RhineBlock?,
     reveal: Float,
 ): List<OpenFace> {
-    val raised = layout.raised
-    fun open(block: RhineBlock, alpha: Float): OpenFace? {
-        val image = illustration(block.slot, false) ?: return null
-        val area = illustrationArea(block.frontFrame.copy(height = block.height), style, pad)
-        return area?.let { OpenFace(block, image, it, alpha) }
-    }
-    val task =
-        if (reveal <= 0f) null
-        else
-            layout.blocks
-                .firstOrNull {
-                    it !== raised &&
-                        it.slot.kind == RhineBlockKind.Real &&
-                        it.slot.v == input.focusV &&
-                        it.slot.u.toFloat() == input.focusU
-                }
-                ?.let { open(it, reveal) }
-    val opened = ArrayList<OpenFace>(3)
+    val opened = ArrayList<OpenFace>()
     for (block in layout.blocks) {
-        if (block === raised || !showsIllustration(block.slot, false)) continue
-        val inFront =
-            task != null && block.slot.v == task.block.slot.v && block.overlaps(task.block.front)
-        val alpha = if (inFront) 1f - task!!.alpha else 1f
-        if (alpha > 0f) open(block, alpha)?.let { opened += it }
+        if (block === layout.raised || !showsIllustration(block.slot, false)) continue
+        val alpha = if (task != null && task.hides(block)) 1f - reveal else 1f
+        if (alpha <= 0f) continue
+        val image = illustration(block.slot, false) ?: continue
+        val area = illustrationArea(block.frontFrame.copy(height = block.height), style, pad)
+        if (area != null) opened += OpenFace(block, image, area, alpha)
     }
-    task?.let { opened += it }
     return opened
 }
+
+/** Whether [block] stands in front of this one's long face, in the same column. */
+private fun RhineBlock.hides(block: RhineBlock): Boolean =
+    block.slot.v == slot.v && block.slot.u < slot.u && block.overlaps(front)
 
 /** Opacity of a decoration block standing in front of an illustrated column start. */
 private const val SeeThroughAlpha = 0.28f
 
-/** Opacity of the blocks in front of the focused Task's illustration once it is shown. */
+/** Opacity of the matte blocks in front of the focused Task's illustration once it is shown. */
 private const val ClearGlassAlpha = 0.3f
 
 private inline fun DrawScope.withAlphaLayer(alpha: Float, draw: () -> Unit) {
@@ -381,9 +374,10 @@ private fun DrawScope.drawBlock(block: RhineBlock, style: RhineStyle, center: Fl
 }
 
 /**
- * A transparent glass block (docs/视觉优化/06): every face is a light veil, so blocks behind and their
- * pictures show through; the end face is a little deeper, and the edges facing the light are a fine
- * white rim over a faint crease.
+ * A transparent glass block (docs/视觉优化/06, 07): every face is a clear veil, so blocks behind and
+ * their pictures show through, with a fine crease along each edge. Over the veil lies a thin-film
+ * sheen: pastel bands running along each face, whose phase follows the block's place on screen, so
+ * they slide from block to block as the camera moves, like light on a turning disc.
  */
 private fun DrawScope.drawGlassBlock(block: RhineBlock, style: RhineStyle, path: Path) {
     val d = density
@@ -415,16 +409,82 @@ private fun DrawScope.drawGlassBlock(block: RhineBlock, style: RhineStyle, path:
             end = top[3],
         ),
     )
+    val phase = top[0].x / size.width * 1.4f + top[0].y / size.height * 0.6f
+    fun film(face: List<Offset>, from: Offset, to: Offset, alpha: Float) {
+        val run = (to - from) * SheenPeriod
+        val start = from - run * phase
+        drawPath(
+            face.toPath(path),
+            Brush.linearGradient(
+                *style.sheen.toTypedArray(),
+                start = start,
+                end = start + run,
+                tileMode = TileMode.Mirror,
+            ),
+            alpha = alpha,
+        )
+    }
+    // Along the long face and the top, down the end face.
+    film(front, front[3], front[2], 1f)
+    film(top, top[0], top[1], 0.5f)
+    film(cap, cap[3], cap[0], 0.7f)
     val crease = 0.8f * d
     drawPolygon(front, style.glassEdge, stroke = crease, path = path)
     drawPolygon(cap, style.glassEdge, stroke = crease, path = path)
     drawPolygon(top, style.glassEdge, stroke = crease, path = path)
+}
+
+/** Length of one run of the sheen's bands, as a fraction of the face edge it follows. */
+private const val SheenPeriod = 0.85f
+
+/**
+ * A window reflection fixed on screen: a soft and a sharp steep band left of the centre, which the
+ * glass blocks pass through as the camera moves.
+ */
+private fun DrawScope.glintBrush(style: RhineStyle): Brush {
+    val reach = maxOf(size.width, size.height)
+    val clear = style.glint.copy(alpha = 0f)
+    return Brush.linearGradient(
+        0f to clear,
+        0.26f to clear,
+        0.33f to style.glint.copy(alpha = style.glint.alpha * 0.4f),
+        0.40f to clear,
+        0.43f to clear,
+        0.445f to style.glint,
+        0.46f to clear,
+        1f to clear,
+        start = Offset.Zero,
+        // Bands at about 65°, steeper than the long faces climb.
+        end = Offset(reach * 0.906f, reach * 0.423f),
+    )
+}
+
+/**
+ * Light on the glass, drawn over the face picture: the window [glint] on every face, the edges facing
+ * the light as a fine white rim, and a prismatic line just inside the long face's top edge.
+ */
+private fun DrawScope.drawGlassLight(block: RhineBlock, style: RhineStyle, glint: Brush, path: Path) {
+    val d = density
+    val front = block.front
+    val cap = block.cap
+    val top = block.top
+    drawPath(front.toPath(path), glint)
+    drawPath(top.toPath(path), glint, alpha = 0.6f)
+    drawPath(cap.toPath(path), glint, alpha = 0.7f)
     // Rim light: the near top edge, the top of the end face and a softer line down the front's
     // leading edge.
     val rim = 1.1f * d
     drawLine(style.glassRim, top[0], top[1], strokeWidth = rim)
     drawLine(style.glassRim.copy(alpha = 0.7f), cap[3], cap[2], strokeWidth = rim * 0.8f)
     drawLine(style.glassRim.copy(alpha = 0.45f), front[3], front[0], strokeWidth = rim * 0.7f)
+    val down = front[0] - front[3]
+    val inset = down * (1.8f * d / down.getDistance().coerceAtLeast(1f))
+    drawLine(
+        Brush.linearGradient(style.prism, front[3], front[2]),
+        front[3] + inset,
+        front[2] + inset,
+        strokeWidth = 0.9f * d,
+    )
 }
 
 /**

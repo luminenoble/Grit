@@ -50,17 +50,43 @@ data class RhineStyle(
     /** Small round fitting near the far end of each long face. */
     val marker: Color = Color(0xFF8A8C8D),
     /**
-     * Transparent glass blocks (docs/视觉优化/06): each face is a light veil over whatever stands
+     * Transparent glass blocks (docs/视觉优化/06, 07): each face is a clear veil over whatever stands
      * behind it, the end face a little deeper as it turns from the light, and the edges catch the
      * light as a fine white rim.
      */
-    val glassTop: Color = Color(0xC7FFFFFF),
-    val glassTopFar: Color = Color(0xA3FBF8F4),
-    val glassFront: Color = Color(0x85FFFFFF),
-    val glassFrontLow: Color = Color(0x5CB4AA9E),
-    val glassCap: Color = Color(0x99ACA194),
+    val glassTop: Color = Color(0xB8FFFFFF),
+    val glassTopFar: Color = Color(0x94FBF8F4),
+    val glassFront: Color = Color(0x6BFFFFFF),
+    val glassFrontLow: Color = Color(0x42B4AA9E),
+    val glassCap: Color = Color(0x85ACA194),
     val glassRim: Color = Color(0xF2FFFFFF),
-    val glassEdge: Color = Color(0x4D574B3F),
+    val glassEdge: Color = Color(0x59574B3F),
+    /**
+     * Thin-film sheen over the glass, like light on a disc: clear glass with one narrow band of
+     * cyan, violet, rose and amber per run.
+     */
+    val sheen: List<Pair<Float, Color>> =
+        listOf(
+            0f to Color(0x00FFFFFF),
+            0.34f to Color(0x00FFFFFF),
+            0.44f to Color(0x3D8FE0EE),
+            0.53f to Color(0x38B9A2F0),
+            0.62f to Color(0x38F4A6C8),
+            0.71f to Color(0x33F6D49C),
+            0.82f to Color(0x00FFFFFF),
+            1f to Color(0x00FFFFFF),
+        ),
+    /** Window reflection on the glass, at its brightest. */
+    val glint: Color = Color(0x8CFFFFFF),
+    /** Prismatic line inside the lit edge of the long face. */
+    val prism: List<Color> =
+        listOf(
+            Color(0x9978D6F0),
+            Color(0x99A592F2),
+            Color(0x99F29AC2),
+            Color(0x99F5CF8A),
+            Color(0x998FE3B8),
+        ),
     /** Default text on the light top face. */
     val text: Color = Color(0xFF221F1A),
     /** Default text on the dark side face. */

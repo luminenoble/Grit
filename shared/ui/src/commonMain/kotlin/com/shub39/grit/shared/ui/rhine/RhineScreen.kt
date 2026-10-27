@@ -77,6 +77,7 @@ import androidx.compose.ui.unit.IntSize
 import com.shub39.grit.shared.ui.blurPossible
 import com.shub39.grit.shared.ui.theme.GlassMode
 import com.shub39.grit.shared.ui.theme.LocalGlassMode
+import kotlin.math.abs
 import kotlin.math.ceil
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
@@ -991,12 +992,14 @@ fun RhineScreen(
     val frameOf: () -> Pair<RhineFrame, RhineRaise?> = {
         framer.frame(director, browser.camera) { rhineDraftSlot(currentDraft, it, draftIndex) }
     }
-    // Illustrations: only column-start blocks of the centre column and its neighbours can be tall
-    // enough to show one, plus the edited block.
+    // Illustrations (docs/视觉优化/07): every illustrated block in view shows its picture, i.e. the
+    // column starts and, on the first layer, the Tasks of the centre column and three columns either
+    // side, plus the edited block. Blocks around the selection are decoded at full size, the
+    // blurred rest at the smallest size.
     val illustrationOwner =
         if (input.layer == RhineLayer.Categories) IllustrationOwner.Category else IllustrationOwner.Task
-    val nearIds =
-        (browser.center - 1..browser.center + 1).mapNotNull { input.columns.getOrNull(it)?.id }.toSet()
+    val nearColumns = (browser.center - 3..browser.center + 3).mapNotNull { input.columns.getOrNull(it) }
+    val nearIds = nearColumns.mapTo(HashSet()) { it.id }
     val overview by
         remember(illustrations, illustrationOwner, nearIds) {
                 illustrations?.illustrationsFlow(illustrationOwner, nearIds)
@@ -1004,27 +1007,20 @@ fun RhineScreen(
             }
             .collectAsState(emptyMap())
     val overviewBucket = illustrationBucket(geometry.blockLength * density)
+    val blurredBucket = IllustrationBuckets.first()
     val editorBucket = illustrationBucket(geometry.blockLength * density * 1.6f)
     val editorUri =
         illustrationDraft?.current?.takeIf {
             director.stage != RhineStage.Idle && director.stage != RhineStage.NavEnter
         }
-    LaunchedEffect(overview, editorUri, overviewBucket, editorBucket) {
-        overview.values.forEach { launch { illustrationCache.load(it, overviewBucket) } }
-        editorUri?.let { launch { illustrationCache.load(it, editorBucket) } }
-    }
-    // The focused Task on the first layer shows its whole illustration once the camera rests
-    // (docs/视觉优化/05). Its neighbours are read and decoded ahead, so stepping reveals at once.
     val focusU = input.focusU.roundToInt()
+    fun sharp(slot: RhineSlot) = slot.v == input.focusV && abs(slot.u - focusU) <= 1
     val nearTasks =
         if (input.layer != RhineLayer.Categories) emptySet()
         else
-            input.columns
-                .getOrNull(input.focusV)
-                ?.items
-                ?.filterKeys { it in focusU - 3..focusU + 3 }
-                ?.values
-                ?.mapTo(HashSet()) { it.id } ?: emptySet()
+            nearColumns.flatMapTo(HashSet()) { column ->
+                column.items.filterKeys { it in focusU - 8..focusU + 8 }.values.map { it.id }
+            }
     val taskImages by
         remember(illustrations, nearTasks) {
                 illustrations
@@ -1034,19 +1030,35 @@ fun RhineScreen(
             }
             .collectAsState(emptyMap())
     // The collected map outlives a layer switch; Section IDs must never look up Task images.
-    fun taskImage(item: RhineItem, layer: RhineLayer) =
-        if (layer == RhineLayer.Categories)
-            taskImages[item.id]?.let { illustrationCache.bitmap(it, overviewBucket) }
-        else null
-    LaunchedEffect(taskImages, overviewBucket) {
-        taskImages.values.forEach { launch { illustrationCache.load(it, overviewBucket) } }
+    fun taskUri(item: RhineItem, layer: RhineLayer) =
+        if (layer == RhineLayer.Categories) taskImages[item.id] else null
+    fun uriOf(slot: RhineSlot): String? =
+        when (slot.kind) {
+            RhineBlockKind.Real -> slot.item?.let { taskUri(it, input.layer) }
+            RhineBlockKind.Zero -> slot.column?.let { overview[it.id] }
+            else -> null
+        }
+    val sharpUris =
+        (focusU - 1..focusU + 1).mapNotNullTo(HashSet()) { uriOf(input.slot(it, input.focusV)) }
+    LaunchedEffect(overview, taskImages, sharpUris, editorUri, overviewBucket, editorBucket) {
+        editorUri?.let { launch { illustrationCache.load(it, editorBucket) } }
+        sharpUris.forEach { launch { illustrationCache.load(it, overviewBucket) } }
+        (overview.values + taskImages.values).forEach {
+            if (it !in sharpUris) launch { illustrationCache.load(it, blurredBucket) }
+        }
     }
+    // Matte blocks reveal the focused Task's whole illustration once the camera rests
+    // (docs/视觉优化/05).
     val revealed =
         input
             .takeIf { it.focusU == focusU.toFloat() && !transition && !director.active }
             ?.slot(focusU, input.focusV)
             ?.item
-            ?.takeIf { adjustment.move == null && taskImage(it, input.layer) != null }
+            ?.takeIf {
+                adjustment.move == null &&
+                    taskUri(it, input.layer)?.let { uri -> illustrationCache.bitmap(uri, overviewBucket) } !=
+                        null
+            }
             ?.id
     val reveal = remember { androidx.compose.animation.core.Animatable(0f) }
     LaunchedEffect(revealed, reduced) {
@@ -1057,12 +1069,10 @@ fun RhineScreen(
     val illustrationOf: (RhineSlot, Boolean) -> androidx.compose.ui.graphics.ImageBitmap? =
         { slot, raised ->
             if (raised) editorUri?.let { illustrationCache.bitmap(it, editorBucket) }
-            else if (slot.kind == RhineBlockKind.Real) slot.item?.let { taskImage(it, input.layer) }
             else
-                slot.column
-                    ?.takeIf { slot.kind == RhineBlockKind.Zero }
-                    ?.let { overview[it.id] }
-                    ?.let { illustrationCache.bitmap(it, overviewBucket) }
+                uriOf(slot)?.let {
+                    illustrationCache.bitmap(it, if (sharp(slot)) overviewBucket else blurredBucket)
+                }
         }
     val glassBackdrop =
         backdrop.takeIf {
@@ -1588,10 +1598,27 @@ fun RhineCanvas(
                 raise,
             )
         drawObserver?.drawn(layout)
+        // While editing, the overview's block array stands behind the raised block as a backdrop
+        // (docs/视觉优化/07): the context crossfades from the turned, zoomed scene into the array
+        // as it stood before the editor opened, veiled by the floor colour and, on glass, blurred.
+        val backdrop = frame.backdrop
+        val backdropLayout =
+            if (backdrop <= 0f) null
+            else
+                layoutScene(
+                    drawing,
+                    RhineProjection(
+                        geometry,
+                        density,
+                        Size(size.width, size.height),
+                        RhineCamera(input.focusU, input.cameraV),
+                    ),
+                    raise = raise,
+                )
         val revealed = reveal()
-        fun DrawScope.scene(pass: RhinePass) =
+        fun DrawScope.scene(pass: RhinePass, of: RhineLayout = layout) =
             drawRhineScene(
-                layout,
+                of,
                 drawing,
                 style,
                 labels,
@@ -1599,15 +1626,30 @@ fun RhineCanvas(
                 display,
                 titlePhase,
                 facePath,
-                contextAlpha = frame.contextAlpha,
                 raisedAlpha = frame.selectedAlpha,
                 illustration = illustration,
                 reveal = revealed,
                 glass = glassOn,
                 pass = pass,
             )
+        // Everything but the selected block, with the backdrop faded in over the posed context.
+        fun DrawScope.context() {
+            if (backdrop < 1f) scene(RhinePass.Blurred)
+            if (backdropLayout == null) return
+            drawIntoCanvas {
+                it.saveLayer(Rect(Offset.Zero, size), Paint().apply { alpha = backdrop })
+            }
+            scene(RhinePass.Blurred, backdropLayout)
+            drawIntoCanvas { it.restore() }
+        }
         if (!glassOn) {
-            scene(RhinePass.All)
+            if (backdropLayout == null) {
+                scene(RhinePass.All)
+                return@Canvas
+            }
+            context()
+            drawRect(style.floor.copy(alpha = MatteBackdropVeil * backdrop))
+            scene(RhinePass.Sharp)
             return@Canvas
         }
         // The scene without the selected block is recorded once and blurred twice on reduced
@@ -1617,7 +1659,7 @@ fun RhineCanvas(
         val full = IntSize(size.width.toInt(), size.height.toInt())
         // Recording from inside this draw must not hand this scope over as its own density.
         val recordDensity = androidx.compose.ui.unit.Density(density, fontScale)
-        sceneLayer.record(recordDensity, layoutDirection, full) { scene(RhinePass.Blurred) }
+        sceneLayer.record(recordDensity, layoutDirection, full) { context() }
         fun blurred(
             layer: androidx.compose.ui.graphics.layer.GraphicsLayer,
             scale: Float,
@@ -1634,7 +1676,7 @@ fun RhineCanvas(
             }
         }
         blurred(nearLayer, NearScale, NearBlur)
-        blurred(farLayer, FarScale, FarBlur)
+        blurred(farLayer, FarScale, FarBlur + (BackdropBlur - FarBlur) * backdrop)
         scale(1f / NearScale, 1f / NearScale, Offset.Zero) { drawLayer(nearLayer) }
         val focus =
             layout.raised?.let { b -> b.top.reduce { a, c -> a + c } / 4f }
@@ -1646,17 +1688,20 @@ fun RhineCanvas(
                 ?: Offset(size.width * geometry.anchor.x, size.height * geometry.anchor.y)
         drawIntoCanvas { it.saveLayer(Rect(Offset.Zero, size), Paint()) }
         scale(1f / FarScale, 1f / FarScale, Offset.Zero) { drawLayer(farLayer) }
+        // The far blur takes over from 30 % of the radius out, and everywhere in the backdrop.
+        val inner = Color.Black.copy(alpha = backdrop)
         drawRect(
             Brush.radialGradient(
-                0f to Color.Transparent,
-                0.22f to Color.Transparent,
+                0f to inner,
+                0.3f to inner,
                 1f to Color.Black,
                 center = focus,
-                radius = size.width * 0.6f,
+                radius = size.width * 0.7f,
             ),
             blendMode = BlendMode.DstIn,
         )
         drawIntoCanvas { it.restore() }
+        if (backdrop > 0f) drawRect(style.floor.copy(alpha = GlassBackdropVeil * backdrop))
         scene(RhinePass.Sharp)
     }
 }
@@ -1665,9 +1710,14 @@ fun RhineCanvas(
 private const val NearScale = 0.5f
 private const val FarScale = 0.25f
 
-/** Blur of the blocks around the selection, and of the far scene. */
-private val NearBlur = 3.dp
-private val FarBlur = 10.dp
+/** Blur of the blocks around the selection, of the far scene and of the editor's backdrop. */
+private val NearBlur = 1.5.dp
+private val FarBlur = 5.dp
+private val BackdropBlur = 3.dp
+
+/** Floor-coloured veil over the editor's backdrop: lighter on blurred glass than on sharp matte. */
+private const val GlassBackdropVeil = 0.1f
+private const val MatteBackdropVeil = 0.55f
 
 /** Text styles of the HUD; Montserrat for Latin, system fallback for Chinese. */
 internal class HudText(val family: FontFamily, val ink: Color) {

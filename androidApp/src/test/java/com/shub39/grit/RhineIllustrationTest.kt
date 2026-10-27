@@ -57,11 +57,11 @@ class RhineIllustrationTest {
     }
 
     @Test
-    fun onlyColumnStartBlocksOrTheRaisedBlockShowIllustrations() {
+    fun columnStartsItemsAndTheRaisedBlockShowIllustrations() {
         val column = RhineColumn(1, 1, "A", itemCount = 1, items = mapOf(1 to RhineItem(9, 1, "t")))
         val input = RhineSceneInput(RhineLayer.Categories, listOf(column), 0, 0f)
         assertTrue(showsIllustration(input.slot(0, 0), raised = false))
-        assertFalse(showsIllustration(input.slot(1, 0), raised = false))
+        assertTrue(showsIllustration(input.slot(1, 0), raised = false))
         assertFalse(showsIllustration(input.slot(2, 0), raised = false))
         assertFalse(showsIllustration(input.slot(0, 1), raised = false)) // add-parent column
         assertTrue(showsIllustration(input.slot(1, 0), raised = true))

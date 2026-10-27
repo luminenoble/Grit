@@ -142,7 +142,7 @@ sealed interface IllustrationImage {
 @Stable
 class RhineIllustrationCache(
     private val decoder: RhineImageDecoder?,
-    private val budgetBytes: Long = 24L * 1024 * 1024,
+    private val budgetBytes: Long = 48L * 1024 * 1024,
 ) {
     private val images = mutableStateMapOf<String, IllustrationImage>()
     private val order = ArrayDeque<String>()
@@ -201,12 +201,15 @@ class RhineIllustrationCache(
 }
 
 /**
- * Which blocks show an illustration (docs/视觉优化/03 section 5): in the overview only column-start
- * (0) blocks, i.e. the Category on the first layer and the Task on the second; the raised block of
- * an editor or of a create/delete transition always.
+ * Which blocks can show an illustration (docs/视觉优化/07): column starts (0), i.e. the Category on
+ * the first layer and the Task on the second, every real item block (Tasks on the first layer;
+ * Sections have none), and the raised block of an editor or of a create/delete transition.
  */
 fun showsIllustration(slot: RhineSlot, raised: Boolean): Boolean =
-    raised || (slot.kind == RhineBlockKind.Zero && slot.column != null)
+    raised ||
+        (slot.column != null &&
+            (slot.kind == RhineBlockKind.Zero ||
+                (slot.kind == RhineBlockKind.Real && slot.item != null)))
 
 /**
  * Source and destination rectangles for an image of [imageSize] in [area] (face-local px), never

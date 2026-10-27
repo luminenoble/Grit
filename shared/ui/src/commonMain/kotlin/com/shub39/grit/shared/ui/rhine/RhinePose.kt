@@ -110,8 +110,11 @@ data class RhineFrame(
     val pose: RhinePose = RhinePose.Identity,
     /** Lift of the selected block, dp. */
     val liftDp: Float = 0f,
-    /** Opacity of every block except the selected one. */
-    val contextAlpha: Float = 1f,
+    /**
+     * How far every block except the selected one has receded into a blurred, veiled backdrop
+     * behind it (editor, docs/视觉优化/07): 0 in the overview, 1 while editing.
+     */
+    val backdrop: Float = 0f,
     /** Opacity of the whole scene (navigation fades). */
     val sceneAlpha: Float = 1f,
     val hudAlpha: Float = 1f,
@@ -151,7 +154,7 @@ fun navEnterFrame(ms: Float, start: RhinePose, end: RhinePose, liftDp: Float, fo
 
 /**
  * Editor entry (1.5 s): lift 0–550 with the camera following, then yaw/tilt/zoom/pan 550–1150,
- * context fade-out 1100–1350 and panel fade-in 1250–1500. [raised] is [start] shifted by the
+ * context receding into the backdrop 1100–1350 and panel fade-in 1250–1500. [raised] is [start] shifted by the
  * follow offset, i.e. the pose at the end of the lift.
  */
 fun editorEnterFrame(
@@ -167,15 +170,15 @@ fun editorEnterFrame(
     return RhineFrame(
         pose = pose,
         liftDp = liftDp * lift,
-        contextAlpha = 1f - window(ms, 1100, 1350, GritMotion.EaseExit),
+        backdrop = window(ms, 1100, 1350, GritMotion.EaseExit),
         hudAlpha = 1f - window(ms, 0, 150, GritMotion.EaseExit),
         panelAlpha = window(ms, 1250, 1500, GritMotion.EaseStandard),
     )
 }
 
 /**
- * Editor exit (1.5 s): panel fade-out 0–250, context fade-in 200–500 revealing the raised, turned
- * block, then descent and clockwise return 500–1500 together, HUD fade-in 1350–1500. With
+ * Editor exit (1.5 s): panel fade-out 0–250, context back out of the backdrop 200–500 around the
+ * raised, turned block, then descent and clockwise return 500–1500 together, HUD fade-in 1350–1500. With
  * [dissolve] (after delete) the block fades 250–600 and only the camera returns 600–1500.
  */
 fun editorExitFrame(
@@ -189,7 +192,7 @@ fun editorExitFrame(
     return RhineFrame(
         pose = lerp(from, to, back),
         liftDp = liftDp * (1f - back),
-        contextAlpha = window(ms, 200, 500, GritMotion.EaseStandard),
+        backdrop = 1f - window(ms, 200, 500, GritMotion.EaseStandard),
         hudAlpha = window(ms, 1350, 1500, GritMotion.EaseStandard),
         panelAlpha = 1f - window(ms, 0, 250, GritMotion.EaseExit),
         selectedAlpha = if (dissolve) 1f - window(ms, 250, 600, GritMotion.EaseExit) else 1f,

@@ -223,7 +223,7 @@ class RhineFramer(
                         RhineFrame(
                             pose = end,
                             liftDp = editorLiftDp,
-                            contextAlpha = 0f,
+                            backdrop = 1f,
                             hudAlpha = 0f,
                             panelAlpha = 1f,
                         )
