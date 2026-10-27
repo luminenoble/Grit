@@ -33,6 +33,7 @@ data class SectionSummary(
     val title: String,
     val orderIndex: Int,
     val completedOn: LocalDate?,
+    val titleColor: String? = null,
 )
 
 data class CategoryTaskCount(val categoryId: Long, val count: Int, val completedCount: Int = 0)
@@ -50,10 +51,31 @@ data class TaskSearchResult(
 
 fun Task.summary() = TaskSummary(id, categoryId, title, orderIndex, titleColor, isCompleted)
 
-fun Section.summary() = SectionSummary(id, taskId, title, orderIndex, completedOn)
+fun Section.summary() = SectionSummary(id, taskId, title, orderIndex, completedOn, titleColor)
+
+/** Most colours one gradient title may blend. */
+const val MaxTitleColorStops = 5
+
+private val TitleColorPattern = Regex("#[0-9a-fA-F]{6}")
+
+/**
+ * Title colours as stored: "#RRGGBB" for a solid colour, or 2–[MaxTitleColorStops] of them joined
+ * by commas for a left-to-right gradient. Returns the 0xRRGGBB values; null when [value] is absent
+ * or malformed.
+ */
+fun titleColorStops(value: String?): List<Int>? {
+    val parts = value?.split(',') ?: return null
+    if (parts.size > MaxTitleColorStops) return null
+    return parts.map { part ->
+        if (!TitleColorPattern.matches(part)) return null
+        part.drop(1).toInt(16)
+    }
+}
 
 fun validateTitleColor(color: String?) {
-    require(color == null || Regex("#[0-9a-fA-F]{6}").matches(color)) { "颜色必须为 #RRGGBB" }
+    require(color == null || titleColorStops(color) != null) {
+        "颜色必须为 #RRGGBB，渐变为 2–$MaxTitleColorStops 个以逗号分隔的 #RRGGBB"
+    }
 }
 
 /** Target is a zero-based position; IDs remain stable. */

@@ -49,7 +49,14 @@ class SectionRhineDataSource(private val repo: TaskRepo, val categoryId: Long) :
     override fun item(id: Long) =
         repo.getSectionSummaryFlow(id).map { section ->
             section?.let {
-                TaskSummary(it.id, it.taskId, it.title, it.orderIndex, null, it.completedOn != null)
+                TaskSummary(
+                    it.id,
+                    it.taskId,
+                    it.title,
+                    it.orderIndex,
+                    it.titleColor,
+                    it.completedOn != null,
+                )
             }
         }
 
@@ -98,7 +105,7 @@ class SectionRhineDataSource(private val repo: TaskRepo, val categoryId: Long) :
                                 section.id,
                                 section.orderIndex + 1,
                                 section.title,
-                                task?.titleColor,
+                                section.titleColor,
                                 section.completedOn != null,
                                 section.completedOn,
                             )

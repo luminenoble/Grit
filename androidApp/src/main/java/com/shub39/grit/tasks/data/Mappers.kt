@@ -68,7 +68,17 @@ fun TaskWithSections.toTask() =
     }
 
 fun Section.toSectionEntity() =
-    SectionEntity(id, taskId, title, content, orderIndex, completedOn, createdAt, updatedAt)
+    SectionEntity(
+        id,
+        taskId,
+        title,
+        content,
+        orderIndex,
+        completedOn,
+        createdAt,
+        updatedAt,
+        titleColor,
+    )
 
 fun SectionEntity.toSection() =
-    Section(id, taskId, title, content, orderIndex, completedOn, createdAt, updatedAt)
+    Section(id, taskId, title, content, orderIndex, completedOn, createdAt, updatedAt, titleColor)

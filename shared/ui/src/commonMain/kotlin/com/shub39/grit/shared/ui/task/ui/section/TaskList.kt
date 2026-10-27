@@ -59,6 +59,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonShapes
 import androidx.compose.material3.IconToggleButtonShapes
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialShapes
@@ -109,8 +110,8 @@ import com.shub39.grit.shared.ui.theme.glassSurface
 import com.shub39.grit.shared.ui.theme.rememberGlassBackdrop
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
 import com.shub39.grit.shared.ui.theme.flexFontRounded
-import com.shub39.grit.shared.ui.theme.parseAccentColor
-import com.shub39.grit.shared.ui.theme.readableTitleColor
+import com.shub39.grit.shared.ui.theme.titleBrush
+import com.shub39.grit.shared.ui.theme.withTitleColor
 import grit.shared.ui.generated.resources.*
 import grit.shared.ui.generated.resources.add
 import kotlin.invoke
@@ -368,12 +369,20 @@ private fun CategorySelector(
                         onReorderModeChange(false)
                     },
                 ) {
-                    parseAccentColor(category.titleColor)?.let { accent ->
-                        Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(accent))
+                    if (category.titleColor != null) {
+                        Box(
+                            modifier =
+                                Modifier.size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(titleBrush(category.titleColor))
+                        )
                         Spacer(modifier = Modifier.width(6.dp))
                     }
 
-                    Text(text = category.name, color = readableTitleColor(category.titleColor))
+                    Text(
+                        text = category.name,
+                        style = LocalTextStyle.current.withTitleColor(category.titleColor),
+                    )
                 }
             }
             item {

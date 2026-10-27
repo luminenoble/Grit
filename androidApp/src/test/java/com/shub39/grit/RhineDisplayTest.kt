@@ -148,18 +148,22 @@ class RhineDisplayTest {
     }
 
     @Test
-    fun shadedFacesKeepRawColorReadableAtBothEnds() {
-        val style = RhineStyle()
-        for (raw in listOf("#FFFFFF", "#FFFFCC", "#426E79")) for (center in listOf(0f, 0.5f, 1f)) {
-            val a = style.frontAt(center)
-            val b = style.frontLowAt(center)
-            val shown = style.readableFace(raw, a, b)
-            assertTrue(contrast(shown, a) >= 4.5f)
-            assertTrue(contrast(shown, b) >= 4.5f)
-            val top = style.readableFace(raw, style.top, style.topFar)
-            assertTrue(contrast(top, style.top) >= 4.5f)
-            assertTrue(contrast(top, style.topFar) >= 4.5f)
-        }
+    fun onlyTheSelectedBlockIsSharp() {
+        val g = RhineGeometry()
+        val input = rhineSample(RhineSample.Standard)
+        val projection =
+            RhineProjection(g, 2.625f, Size(2400f, 1080f), RhineCamera(input.focusU, input.cameraV))
+        val layout = layoutScene(input, projection)
+        val sharp = layout.blocks.filter { sharpness(layout, input, it) > 0f }
+        assertEquals(1, sharp.size)
+        assertEquals(input.focusV, sharp.single().slot.v)
+        assertEquals(input.focusU, sharp.single().slot.u.toFloat())
+        assertEquals(1f, sharpness(layout, input, sharp.single()))
+        // Halfway between two slots neither block is fully sharp, and both are partly.
+        val moving = input.copy(focusU = input.focusU + 0.5f)
+        val between = layout.blocks.filter { sharpness(layout, moving, it) > 0f }
+        assertEquals(2, between.size)
+        assertTrue(between.all { sharpness(layout, moving, it) < 1f })
     }
 
     @Test

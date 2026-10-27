@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-import com.shub39.grit.shared.ui.theme.parseAccentColor
+import com.shub39.grit.shared.ui.theme.parseTitleColors
 
 /** Material and text defaults for the Rhine scene. Text colors never tint the blocks. */
 @Immutable
@@ -49,6 +49,18 @@ data class RhineStyle(
     val shadowAlphaEdge: Float = 0.03f,
     /** Small round fitting near the far end of each long face. */
     val marker: Color = Color(0xFF8A8C8D),
+    /**
+     * Transparent glass blocks (docs/视觉优化/06): each face is a light veil over whatever stands
+     * behind it, the end face a little deeper as it turns from the light, and the edges catch the
+     * light as a fine white rim.
+     */
+    val glassTop: Color = Color(0xC7FFFFFF),
+    val glassTopFar: Color = Color(0xA3FBF8F4),
+    val glassFront: Color = Color(0x85FFFFFF),
+    val glassFrontLow: Color = Color(0x5CB4AA9E),
+    val glassCap: Color = Color(0x99ACA194),
+    val glassRim: Color = Color(0xF2FFFFFF),
+    val glassEdge: Color = Color(0x4D574B3F),
     /** Default text on the light top face. */
     val text: Color = Color(0xFF221F1A),
     /** Default text on the dark side face. */
@@ -60,35 +72,11 @@ data class RhineStyle(
     val sideTextSize: TextUnit = 7.sp,
 ) {
     /**
-     * User color adjusted to reach [target] contrast on [background], keeping the hue where
-     * possible: darkened on light faces, lightened on dark faces.
+     * Text colours for a stored title colour, exactly as the user chose them (one colour, or the
+     * stops of a left-to-right gradient); [default] when none is set.
      */
-    fun readable(value: String?, background: Color, target: Float = 4.5f): Color {
-        // Pick light or dark ink by whichever default contrasts better with this face.
-        val dark = contrast(sideText, background) > contrast(text, background)
-        val fallback = if (dark) sideText else text
-        val original = parseAccentColor(value) ?: return fallback
-        val towards = if (dark) Color.White else Color.Black
-        var color = original
-        repeat(24) {
-            if (contrast(color, background) >= target) return color
-            color = lerp(color, towards, 0.08f)
-        }
-        return fallback
-    }
-
-    /** Text must contrast with both ends of a shaded face, rather than just one sample. */
-    fun readableFace(value: String?, a: Color, b: Color): Color {
-        var color = readable(value, a)
-        val blackScore = minOf(contrast(Color.Black, a), contrast(Color.Black, b))
-        val whiteScore = minOf(contrast(Color.White, a), contrast(Color.White, b))
-        val towards = if (blackScore >= whiteScore) Color.Black else Color.White
-        repeat(32) {
-            if (minOf(contrast(color, a), contrast(color, b)) >= 4.5f) return color
-            color = lerp(color, towards, 0.08f)
-        }
-        return towards
-    }
+    fun titleColors(value: String?, default: Color = text): List<Color> =
+        parseTitleColors(value) ?: listOf(default)
 
     /** Side face colours for a block whose centrality is [center] (1 = screen centre, 0 = edge). */
     fun frontAt(center: Float): Color = lerp(frontEdge, front, center)
@@ -97,9 +85,6 @@ data class RhineStyle(
 
     fun shadowAlphaAt(center: Float): Float =
         shadowAlphaEdge + (shadowAlphaCenter - shadowAlphaEdge) * center
-
-    /** Side face labels on a face shaded with [face]; small 7 sp text, so aim for 4.5:1. */
-    fun readableSide(value: String?, face: Color = front): Color = readable(value, face)
 }
 
 fun contrast(a: Color, b: Color): Float {

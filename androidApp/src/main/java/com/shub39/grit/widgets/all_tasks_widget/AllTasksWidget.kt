@@ -71,7 +71,7 @@ import com.shub39.grit.core.tasks.Task
 import com.shub39.grit.core.tasks.TaskRepo
 import com.shub39.grit.shared.ui.theme.GlassTokens
 import com.shub39.grit.shared.ui.theme.RhineBaseColors
-import com.shub39.grit.shared.ui.theme.readableTitleColor
+import com.shub39.grit.shared.ui.theme.titleColor
 import com.shub39.grit.widgets.WidgetSize
 import com.shub39.grit.widgets.bodyFontSize
 import com.shub39.grit.widgets.captionFontSize
@@ -307,8 +307,7 @@ private fun Content(
                                     style =
                                         TextStyle(
                                             fontSize = taskFontSize,
-                                            color =
-                                                ColorProvider(readableTitleColor(task.titleColor)),
+                                            color = ColorProvider(titleColor(task.titleColor)),
                                             textDecoration = TextDecoration.None,
                                         ),
                                     maxLines = 2,

@@ -16,6 +16,7 @@
  */
 package com.shub39.grit.shared.ui.rhine
 
+import com.shub39.grit.shared.ui.theme.withTitleColor
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -187,7 +188,7 @@ internal fun RhineToolbar(
                 )
             Text(
                 column?.title ?: "新建",
-                style = t.style(10.sp).copy(color = style.readable(column?.titleColor, style.floor)),
+                style = t.style(10.sp).withTitleColor(column?.titleColor, style.text),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -200,8 +201,7 @@ internal fun RhineToolbar(
             Text(
                 title,
                 style =
-                    t.style(12.sp, bold = true)
-                        .copy(color = style.readable(focus.item?.titleColor, style.floor)),
+                    t.style(12.sp, bold = true).withTitleColor(focus.item?.titleColor, style.text),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )

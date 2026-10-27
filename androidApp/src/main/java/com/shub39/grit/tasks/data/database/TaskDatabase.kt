@@ -24,8 +24,9 @@ import com.shub39.grit.core.data.Converters
         [CategoryEntity::class, TaskEntity::class, SectionEntity::class, IllustrationEntity::class],
     version = TaskDatabase.SCHEMA_VERSION,
     exportSchema = true,
-    // v2 only adds the rhine_illustrations table; existing rows are untouched.
-    autoMigrations = [AutoMigration(from = 1, to = 2)],
+    // v2 only adds the rhine_illustrations table, v3 a nullable Section title colour; existing rows
+    // are untouched.
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
 )
 @ColumnTypeConverters(Converters::class)
 abstract class TaskDatabase : RoomDatabase() {
@@ -39,6 +40,6 @@ abstract class TaskDatabase : RoomDatabase() {
 
     companion object {
         const val DB_NAME = "grit_rhine_database"
-        const val SCHEMA_VERSION = 2
+        const val SCHEMA_VERSION = 3
     }
 }

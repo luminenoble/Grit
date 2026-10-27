@@ -17,7 +17,6 @@
 package com.shub39.grit.shared.ui.task.ui.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,7 +27,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions.Companion.Default
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -66,15 +64,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.tasks.Category
-import com.shub39.grit.shared.ui.components.ColorPickerDialog
 import com.shub39.grit.shared.ui.components.ExpressiveSwitch
+import com.shub39.grit.shared.ui.components.TitleColorRow
 import com.shub39.grit.shared.ui.components.GritBottomSheet
 import com.shub39.grit.shared.ui.components.detachedItemShape
 import com.shub39.grit.shared.ui.components.listItemColors
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
-import com.shub39.grit.shared.ui.theme.parseAccentColor
-import com.shub39.grit.shared.ui.theme.readableTitleColor
-import com.shub39.grit.shared.ui.theme.toHexString
 import grit.shared.ui.generated.resources.*
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
@@ -103,7 +98,6 @@ fun CategoryUpsertSheet(
     var newCategory by rememberSaveable(stateSaver = jsonSaver(Category.serializer())) {
         mutableStateOf(category)
     }
-    var colorPickerDialog by remember { mutableStateOf(false) }
 
     val textFieldState =
         rememberTextFieldState(
@@ -187,40 +181,13 @@ fun CategoryUpsertSheet(
                 maxLines = 4,
                 modifier = Modifier.fillMaxWidth(),
             )
-            TextButton(
-                onClick = { newCategory = newCategory.copy(titleColor = null) },
-                enabled = !saving,
-            ) {
-                Text("使用默认文字颜色")
-            }
             // Category text color is independent of task colors.
-            ListItem(
-                colors = listItemColors(),
-                modifier = Modifier.clip(detachedItemShape()),
-                leadingContent = {
-                    Icon(
-                        imageVector = vectorResource(Res.drawable.palette),
-                        contentDescription = null,
-                    )
-                },
-                headlineContent = {
-                    Text(
-                        text = stringResource(Res.string.accent_color),
-                        color = readableTitleColor(newCategory.titleColor),
-                    )
-                },
-                trailingContent = {
-                    Box(
-                        modifier =
-                            Modifier.size(32.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    parseAccentColor(newCategory.titleColor)
-                                        ?: MaterialTheme.colorScheme.primaryContainer
-                                )
-                                .clickable(enabled = !saving) { colorPickerDialog = true }
-                    )
-                },
+            TitleColorRow(
+                label = stringResource(Res.string.accent_color),
+                value = newCategory.titleColor,
+                default = MaterialTheme.colorScheme.onSurface,
+                onChange = { newCategory = newCategory.copy(titleColor = it) },
+                enabled = !saving,
             )
 
             // Completed tasks in this category stay hidden in lists and widgets
@@ -257,15 +224,6 @@ fun CategoryUpsertSheet(
             ) {
                 Text(text = stringResource(if (isEditSheet) Res.string.done else Res.string.save))
             }
-        }
-
-        if (colorPickerDialog) {
-            ColorPickerDialog(
-                initialColor =
-                    parseAccentColor(newCategory.titleColor) ?: MaterialTheme.colorScheme.primary,
-                onSelect = { newCategory = newCategory.copy(titleColor = it.toHexString()) },
-                onDismiss = { colorPickerDialog = false },
-            )
         }
     }
 

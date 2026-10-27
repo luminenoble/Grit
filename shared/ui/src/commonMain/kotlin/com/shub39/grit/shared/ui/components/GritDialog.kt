@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import com.shub39.grit.shared.ui.theme.GlassTier
 import com.shub39.grit.shared.ui.theme.glassSurface
 
@@ -38,9 +39,16 @@ fun GritDialog(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     padding: Dp = 16.dp,
+    /** [GlassTier.Content] gives an opaque surface, e.g. where colours must be judged exactly. */
+    tier: GlassTier = GlassTier.Thick,
+    properties: DialogProperties = DialogProperties(),
     content: @Composable (ColumnScope.() -> Unit),
 ) {
-    BasicAlertDialog(onDismissRequest = onDismissRequest, modifier = modifier) {
+    BasicAlertDialog(
+        onDismissRequest = onDismissRequest,
+        modifier = modifier,
+        properties = properties,
+    ) {
         Card(
             shape = MaterialTheme.shapes.extraLarge,
             colors =
@@ -48,8 +56,7 @@ fun GritDialog(
                     containerColor = Color.Transparent,
                     contentColor = MaterialTheme.colorScheme.onSurface,
                 ),
-            modifier =
-                Modifier.glassSurface(GlassTier.Thick, MaterialTheme.shapes.extraLarge),
+            modifier = Modifier.glassSurface(tier, MaterialTheme.shapes.extraLarge),
         ) {
             Column(
                 modifier = Modifier.padding(padding),

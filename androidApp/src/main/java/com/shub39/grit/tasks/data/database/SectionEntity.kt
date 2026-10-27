@@ -42,4 +42,6 @@ data class SectionEntity(
     val completedOn: LocalDate?,
     val createdAt: Instant,
     val updatedAt: Instant,
+    /** Added in schema v3; null is the default colour. */
+    @ColumnInfo(defaultValue = "NULL") val titleColor: String? = null,
 )

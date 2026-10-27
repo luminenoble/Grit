@@ -72,6 +72,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import com.shub39.grit.shared.ui.blurPossible
 import com.shub39.grit.shared.ui.theme.GlassMode
@@ -1333,20 +1334,15 @@ fun RhineCanvas(
     reveal: () -> Float = { 0f },
 ) {
     val measurer = rememberTextMeasurer(cacheSize = 384)
-    // Frosted glass blocks and depth blur (docs/视觉优化/05). Without blur, with Reduce transparency
-    // or with low shadows the blocks stay matte, as before.
+    // Transparent glass blocks, with everything but the selected block blurred (docs/视觉优化/06).
+    // Without blur, with Reduce transparency or with low shadows the blocks stay matte and sharp.
     val glassOn =
         blurPossible() &&
             LocalGlassMode.current == GlassMode.Standard &&
             display.shadow == com.shub39.grit.core.settings.RhineShadow.Standard
-    val frostLayer = rememberGraphicsLayer()
-    // The blurred backdrop, rendered once per frame so each glass face only composites a texture.
-    val frostCache =
-        rememberGraphicsLayer().apply {
-            compositingStrategy = androidx.compose.ui.graphics.layer.CompositingStrategy.Offscreen
-        }
     val sceneLayer = rememberGraphicsLayer()
-    val depthLayer = rememberGraphicsLayer()
+    val nearLayer = rememberGraphicsLayer()
+    val farLayer = rememberGraphicsLayer()
     val facePath = remember { androidx.compose.ui.graphics.Path() }
     val drawObserver = LocalRhineDrawObserver.current
     val density = LocalDensity.current.density
@@ -1593,7 +1589,7 @@ fun RhineCanvas(
             )
         drawObserver?.drawn(layout)
         val revealed = reveal()
-        fun DrawScope.scene(glass: (DrawScope.() -> Unit)?) =
+        fun DrawScope.scene(pass: RhinePass) =
             drawRhineScene(
                 layout,
                 drawing,
@@ -1607,75 +1603,71 @@ fun RhineCanvas(
                 raisedAlpha = frame.selectedAlpha,
                 illustration = illustration,
                 reveal = revealed,
-                glass = glass,
+                glass = glassOn,
+                pass = pass,
             )
         if (!glassOn) {
-            scene(null)
+            scene(RhinePass.All)
             return@Canvas
         }
-        // Both blurs run on quarter-size layers: one for what glass faces show, one over the
-        // finished scene for depth. Nothing is drawn while the scene rests.
-        val small =
-            IntSize(ceil(size.width * GlassScale).toInt(), ceil(size.height * GlassScale).toInt())
+        // The scene without the selected block is recorded once and blurred twice on reduced
+        // layers: lightly around the selection, more towards the far columns and the borders. The
+        // selected block is then drawn sharp on top, so pictures and text behind or in front of it
+        // never cross it.
+        val full = IntSize(size.width.toInt(), size.height.toInt())
         // Recording from inside this draw must not hand this scope over as its own density.
         val recordDensity = androidx.compose.ui.unit.Density(density, fontScale)
-        frostLayer.renderEffect =
-            BlurEffect(FrostBlur.toPx() * GlassScale, FrostBlur.toPx() * GlassScale, TileMode.Clamp)
-        frostLayer.record(recordDensity, layoutDirection, small) {
-            scale(GlassScale, GlassScale, Offset.Zero) {
-                drawRhineBackdrop(layout, drawing, style, display, illustration, revealed, facePath)
+        sceneLayer.record(recordDensity, layoutDirection, full) { scene(RhinePass.Blurred) }
+        fun blurred(
+            layer: androidx.compose.ui.graphics.layer.GraphicsLayer,
+            scale: Float,
+            blur: Dp,
+        ) {
+            layer.renderEffect =
+                BlurEffect(blur.toPx() * scale, blur.toPx() * scale, TileMode.Clamp)
+            layer.record(
+                recordDensity,
+                layoutDirection,
+                IntSize(ceil(size.width * scale).toInt(), ceil(size.height * scale).toInt()),
+            ) {
+                scale(scale, scale, Offset.Zero) { drawLayer(sceneLayer) }
             }
         }
-        frostCache.record(
-            recordDensity,
-            layoutDirection,
-            IntSize(size.width.toInt(), size.height.toInt()),
-        ) {
-            scale(1f / GlassScale, 1f / GlassScale, Offset.Zero) { drawLayer(frostLayer) }
-        }
-        sceneLayer.record(
-            recordDensity,
-            layoutDirection,
-            IntSize(size.width.toInt(), size.height.toInt()),
-        ) {
-            scene { drawLayer(frostCache) }
-        }
-        drawLayer(sceneLayer)
-        depthLayer.renderEffect =
-            BlurEffect(DepthBlur.toPx() * GlassScale, DepthBlur.toPx() * GlassScale, TileMode.Clamp)
-        depthLayer.record(recordDensity, layoutDirection, small) {
-            scale(GlassScale, GlassScale, Offset.Zero) { drawLayer(sceneLayer) }
-        }
-        // Sharp around the focused block, blurring towards the far columns and the borders.
+        blurred(nearLayer, NearScale, NearBlur)
+        blurred(farLayer, FarScale, FarBlur)
+        scale(1f / NearScale, 1f / NearScale, Offset.Zero) { drawLayer(nearLayer) }
         val focus =
-            layout.blocks
-                .firstOrNull {
-                    it.slot.v == drawing.focusV && it.slot.u.toFloat() == drawing.focusU
-                }
-                ?.let { b -> b.top.reduce { a, c -> a + c } / 4f }
+            layout.raised?.let { b -> b.top.reduce { a, c -> a + c } / 4f }
+                ?: layout.blocks
+                    .firstOrNull {
+                        it.slot.v == drawing.focusV && it.slot.u == drawing.focusU.roundToInt()
+                    }
+                    ?.let { b -> b.top.reduce { a, c -> a + c } / 4f }
                 ?: Offset(size.width * geometry.anchor.x, size.height * geometry.anchor.y)
         drawIntoCanvas { it.saveLayer(Rect(Offset.Zero, size), Paint()) }
-        scale(1f / GlassScale, 1f / GlassScale, Offset.Zero) { drawLayer(depthLayer) }
+        scale(1f / FarScale, 1f / FarScale, Offset.Zero) { drawLayer(farLayer) }
         drawRect(
             Brush.radialGradient(
                 0f to Color.Transparent,
-                0.38f to Color.Transparent,
-                1f to Color.Black.copy(alpha = 0.9f),
+                0.22f to Color.Transparent,
+                1f to Color.Black,
                 center = focus,
-                radius = size.width * 0.62f,
+                radius = size.width * 0.6f,
             ),
             blendMode = BlendMode.DstIn,
         )
         drawIntoCanvas { it.restore() }
+        scene(RhinePass.Sharp)
     }
 }
 
-/** Glass blurs work on layers this fraction of the scene size. */
-private const val GlassScale = 0.25f
+/** Blur layers are drawn at these fractions of the scene size. */
+private const val NearScale = 0.5f
+private const val FarScale = 0.25f
 
-/** Blur behind frosted glass faces, and of the far scene. */
-private val FrostBlur = 14.dp
-private val DepthBlur = 6.dp
+/** Blur of the blocks around the selection, and of the far scene. */
+private val NearBlur = 3.dp
+private val FarBlur = 10.dp
 
 /** Text styles of the HUD; Montserrat for Latin, system fallback for Chinese. */
 internal class HudText(val family: FontFamily, val ink: Color) {

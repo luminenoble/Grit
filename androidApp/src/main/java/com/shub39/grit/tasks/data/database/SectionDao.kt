@@ -23,7 +23,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SectionDao {
-    @Query("SELECT id, taskId, title, orderIndex, completedOn FROM sections WHERE id = :id")
+    @Query(
+        "SELECT id, taskId, title, orderIndex, completedOn, titleColor FROM sections WHERE id = :id"
+    )
     suspend fun summaryById(id: Long): SectionSummary?
 
     @Query("SELECT id FROM sections WHERE taskId = :parentId ORDER BY orderIndex")
@@ -42,11 +44,13 @@ interface SectionDao {
     suspend fun setOrder(id: Long, position: Int, time: Instant)
 
     @Query(
-        "SELECT id, taskId, title, orderIndex, completedOn FROM sections WHERE taskId = :taskId ORDER BY orderIndex LIMIT :limit OFFSET :offset"
+        "SELECT id, taskId, title, orderIndex, completedOn, titleColor FROM sections WHERE taskId = :taskId ORDER BY orderIndex LIMIT :limit OFFSET :offset"
     )
     fun summaries(taskId: Long, offset: Int, limit: Int): Flow<List<SectionSummary>>
 
-    @Query("SELECT id, taskId, title, orderIndex, completedOn FROM sections WHERE id = :id")
+    @Query(
+        "SELECT id, taskId, title, orderIndex, completedOn, titleColor FROM sections WHERE id = :id"
+    )
     fun summary(id: Long): Flow<SectionSummary?>
 
     @Query(

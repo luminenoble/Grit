@@ -33,6 +33,8 @@ data class Section(
     val completedOn: LocalDate? = null,
     val createdAt: Instant = Clock.System.now(),
     val updatedAt: Instant = createdAt,
+    /** Same format as a Task's title colour; null is the default black. */
+    val titleColor: String? = null,
 ) {
     val isCompleted: Boolean
         get() = completedOn != null
@@ -42,6 +44,7 @@ data class Section(
 
     fun normalized(): Section {
         require(completedOn == null || completedOn <= LocalDate.now()) { "完成日期不能在未来" }
+        validateTitleColor(titleColor)
         return copy(title = title.trim().ifBlank { "unname" })
     }
 }

@@ -79,6 +79,7 @@ class RhineDetailRepositoryTest {
                                 title = "S$it",
                                 content = "长正文".repeat(1000),
                                 completedOn = if (it % 3 == 0) LocalDate(2026, 1, 2) else null,
+                                titleColor = if (it == 9) "#C0392B,#1E6FD9" else null,
                             )
                         },
                 )
@@ -92,7 +93,10 @@ class RhineDetailRepositoryTest {
         assertEquals(13, catalog.bounds.maxU)
         assertEquals(2, catalog.bounds.maxV)
         assertEquals(4, columns[0].completedCount)
-        assertEquals("#426E79", columns[0].items[9]!!.titleColor)
+        // The column is the Task in its colour; each Section block has its own, default none.
+        assertEquals("#426E79", columns[0].titleColor)
+        assertEquals("#C0392B,#1E6FD9", columns[0].items[9]!!.titleColor)
+        assertNull(columns[0].items[8]!!.titleColor)
         assertEquals(LocalDate(2026, 1, 2), columns[0].items[9]!!.completedOn)
         assertTrue(columns[1].items.isEmpty())
         assertEquals(3, repo.getTasks().size)

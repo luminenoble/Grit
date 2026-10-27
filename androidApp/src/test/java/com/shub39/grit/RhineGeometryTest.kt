@@ -19,8 +19,8 @@ package com.shub39.grit
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import com.shub39.grit.shared.ui.rhine.*
-import kotlin.math.abs
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -220,22 +220,23 @@ class RhineGeometryTest {
     }
 
     @Test
-    fun lightTextColorIsMadeReadable() {
+    fun titleColorsShowExactlyAsChosen() {
         val style = RhineStyle()
-        for (hex in listOf("#FFFFFF", "#F2E6A0", "#BFEDEA")) {
-            val c = style.readable(hex, style.top)
-            assertTrue("$hex -> ${contrast(c, style.top)}", contrast(c, style.top) >= 4.5f)
+        // No contrast filter: light colours stay light, on any face.
+        for (hex in listOf("#FFFFFF", "#F2E6A0", "#BFEDEA", "#2F5D8A")) {
+            val c = style.titleColors(hex).single()
+            assertEquals(
+                hex,
+                "#" + (c.toArgb() and 0xFFFFFF).toString(16).padStart(6, '0').uppercase(),
+            )
         }
-        assertEquals(style.text, style.readable(null, style.top))
-        // Side faces are shaded from the centre to the edge; labels stay readable across the range.
-        for (face in listOf(style.front, style.frontAt(0.5f), style.frontEdge)) {
-            assertTrue(contrast(style.readableSide(null, face), face) >= 4.5f)
-            for (hex in listOf("#2F5D8A", "#8A3B2F", "#F4E3B2")) {
-                val c = style.readableSide(hex, face)
-                assertTrue("$hex -> ${contrast(c, face)}", contrast(c, face) >= 4.5f)
-            }
-        }
-        val dark = style.readable("#2F5D8A", style.top)
-        assertTrue(abs(dark.red - Color(0xFF2F5D8A).red) < 0.001f)
+        assertEquals(listOf(style.text), style.titleColors(null))
+        assertEquals(listOf(style.sideText), style.titleColors(null, style.sideText))
+        assertEquals(
+            listOf(Color(0xFFFF0000), Color(0xFF00FF00), Color(0xFF0000FF)),
+            style.titleColors("#FF0000,#00FF00,#0000FF"),
+        )
+        // Malformed values fall back to the default rather than guessing.
+        assertEquals(listOf(style.text), style.titleColors("#FF00"))
     }
 }

@@ -83,6 +83,44 @@ class RhineModelTest {
     }
 
     @Test
+    fun titleColoursAreOneToFiveStops() {
+        assertEquals(listOf(0x336699), titleColorStops("#336699"))
+        assertEquals(
+            listOf(0xFF0000, 0x00FF00, 0x0000FF, 0x123456, 0xABCDEF),
+            titleColorStops("#FF0000,#00FF00,#0000FF,#123456,#abcdef"),
+        )
+        for (bad in listOf("", "#12345", "336699", "#FF0000,", "#FF0000, #00FF00")) {
+            assertNull(bad, titleColorStops(bad))
+            assertThrows(IllegalArgumentException::class.java) { validateTitleColor(bad) }
+        }
+        // Six stops are one too many.
+        assertNull(titleColorStops(List(6) { "#000000" }.joinToString(",")))
+        validateTitleColor(null)
+    }
+
+    @Test
+    fun sectionColoursRoundTripAndOldBackupsStillImport() {
+        val coloured =
+            backup(
+                listOf(
+                    Section(id = 3, title = "工作", createdAt = time, titleColor = "#C0392B,#1E6FD9")
+                )
+            )
+        val text = RhineBackup.json.encodeToString(coloured)
+        assertEquals(
+            "#C0392B,#1E6FD9",
+            RhineBackup.decode(text).tasks.single().sections.single().titleColor,
+        )
+        // Backups written before Sections had a colour carry no such field.
+        val old = text.replace(Regex(",\\s*\"titleColor\": \"#C0392B,#1E6FD9\""), "")
+        assertFalse(old.contains("#C0392B"))
+        assertNull(RhineBackup.decode(old).tasks.single().sections.single().titleColor)
+        assertThrows(IllegalArgumentException::class.java) {
+            RhineBackup.decode(text.replace("#C0392B,#1E6FD9", "red"))
+        }
+    }
+
+    @Test
     fun duplicateSectionsAcrossTasksAndOrphanCategoriesAreRejected() {
         val b = backup()
         assertThrows(IllegalArgumentException::class.java) {

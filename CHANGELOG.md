@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.2.1
+
+- Text colours now show exactly as picked; the automatic darkening that changed chosen colours is gone
+- The colour picker takes RGB and hex values, and can make a left-to-right gradient of up to 5 colours
+- Sections have their own title colour, solid or gradient; black by default
+- Copy and paste colours between categories, tasks and sections from the colour picker
+- Rhine: blocks are now clear glass, so the blocks and pictures behind show through; only the selected block stays sharp and everything else is blurred, more so further away
+
 ## 6.1.3
 
 - Rhine: blocks are now frosted warm glass with a soft depth blur towards the distance; the focused task shows its whole image like the category block, seen through the glass blocks in front, replacing the thin strips from 6.1.2

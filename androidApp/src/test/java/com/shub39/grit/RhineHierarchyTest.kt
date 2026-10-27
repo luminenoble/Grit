@@ -233,7 +233,11 @@ class RhineHierarchyTest {
                     }
                     "getSectionSummariesFlow" -> {
                         calls += "section:${args.toList()}"
-                        flowOf(listOf(SectionSummary(808, 100, "S8", 7, LocalDate(2026, 1, 2))))
+                        flowOf(
+                            listOf(
+                                SectionSummary(808, 100, "S8", 7, LocalDate(2026, 1, 2), "#C0392B")
+                            )
+                        )
                     }
                     else -> error("Unexpected query: ${method.name}; overview must not load bodies")
                 }
@@ -244,7 +248,9 @@ class RhineHierarchyTest {
         assertEquals(listOf("task:[10, 0, 1]", "section:[100, 7, 2]"), calls)
         assertEquals(3, columns.size)
         assertEquals(13, cat.bounds.maxU)
-        assertEquals("#426E79", columns[0].items[8]!!.titleColor)
+        // The column is the Task in its colour; each Section block has its own.
+        assertEquals("#426E79", columns[0].titleColor)
+        assertEquals("#C0392B", columns[0].items[8]!!.titleColor)
         assertEquals(LocalDate(2026, 1, 2), columns[0].items[8]!!.completedOn)
         assertEquals(4, columns[0].completedCount)
         assertTrue(columns[1].items.isEmpty())

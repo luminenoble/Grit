@@ -44,6 +44,7 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -81,16 +82,14 @@ import com.shub39.grit.core.tasks.Category
 import com.shub39.grit.core.tasks.Section
 import com.shub39.grit.core.tasks.Task
 import com.shub39.grit.core.toFormattedString
-import com.shub39.grit.shared.ui.components.ColorPickerDialog
+import com.shub39.grit.shared.ui.components.TitleColorRow
 import com.shub39.grit.shared.ui.components.ExpressiveSwitch
 import com.shub39.grit.shared.ui.components.GritBottomSheet
 import com.shub39.grit.shared.ui.components.GritTimePicker
 import com.shub39.grit.shared.ui.components.detachedItemShape
 import com.shub39.grit.shared.ui.components.listItemColors
 import com.shub39.grit.shared.ui.theme.flexFontEmphasis
-import com.shub39.grit.shared.ui.theme.parseAccentColor
-import com.shub39.grit.shared.ui.theme.readableTitleColor
-import com.shub39.grit.shared.ui.theme.toHexString
+import com.shub39.grit.shared.ui.theme.withTitleColor
 import grit.shared.ui.generated.resources.*
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Instant
@@ -202,7 +201,6 @@ fun TaskUpsertSheetContent(
     var editingSection by remember { mutableStateOf<SectionItem?>(null) }
 
     var reorderSections by remember { mutableStateOf(false) }
-    var showColorPicker by remember { mutableStateOf(false) }
     var showUnsaved by remember { mutableStateOf(false) }
     var showTaskDelete by remember { mutableStateOf(false) }
     var movingSection by remember { mutableStateOf<SectionItem?>(null) }
@@ -361,22 +359,13 @@ fun TaskUpsertSheetContent(
             }
 
             item {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(
-                        "标题文字颜色",
-                        color = readableTitleColor(newTask.titleColor),
-                        modifier = Modifier.padding(top = 12.dp),
-                    )
-                    TextButton(onClick = { showColorPicker = true }, enabled = !saving) {
-                        Text("选择")
-                    }
-                    TextButton(
-                        onClick = { newTask = newTask.copy(titleColor = null) },
-                        enabled = !saving,
-                    ) {
-                        Text("默认")
-                    }
-                }
+                TitleColorRow(
+                    label = "标题文字颜色",
+                    value = newTask.titleColor,
+                    default = MaterialTheme.colorScheme.onSurface,
+                    onChange = { newTask = newTask.copy(titleColor = it) },
+                    enabled = !saving,
+                )
             }
             item {
                 ListItem(
@@ -424,11 +413,19 @@ fun TaskUpsertSheetContent(
                                     "${sectionItems.indexOfFirst { it.uid == step.uid } + 1}.",
                                     Modifier.padding(end = 8.dp),
                                 )
-                                Text(
-                                    step.section.title,
-                                    maxLines = 1,
-                                    modifier = Modifier.weight(1f).basicMarquee(),
-                                )
+                                // Wrapped, so a gradient runs across the name, not the row.
+                                Box(Modifier.weight(1f)) {
+                                    Text(
+                                        step.section.title,
+                                        maxLines = 1,
+                                        style =
+                                            LocalTextStyle.current.withTitleColor(
+                                                step.section.titleColor,
+                                                Color.Black,
+                                            ),
+                                        modifier = Modifier.basicMarquee(),
+                                    )
+                                }
                             }
                         },
                         supportingContent = {
@@ -676,13 +673,6 @@ fun TaskUpsertSheetContent(
         }
     }
 
-    if (showColorPicker)
-        ColorPickerDialog(
-            initialColor =
-                parseAccentColor(newTask.titleColor) ?: MaterialTheme.colorScheme.onSurface,
-            onSelect = { newTask = newTask.copy(titleColor = it.toHexString()) },
-            onDismiss = { showColorPicker = false },
-        )
     if (showUnsaved)
         GlassAlertDialog(
             onDismissRequest = { showUnsaved = false },

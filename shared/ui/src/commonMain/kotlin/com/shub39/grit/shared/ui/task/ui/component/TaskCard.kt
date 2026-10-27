@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.now
 import com.shub39.grit.core.tasks.*
 import com.shub39.grit.core.toFormattedString
-import com.shub39.grit.shared.ui.theme.readableTitleColor
+import com.shub39.grit.shared.ui.theme.withTitleColor
 import grit.shared.ui.generated.resources.*
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.vectorResource
@@ -76,18 +76,23 @@ fun TaskCard(
                 }
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        task.title,
-                        color =
-                            readableTitleColor(task.titleColor).let {
-                                if (done) it.copy(alpha = it.alpha * 0.62f) else it
-                            },
-                        style =
-                            MaterialTheme.typography.titleMedium.copy(
-                                textDecoration = if (done) TextDecoration.LineThrough else null
-                            ),
-                        modifier = Modifier.weight(1f),
-                    )
+                    // Wraps the title, so a gradient runs across the words rather than the row.
+                    Box(Modifier.weight(1f)) {
+                        Text(
+                            task.title,
+                            style =
+                                MaterialTheme.typography.titleMedium
+                                    .copy(
+                                        textDecoration =
+                                            if (done) TextDecoration.LineThrough else null
+                                    )
+                                    .withTitleColor(
+                                        task.titleColor,
+                                        MaterialTheme.colorScheme.onSurface,
+                                        alpha = if (done) 0.62f else 1f,
+                                    )
+                        )
+                    }
                     if (done)
                         Icon(
                             vectorResource(Res.drawable.check_circle),
@@ -120,11 +125,18 @@ fun TaskCard(
                                         },
                                     )
                                     Text("${index + 1}.", Modifier.padding(end = 8.dp))
-                                    Text(
-                                        section.title,
-                                        Modifier.weight(1f).basicMarquee(),
-                                        maxLines = 1,
-                                    )
+                                    Box(Modifier.weight(1f)) {
+                                        Text(
+                                            section.title,
+                                            Modifier.basicMarquee(),
+                                            maxLines = 1,
+                                            style =
+                                                LocalTextStyle.current.withTitleColor(
+                                                    section.titleColor,
+                                                    Color.Black,
+                                                ),
+                                        )
+                                    }
                                     section.completedOn?.let {
                                         Text(
                                             it.toString(),

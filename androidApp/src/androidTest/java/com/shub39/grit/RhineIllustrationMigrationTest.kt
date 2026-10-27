@@ -31,8 +31,9 @@ import org.junit.Assert.*
 import org.junit.Test
 
 /**
- * Database v1 → v2 only adds rhine_illustrations: stored data survives, and illustrations follow
- * their owners through the cascading keys (docs/视觉优化/03 sections 3, 9).
+ * Database v1 → v2 only adds rhine_illustrations, v2 → v3 a nullable Section title colour: stored
+ * data survives, and illustrations follow their owners through the cascading keys (docs/视觉优化/03
+ * sections 3, 9; docs/视觉优化/06).
  */
 class RhineIllustrationMigrationTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
@@ -57,6 +58,26 @@ class RhineIllustrationMigrationTest {
             .forEach(db::execSQL)
         db.version = 1
         db.close()
+    }
+
+    @Test
+    fun upgradeAddsSectionColourDefaultingToNone() = runBlocking {
+        val name = "rhine-migration-v3-test.db"
+        createV1(name)
+        val db =
+            Room.databaseBuilder<TaskDatabase>(context, context.getDatabasePath(name).absolutePath)
+                .build()
+        try {
+            val section = db.sectionDao().getById(1)!!
+            assertEquals("Draft", section.title)
+            assertEquals("text", section.content)
+            assertNull(section.titleColor)
+            db.sectionDao().upsert(section.copy(titleColor = "#C0392B,#1E6FD9"))
+            assertEquals("#C0392B,#1E6FD9", db.sectionDao().summaryById(1)!!.titleColor)
+        } finally {
+            db.close()
+            context.deleteDatabase(name)
+        }
     }
 
     @Test

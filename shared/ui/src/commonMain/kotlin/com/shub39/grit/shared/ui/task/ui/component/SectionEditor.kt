@@ -23,10 +23,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.shub39.grit.core.now
 import com.shub39.grit.core.tasks.Section
+import com.shub39.grit.shared.ui.components.TitleColorRow
 import kotlinx.datetime.LocalDate
 
 @Composable
@@ -44,6 +46,7 @@ fun SectionEditor(
     val compactIme = wide && WindowInsets.ime.getBottom(LocalDensity.current) > 0
     var title by remember(section.id) { mutableStateOf(section.title) }
     var content by remember(section.id) { mutableStateOf(section.content) }
+    var titleColor by remember(section.id) { mutableStateOf(section.titleColor) }
     var dateText by
         remember(section.id) { mutableStateOf(section.completedOn?.toString().orEmpty()) }
     var confirmDelete by remember { mutableStateOf(false) }
@@ -64,6 +67,14 @@ fun SectionEditor(
                 label = { Text("Section name") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                enabled = !saving,
+            )
+            // Each Section has its own colour (solid or gradient); unset is black.
+            TitleColorRow(
+                label = "文字颜色",
+                value = titleColor,
+                default = Color.Black,
+                onChange = { titleColor = it },
                 enabled = !saving,
             )
             OutlinedTextField(
@@ -101,7 +112,14 @@ fun SectionEditor(
             enabled = valid && !saving,
             onClick = {
                 onSave(
-                    section.copy(title = title, content = content, completedOn = date).normalized()
+                    section
+                        .copy(
+                            title = title,
+                            content = content,
+                            completedOn = date,
+                            titleColor = titleColor,
+                        )
+                        .normalized()
                 )
             },
         ) {

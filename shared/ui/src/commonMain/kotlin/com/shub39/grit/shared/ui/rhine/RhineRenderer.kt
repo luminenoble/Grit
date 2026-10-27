@@ -53,6 +53,17 @@ data class RhineLabels(
     val sideLabel: (RhineColumn) -> String,
 )
 
+/**
+ * Which blocks a draw covers. With transparent glass (docs/视觉优化/06) the scene is drawn twice: a
+ * [Blurred] pass of everything but the selected block, blurred as a whole, and a [Sharp] pass of
+ * the selected block alone on top. [All] draws the scene in one go.
+ */
+enum class RhinePass {
+    All,
+    Blurred,
+    Sharp,
+}
+
 fun DrawScope.drawRhineScene(
     layout: RhineLayout,
     input: RhineSceneInput,
@@ -69,12 +80,11 @@ fun DrawScope.drawRhineScene(
     illustration: (RhineSlot, Boolean) -> ImageBitmap? = { _, _ -> null },
     /** Fade-in (0..1) of the focused Task's whole illustration. */
     reveal: Float = 0f,
-    /**
-     * Draws the blurred backdrop at full size behind frosted glass faces; null draws matte blocks.
-     */
-    glass: (DrawScope.() -> Unit)? = null,
+    /** Transparent glass blocks instead of matte ones. */
+    glass: Boolean = false,
+    pass: RhinePass = RhinePass.All,
 ) {
-    drawRect(style.floor)
+    if (pass != RhinePass.Sharp) drawRect(style.floor)
     val d = layout.projection.density
     val pad = 8f * d
     val raised = layout.raised
@@ -125,21 +135,23 @@ fun DrawScope.drawRhineScene(
                     display.shadow == com.shub39.grit.core.settings.RhineShadow.Low,
                     facePath,
                 )
-            drawBlock(block, style, center, facePath, glass)
+            if (glass) drawGlassBlock(block, style, facePath)
+            else drawBlock(block, style, center, facePath)
             if (image != null && area != null)
                 drawFaceImage(
                     face,
                     image,
                     area,
                     display.illustrationFit,
-                    style.frontAt(center),
-                    style.frontLowAt(center),
-                    style.edge,
+                    if (glass) style.glassRim else style.frontAt(center),
+                    if (glass) style.glassCap else style.frontLowAt(center),
+                    if (glass) style.glassEdge else style.edge,
                     open?.alpha ?: 1f,
                 )
         }
 
-        // Side face: the column label, above the illustration where one applies.
+        // Side face: the column label, above the illustration where one applies. Light glass takes
+        // the dark default ink, the matte face the light one.
         if (
             column != null &&
                 (slot.showsSideLabel ||
@@ -148,12 +160,8 @@ fun DrawScope.drawRhineScene(
             drawFaceText(
                 frame = if (area != null) face.copy(height = area.top - 3f * d) else face,
                 text = labels.sideLabel(column),
-                color =
-                    style.readableFace(
-                        column.titleColor,
-                        style.frontAt(center),
-                        style.frontLowAt(center),
-                    ),
+                colors =
+                    style.titleColors(column.titleColor, if (glass) style.text else style.sideText),
                 size = style.sideTextSize,
                 bold = false,
                 pad = pad,
@@ -176,18 +184,16 @@ fun DrawScope.drawRhineScene(
                 else -> null
             }
         if (top != null) {
-            val color =
+            val colors =
                 when (slot.kind) {
-                    RhineBlockKind.Real ->
-                        style.readableFace(slot.item?.titleColor, style.top, style.topFar)
-                    RhineBlockKind.Zero ->
-                        style.readableFace(column?.titleColor, style.top, style.topFar)
-                    else -> style.mutedText
+                    RhineBlockKind.Real -> style.titleColors(slot.item?.titleColor)
+                    RhineBlockKind.Zero -> style.titleColors(column?.titleColor)
+                    else -> listOf(style.mutedText)
                 }
             drawFaceText(
                 frame = block.topFrame,
                 text = top,
-                color = color,
+                colors = colors,
                 size = style.topTextSize,
                 bold = slot.kind == RhineBlockKind.Zero || focused,
                 pad = pad,
@@ -204,45 +210,37 @@ fun DrawScope.drawRhineScene(
                 path = facePath,
             )
     }
+    // How much of a block this pass draws: the selected block moves from the blurred pass to the
+    // sharp one, the others stay blurred.
+    fun share(block: RhineBlock): Float =
+        when (pass) {
+            RhinePass.All -> 1f
+            RhinePass.Blurred -> 1f - sharpness(layout, input, block)
+            RhinePass.Sharp -> sharpness(layout, input, block)
+        }
     // Context blocks fade as one layer so overlapping faces never show through each other.
-    withAlphaLayer(contextAlpha) { for (block in layout.blocks) drawOne(block) }
-    if (raised != null && layout.raisedClear) withAlphaLayer(raisedAlpha) { drawOne(raised) }
+    withAlphaLayer(contextAlpha) {
+        for (block in layout.blocks) withAlphaLayer(share(block)) { drawOne(block) }
+    }
+    if (raised != null && layout.raisedClear)
+        withAlphaLayer(raisedAlpha * share(raised)) { drawOne(raised) }
 }
 
 /**
- * What frosted glass faces show, blurred (docs/视觉优化/05): the floor, contact shadows, top and end
- * faces and the opened illustrations, but no long side faces, so a face shows the light behind it
- * rather than a copy of itself.
+ * How sharply [block] is drawn over the blurred scene (docs/视觉优化/06): 1 for the selected block,
+ * which is the raised block while one is lifted and otherwise the block under the camera. As the
+ * camera travels, sharpness passes from one block to the next within [SharpReach] of a slot.
  */
-fun DrawScope.drawRhineBackdrop(
-    layout: RhineLayout,
-    input: RhineSceneInput,
-    style: RhineStyle,
-    display: com.shub39.grit.core.settings.RhineDisplayConfig,
-    illustration: (RhineSlot, Boolean) -> ImageBitmap?,
-    reveal: Float,
-    path: Path,
-) {
-    drawRect(style.floor)
-    for (block in layout.blocks) {
-        if (block.base == 0f) drawShadow(block, style, centrality(block), true, path)
-        drawPath(block.top.toPath(path), style.top)
-        drawPath(block.cap.toPath(path), style.cap)
-    }
-    for (open in openedFaces(layout, input, style, 8f * density, illustration, reveal)) {
-        val center = centrality(open.block)
-        drawFaceImage(
-            open.block.frontFrame.copy(height = open.block.height),
-            open.image,
-            open.area,
-            display.illustrationFit,
-            style.frontAt(center),
-            style.frontLowAt(center),
-            style.edge,
-            open.alpha,
-        )
-    }
+fun sharpness(layout: RhineLayout, input: RhineSceneInput, block: RhineBlock): Float {
+    val raised = layout.raised
+    if (raised != null) return if (block === raised) 1f else 0f
+    val du = kotlin.math.abs(block.slot.u - input.focusU)
+    val dv = kotlin.math.abs(block.slot.v - input.cameraV)
+    return (1f - du / SharpReach).coerceIn(0f, 1f) * (1f - dv / SharpReach).coerceIn(0f, 1f)
 }
+
+/** Camera travel, in slots, over which a block loses its sharpness. */
+private const val SharpReach = 0.6f
 
 /** A long face drawn at full height with its illustration, faded in by [alpha]. */
 private class OpenFace(
@@ -300,9 +298,6 @@ private const val SeeThroughAlpha = 0.28f
 /** Opacity of the blocks in front of the focused Task's illustration once it is shown. */
 private const val ClearGlassAlpha = 0.3f
 
-/** Tint opacity of a frosted long face over the blurred backdrop. */
-private const val GlassFront = 0.74f
-
 private inline fun DrawScope.withAlphaLayer(alpha: Float, draw: () -> Unit) {
     if (alpha <= 0f) return
     if (alpha >= 1f) {
@@ -350,20 +345,9 @@ private fun DrawScope.drawShadow(
     drawPath(inner.toPath(path), style.shadow.copy(alpha = alpha * 0.55f))
 }
 
-private fun DrawScope.drawBlock(
-    block: RhineBlock,
-    style: RhineStyle,
-    center: Float,
-    path: Path,
-    glass: (DrawScope.() -> Unit)?,
-) {
+private fun DrawScope.drawBlock(block: RhineBlock, style: RhineStyle, center: Float, path: Path) {
     val d = density
-    // Frosted glass: the long face shows the blurred backdrop under a warm tint that keeps it
-    // opaque, so blocks behind come through as soft light, never as sharp edges. Top and end faces
-    // only take the tint; blocks at the borders, pale and under the depth blur anyway, stay matte.
-    val glassy = glass != null && center > 0.08f
     val front = block.front
-    if (glassy) clipPath(front.toPath(path)) { glass!!() }
     drawPath(
         front.toPath(path),
         Brush.linearGradient(
@@ -371,21 +355,7 @@ private fun DrawScope.drawBlock(
             start = front[3],
             end = front[0],
         ),
-        alpha = if (glassy) GlassFront else 1f,
     )
-    if (glassy) {
-        // Sheen down from the lit top edge, and a fine rim light along it.
-        drawPath(
-            front.toPath(path),
-            Brush.linearGradient(
-                0f to style.highlight.copy(alpha = 0.32f),
-                0.45f to Color.Transparent,
-                start = front[3],
-                end = front[0],
-            ),
-        )
-        drawLine(style.highlight.copy(alpha = 0.7f), front[3], front[2], strokeWidth = 0.8f * d)
-    }
     val cap = block.cap
     drawPath(block.cap.toPath(path), style.cap)
     // Round fitting on the end face, a fixed distance below the top edge.
@@ -410,11 +380,61 @@ private fun DrawScope.drawBlock(
     drawLine(style.highlight, top[0] + inset, top[1] + inset, strokeWidth = 1.1f * d)
 }
 
-/** Draws one line of text in a face's local frame, clipped to the face minus [pad]. */
+/**
+ * A transparent glass block (docs/视觉优化/06): every face is a light veil, so blocks behind and their
+ * pictures show through; the end face is a little deeper, and the edges facing the light are a fine
+ * white rim over a faint crease.
+ */
+private fun DrawScope.drawGlassBlock(block: RhineBlock, style: RhineStyle, path: Path) {
+    val d = density
+    val front = block.front
+    // Brighter along the lit top edge, clearer towards the foot.
+    drawPath(
+        front.toPath(path),
+        Brush.linearGradient(
+            listOf(style.glassFront, style.glassFrontLow),
+            start = front[3],
+            end = front[0],
+        ),
+    )
+    val cap = block.cap
+    drawPath(
+        cap.toPath(path),
+        Brush.linearGradient(
+            listOf(style.glassCap, style.glassCap.copy(alpha = style.glassCap.alpha * 0.6f)),
+            start = cap[3],
+            end = cap[0],
+        ),
+    )
+    val top = block.top
+    drawPath(
+        top.toPath(path),
+        Brush.linearGradient(
+            listOf(style.glassTop, style.glassTopFar),
+            start = top[0],
+            end = top[3],
+        ),
+    )
+    val crease = 0.8f * d
+    drawPolygon(front, style.glassEdge, stroke = crease, path = path)
+    drawPolygon(cap, style.glassEdge, stroke = crease, path = path)
+    drawPolygon(top, style.glassEdge, stroke = crease, path = path)
+    // Rim light: the near top edge, the top of the end face and a softer line down the front's
+    // leading edge.
+    val rim = 1.1f * d
+    drawLine(style.glassRim, top[0], top[1], strokeWidth = rim)
+    drawLine(style.glassRim.copy(alpha = 0.7f), cap[3], cap[2], strokeWidth = rim * 0.8f)
+    drawLine(style.glassRim.copy(alpha = 0.45f), front[3], front[0], strokeWidth = rim * 0.7f)
+}
+
+/**
+ * Draws one line of text in a face's local frame, clipped to the face minus [pad]. Several [colors]
+ * run as a gradient across the glyphs, left to right.
+ */
 private fun DrawScope.drawFaceText(
     frame: FaceFrame,
     text: String,
-    color: Color,
+    colors: List<Color>,
     size: TextUnit,
     bold: Boolean,
     pad: Float,
@@ -422,6 +442,7 @@ private fun DrawScope.drawFaceText(
     trailingMark: Boolean = false,
     scrollSeconds: Float = 0f,
 ) {
+    val color = colors.first()
     val markSpace = if (trailingMark) 14f * density else 0f
     // Reserve equal space on both sides so a completion mark never shifts the title's centre.
     val maxWidth = (frame.width - pad * 2 - markSpace * 2).toInt()
@@ -474,7 +495,17 @@ private fun DrawScope.drawFaceText(
                 if (scrolling) pad + markSpace - overflow * fraction
                 else (frame.width - result.size.width) / 2f
             clipRect(pad + markSpace, 0f, frame.width - pad - markSpace, frame.height) {
-                drawText(result, topLeft = Offset(x, y))
+                if (colors.size == 1) drawText(result, topLeft = Offset(x, y))
+                else
+                    drawText(
+                        result,
+                        Brush.horizontalGradient(
+                            colors,
+                            startX = result.getLineLeft(0),
+                            endX = result.getLineRight(0),
+                        ),
+                        topLeft = Offset(x, y),
+                    )
             }
             if (trailingMark) {
                 val r = 4f * density
